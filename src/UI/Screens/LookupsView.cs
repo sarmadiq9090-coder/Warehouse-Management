@@ -12,13 +12,21 @@ namespace Stores
     // ================================================================== stores / types / groups
     class LookupsView : UserControl
     {
+        /// <summary>Where a store is used: also documents without a movement (reservations, requests, counts, write-offs).</summary>
+        static string[] StoreUsage()
+        {
+            List<string> l = new List<string> { "SELECT COUNT(*) FROM sale WHERE stor = ?", "SELECT COUNT(*) FROM shop WHERE stor = ?", "SELECT COUNT(*) FROM trans WHERE stor_out = ? OR stor_in = ?", "SELECT COUNT(*) FROM item_stor WHERE stor = ? AND (item_bal <> 0 OR item_bal_f <> 0)" };
+            foreach (string t in new[] { "reserve", "mreq", "preq", "count_head", "wo_head" }) if (Db.TableExists(t)) l.Add("SELECT COUNT(*) FROM " + t + " WHERE stor = ?");
+            return l.ToArray();
+        }
+
         public LookupsView()
         {
             BackColor = Theme.Bg;
             TableLayoutPanel t = new TableLayoutPanel(); t.Dock = DockStyle.Fill; t.ColumnCount = 3; t.RowCount = 1;
             for (int i = 0; i < 3; i++) t.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3f));
             t.Controls.Add(new LookupPanel("المخازن", "stor", "stor_no", "stor_name",
-                new string[] { "SELECT COUNT(*) FROM sale WHERE stor = ?", "SELECT COUNT(*) FROM shop WHERE stor = ?", "SELECT COUNT(*) FROM trans WHERE stor_out = ? OR stor_in = ?", "SELECT COUNT(*) FROM item_stor WHERE stor = ? AND (item_bal <> 0 OR item_bal_f <> 0)" }), 0, 0);
+                StoreUsage()), 0, 0);
             t.Controls.Add(new LookupPanel("أنواع المواد", "[type]", "type_no", "type_name", new string[] { "SELECT COUNT(*) FROM item WHERE [type] = ?" }), 1, 0);
             t.Controls.Add(new LookupPanel("مجموعات المواد", "[group]", "group_no", "group_name", new string[] { "SELECT COUNT(*) FROM item WHERE [group] = ?" }), 2, 0);
             Controls.Add(t); Controls.Add(ViewHelp.Title("المخازن والأنواع والمجموعات"));
@@ -45,6 +53,7 @@ namespace Stores
             {
                 string n = InputDialog.Ask(FindForm(), title, "الاسم الجديد:", "");
                 if (string.IsNullOrEmpty(n)) return;
+                if (n.Length > 50) { UI.Warn("الاسم طويل (50 حرفا كحد أقصى)."); return; }
                 if (Exists(n, 0)) { UI.Warn("الاسم موجود."); return; }
                 Db.Exec("INSERT INTO " + table + " (" + nameCol + ") VALUES (?)", n);
                 Db.Log(null, "إضافة " + title, n);
@@ -55,6 +64,7 @@ namespace Stores
                 ComboItem it = list.SelectedItem as ComboItem; if (it == null) { UI.Warn("اختر اسما من القائمة أولا."); return; }
                 string n = InputDialog.Ask(FindForm(), title, "الاسم:", it.Name);
                 if (string.IsNullOrEmpty(n) || n == it.Name) return;
+                if (n.Length > 50) { UI.Warn("الاسم طويل (50 حرفا كحد أقصى)."); return; }
                 if (Exists(n, it.Id)) { UI.Warn("الاسم موجود."); return; }
                 Db.Exec("UPDATE " + table + " SET " + nameCol + " = ? WHERE " + idCol + " = ?", n, it.Id);
                 Db.Log(null, "تعديل " + title, it.Name + " ← " + n);

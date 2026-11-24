@@ -80,6 +80,7 @@ namespace Stores
 
         void Run()
         {
+            if (cmbKind.Items.Count == 0) return;      // no right to see any kind
             try
             {
                 UI.WaitCursor(true);
@@ -110,16 +111,18 @@ namespace Stores
                           "FROM " + t + " h WHERE h.menu_date >= ? AND h.menu_date < ?";
                     if (k == 0) sql += " AND " + Db.IssueOnly("h");
                     if (k == 4) sql += Db.HasProj ? " AND h.doc_kind = 1" : " AND 1=0";
-                    if (k == 1) sql += " AND h.shop_type <> 3 AND " + Db.NotCountAdj("h");
+                    if (k == 1) sql += " AND h.shop_type <> 3 AND " + Db.NotCountAdj("h") + " AND " + Db.MainShop("h");
                     if (k == 2) sql += " AND h.shop_type = 3";
                     if (person.Value != 0) sql += " AND h.custom_no = ?";
                 }
                 args.Add(a); args.Add(b);
                 if (k != 3 && k != 5 && person.Value != 0) args.Add(person.Value);
                 string s = UI.NormDigits(txt.Text.Trim());
-                if (s.Length > 0) { sql += " AND (h.menu_no = ? OR " + noteCol + " LIKE ?)"; args.Add(s); args.Add("%" + s + "%"); }
+                if (s.Length > 0) { sql += " AND (h.menu_no = ? OR " + noteCol + " LIKE ?)"; args.Add(s); args.Add(Db.Like(s)); }
                 sql += " ORDER BY " + dateCol + " DESC, " + idCol + " DESC";
                 data = Db.Query(sql, args.ToArray());
+                Dictionary<int, Posting.GroupInfo> groups = k == 1 ? Posting.Groups() : new Dictionary<int, Posting.GroupInfo>();   // receipts into several stores
+                if (groups.Count > 0) data.Columns["n"].ReadOnly = data.Columns["q"].ReadOnly = false;
                 data.Columns.Add("pname", typeof(string)); data.Columns.Add("sname", typeof(string)); data.Columns.Add("tname", typeof(string));
                 foreach (DataRow r in data.Rows)
                 {
@@ -129,6 +132,8 @@ namespace Stores
                     else if (pj > 0 && (k == 0 || k == 2) && Db.HasCcPerson) r["pname"] = Cache.Project(pj);   // «المستلم = مركز الكلفة»
                     else r["pname"] = pj > 0 ? Cache.Project(pj) + " • " + Cache.Person(Db.I(r["custom_no"])) : Cache.Person(Db.I(r["custom_no"]));
                     r["sname"] = Cache.Store(Db.I(r["stor"]));
+                    Posting.GroupInfo gi;
+                    if (groups.TryGetValue(Db.I(r["shop_no"]), out gi)) { r["sname"] = gi.Stores; r["n"] = gi.Lines; r["q"] = gi.Qty; }
                     int st = Db.I(r["st"]);
                     r["tname"] = k == 0 ? "إخراج مخزني" : k == 3 ? "نقل مخزني" : k == 4 ? "مردود مشتريات" : k == 5 ? (st == 0 ? "حجز ملغى" : "حجز") : st == 3 ? "مردود إخراج مخزني" : Cache.ReceiptTypes[Math.Max(0, Math.Min(3, st))];
                 }

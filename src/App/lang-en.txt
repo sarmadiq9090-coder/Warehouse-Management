@@ -1544,11 +1544,10 @@ auto_seq\tالنوع\tرقم السند\tالتاريخ\tالرمز\tالماد�
 بحث عن مستند	Find a Document
 بحث عن مستند: الرقم أو مركز الكلفة أو المجهز أو الملاحظات	Find a document: number, cost centre, supplier or notes
 بطاقة مادة	Item Card
-تابع لسند الإدخال رقم	Part of receipt No.
+تعذر تجهيز ملف البيانات لإدخال المواد في أكثر من مخزن. أغلق البرنامج على بقية الحواسيب ثم شغّله من جديد	The data file could not be prepared for items in more than one store. Close the program on the other computers, then start it again
 تعذر إنشاء ملف PDF: طابعة «Microsoft Print to PDF» غير موجودة في هذا الحاسوب.\nفعّلها من: إعدادات ويندوز ← الميزات الاختيارية، أو احفظ السند كملف Excel	Could not create the PDF file: the "Microsoft Print to PDF" printer is missing on this computer.\nTurn it on in Windows Settings → Optional features, or save the document as Excel
 تعذر استعمال الطابعة	The printer could not be used
 تعذرت الطباعة	Printing failed
-تم الحفظ. المواد موزعة على أكثر من مخزن، لذلك حُفظ سند إدخال لكل مخزن	Saved. The items go into more than one store, so one receipt per store was saved
 حفظ Excel	Save Excel
 حفظ PDF	Save PDF
 حفظ كملف	Save as File
@@ -1556,7 +1555,6 @@ auto_seq\tالنوع\tرقم السند\tالتاريخ\tالرمز\tالماد�
 حفظ كملف PDF	Save as PDF
 رقم السند أو مركز الكلفة أو المجهز أو الملاحظات	Document number, cost centre, supplier or notes
 سند رقم	Document No.
-سند لكل مخزن	one document per store
 طولي	Portrait
 عرضي	Landscape
 غير موجودة.\n\nهل تريد إضافتها كمادة جديدة؟\n(قائمة الإدخال الحالية تبقى كما هي	does not exist.\n\nAdd it as a new item?\n(the current receipt list stays as it is
@@ -1581,7 +1579,6 @@ auto_seq\tالنوع\tرقم السند\tالتاريخ\tالرمز\tالماد�
 هذا المستند غير موجود (ربما حُذف	This document does not exist (it may have been deleted
 يجب حفظ السند أولا. حفظ الآن	The document must be saved first. Save now
 يوجد سجل تالف قديم في ملف البيانات.\nالإصلاح: «الإعدادات» ← «ضغط وإصلاح ملف البيانات» (تُؤخذ نسخة احتياطية تلقائيا أولا	The data file has an old damaged record.\nTo repair it: "Settings" → "Compact and Repair Data File" (a backup is taken automatically first
-يُحفظ سند لكل مخزن	one document per store is saved
 SQL Server لا يستجيب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	SQL Server does not respond. Restart the computer, then click "Main server" again
 SQL Server منصّب مسبقا، يجري إعداده	SQL Server is already installed, setting it up
 SQL Server يحتاج ويندوز 64 بت	SQL Server needs 64-bit Windows
@@ -1713,3 +1710,6 @@ SQL Server يحتاج ويندوز 64 بت	SQL Server needs 64-bit Windows
 لكن كل المواد في الجدول تدخل إلى	but every item in the table goes into
 نعم: إدخال كل المواد إلى	Yes: put every item into
 هذه المادة غير موجودة (ربما حُذفت من حاسوب آخر	This item does not exist (it may have been deleted on another computer
+جاري حفظ نسخة من بيانات السيرفر الحالية	Backing up the server data that is there now
+الاسم طويل (50 حرفا كحد أقصى	The name is too long (50 characters at most
+السعر لا يمكن أن يكون سالبا	The price cannot be negative

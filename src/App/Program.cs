@@ -18,7 +18,7 @@ namespace Stores
         public static string Company { get { return Branding.Company; } }
         /// <summary>Set by «تسجيل الخروج»: after the main window closes, the login screen shows again.</summary>
         public static bool LogoutRequested;
-        public const string Version = "1.2.1";
+        public const string Version = "1.2.2";
 
         [STAThread]
         static void Main(string[] args)

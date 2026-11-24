@@ -17,7 +17,7 @@ namespace Stores
             Text = "الإعدادات العامة";
             ClientSize = new Size(620, 430);
             TableLayoutPanel t = FormTable();
-            txtCompany = UI.Text(380); txtCompany.Text = Branding.Company;
+            txtCompany = UI.Text(380); txtCompany.MaxLength = 120; txtCompany.Text = Branding.Company;
             AddRow(t, "اسم الشركة", txtCompany);
 
             pic = new PictureBox(); pic.Size = new Size(380, 90); pic.SizeMode = PictureBoxSizeMode.Zoom; pic.BorderStyle = BorderStyle.FixedSingle; pic.BackColor = Color.White;

@@ -67,8 +67,16 @@ namespace Stores
 
         public static bool TryNum(string s, out double v)
         {
-            s = NormDigits(s ?? "").Replace(",", "").Trim();
-            return double.TryParse(s, NumberStyles.Float, Inv, out v);
+            s = NormDigits((s ?? "").Replace('،', ',')).Replace(((char)0x200E).ToString(), "").Replace(((char)0x200F).ToString(), "").Trim();
+            if (s.IndexOf(',') >= 0)
+            {
+                // «1,500» and «1,500.25»: thousands; «1,5»: a decimal comma; anything else is not a number
+                if (System.Text.RegularExpressions.Regex.IsMatch(s, @"^[-+]?\d{1,3}(,\d{3})+(\.\d*)?$")) s = s.Replace(",", "");
+                else if (System.Text.RegularExpressions.Regex.IsMatch(s, @"^[-+]?\d*,\d+$")) s = s.Replace(',', '.');
+                else { v = 0; return false; }
+            }
+            // (NaN, Infinity and amounts no stock can have are refused)
+            return double.TryParse(s, NumberStyles.Float, Inv, out v) && !double.IsNaN(v) && Math.Abs(v) < 1e13;
         }
 
         /// <summary>Arabic normalisation for searching.</summary>
@@ -202,7 +210,8 @@ namespace Stores
             else c.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             if (num)
             {
-                c.DefaultCellStyle.Format = "#,##0.###";
+                // the mark keeps the minus on the left of the number in right-to-left grids («-2», not «2-»)
+                c.DefaultCellStyle.Format = "#,##0.###;" + (char)0x200E + "-#,##0.###";
                 c.DefaultCellStyle.FormatProvider = Inv;
                 c.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }

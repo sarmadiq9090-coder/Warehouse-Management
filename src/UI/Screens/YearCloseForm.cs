@@ -75,7 +75,7 @@ namespace Stores
             int y = (int)cmbYear.SelectedItem;
             DateTime a = new DateTime(y, 1, 1), b = a.AddYears(1);
             int n = Db.I(Db.Scalar("SELECT COUNT(*) FROM sale WHERE menu_date >= ? AND menu_date < ?", a, b)) +
-                    Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE menu_date >= ? AND menu_date < ?", a, b)) +
+                    Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE " + Db.MainShop("") + " AND menu_date >= ? AND menu_date < ?", a, b)) +
                     Db.I(Db.Scalar("SELECT COUNT(*) FROM trans WHERE menu_date >= ? AND menu_date < ?", a, b));
             int prev = YearClose.ClosedYear();
             lblCount.Text = "فيها " + n.ToString("#,##0") + " سند" + (y - 1 > prev && prev > 0 ? "، وتُقفل معها السنوات قبلها" : "");

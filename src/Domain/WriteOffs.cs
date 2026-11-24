@@ -130,7 +130,7 @@ namespace Stores
             else if (status == -3) sql += " AND h.status IN (0, 1, 3)";
             else if (status >= 0) { sql += " AND h.status = ?"; a.Add(status); }
             string s = UI.NormDigits((text ?? "").Trim());
-            if (s.Length > 0) { sql += " AND (h.menu_no = ? OR h.notes LIKE ? OR h.user_name LIKE ?)"; a.Add(s); a.Add("%" + s + "%"); a.Add("%" + s + "%"); }
+            if (s.Length > 0) { sql += " AND (h.menu_no = ? OR h.notes LIKE ? OR h.user_name LIKE ?)"; a.Add(s); a.Add(Db.Like(s)); a.Add(Db.Like(s)); }
             sql += " ORDER BY h.wo_date DESC, h.wo_no DESC";
             DataTable t = Db.Query(sql, a.ToArray());
             t.Columns.Add("sname", typeof(string)); t.Columns.Add("rname", typeof(string)); t.Columns.Add("status_name", typeof(string));

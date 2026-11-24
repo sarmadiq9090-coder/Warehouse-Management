@@ -17,8 +17,8 @@ try {
             Copy-Item -LiteralPath $dst -Destination $b -Force
         }
         New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null
+        $copied.Add($rel)        # before the copy: a file that fails half-way is restored too
         Copy-Item -LiteralPath $_.FullName -Destination $dst -Force
-        $copied.Add($rel)
         L ('updated ' + $rel)
     }
     L 'update finished'

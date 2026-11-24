@@ -101,11 +101,12 @@ namespace Stores
             text = UI.NormDigits((text ?? "").Trim());
             string[] words = UI.Norm(text).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             string persons = Ids(Cache.Persons, "p_no", words), projects = Db.HasProj ? Ids(Cache.Projects, "proj_no", words) : "0";
-            string like = "%" + text.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]") + "%";
+            string like = Db.Like(text);
             DataTable res = new DataTable();
             foreach (string c in new[] { "kname", "menu_no", "pname", "sname", "note" }) res.Columns.Add(c, typeof(string));
             res.Columns.Add("menu_date", typeof(DateTime)); res.Columns.Add("k", typeof(int)); res.Columns.Add("id", typeof(int));
 
+            Dictionary<int, Posting.GroupInfo> groups = Posting.Groups();      // receipts into several stores
             // may: the part of this table the user may see ("" = all, null = nothing)
             Action<string, string, string, string, string, Func<DataRow, DocKind>, bool, string> part = delegate(string table, string idCol, string dateCol, string noteCol, string cols, Func<DataRow, DocKind> kind, bool party, string may)
             {
@@ -115,13 +116,15 @@ namespace Stores
                 {
                     if (may.Length > 0) w += " AND " + may;
                     if (table == "sale" || table == "shop") w += " AND " + Db.NotCountAdj("h");
+                    if (table == "shop") w += " AND " + Db.MainShop("h");
                     foreach (DataRow r in Db.Query("SELECT TOP 100 h." + idCol + " AS id, h.menu_no, h." + dateCol + " AS d, " + noteCol + " AS nt, " + cols + " FROM " + table + " AS h WHERE " + w + " ORDER BY h." + dateCol + " DESC, h." + idCol + " DESC", a).Rows)
                     {
                         DocKind k = kind(r);
                         if (!seen.Add(Db.I(r["id"])) || !Session.Can(MainForm.ViewPerm(k))) continue;
                         int pj = Db.I(r["pj"]), pe = Db.I(r["pe"]);
                         string who = k == DocKind.Transfer ? "إلى: " + Cache.Store(pe) : pj > 0 && (Posting.CcIsRecipient(k) || pe == 0) ? Cache.Project(pj) : pj > 0 ? Cache.Project(pj) + " • " + Cache.Person(pe) : Cache.Person(pe);
-                        res.Rows.Add(Posting.KindName(k), Db.S(r["menu_no"]), who, Cache.Store(Db.I(r["st"])), Db.S(r["nt"]), Db.Dt(r["d"]), (int)k, Db.I(r["id"]));
+                        Posting.GroupInfo gi;
+                        res.Rows.Add(Posting.KindName(k), Db.S(r["menu_no"]), who, table == "shop" && groups.TryGetValue(Db.I(r["id"]), out gi) ? gi.Stores : Cache.Store(Db.I(r["st"])), Db.S(r["nt"]), Db.Dt(r["d"]), (int)k, Db.I(r["id"]));
                     }
                 };
                 if (text.Length == 0) { run("1=1", new object[0]); return; }

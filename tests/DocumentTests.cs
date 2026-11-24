@@ -112,6 +112,7 @@ namespace Stores
             Find();
             NewItem();
             Review();
+            Backups();
             Statement();
             Check(Posting.RecalcBalances() == 0, "balances consistent at the end");
             if (args.Length > 2) Sql(args[0], args[2]);
@@ -167,20 +168,39 @@ namespace Stores
             int[] st = Two(); int[] it = Items(3); int A = st[0], B = st[1];
             double a0 = Bal(it[0], A), b1 = Bal(it[1], B), a2 = Bal(it[2], A), b0 = Bal(it[0], B);
             Doc d = Receipt(A, it[0], 5, A, it[1], 7, B, it[2], 3, A, it[0], 4, B);
-            List<Doc> docs = Posting.SaveByStore(d);
-            Check(docs.Count == 2 && docs[0] == d && docs[0].Store == A && docs[1].Store == B, "two stores → two receipts, the chosen store first");
-            Check(docs[0].Lines.Count == 2 && docs[1].Lines.Count == 2, "each receipt has its own lines");
-            Check(docs[0].No != docs[1].No && long.Parse(docs[1].No) == long.Parse(docs[0].No) + 1, "consecutive numbers " + docs[0].No + " / " + docs[1].No);
-            Check(docs[1].Note.Contains("تابع لسند الإدخال رقم " + docs[0].No), "the second names the first in its notes");
+            string next = Posting.NextNo(DocKind.Receipt, null); int rows0 = Db.I(Db.Scalar("SELECT COUNT(*) FROM shop"));
+            Posting.Save(d);
+            Check(d.No == next && Posting.NextNo(DocKind.Receipt, null) == (long.Parse(next) + 1).ToString(), "two stores: one document, one number (" + d.No + ")");
+            Check(Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == rows0 + 2 && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE menu_no = ? AND doc_grp = ?", d.No, d.Id)) == 2, "one row per store, same number");
             Check(Bal(it[0], A) == a0 + 5 && Bal(it[1], B) == b1 + 7 && Bal(it[2], A) == a2 + 3 && Bal(it[0], B) == b0 + 4, "balances: every item in its own store");
-            Check(Posting.Load(DocKind.Receipt, docs[1].Id).Person == d.Person, "same supplier on both");
+            int part = Db.I(Db.Scalar("SELECT shop_no FROM shop WHERE doc_grp = ? AND shop_no <> ?", d.Id, d.Id));
+            Doc e = Posting.Load(DocKind.Receipt, part);
+            Check(e.Id == d.Id && e.Store == A && e.Lines.Count == 4 && string.Join(",", e.Lines.Select(l => l.Store.ToString()).ToArray()) == string.Join(",", new[] { A, B, A, B }.Select(s => s.ToString()).ToArray()), "opened from either row: the whole document, lines in their order");
+            Check(Posting.FindByNo(DocKind.Receipt, d.No) == d.Id && Posting.Neighbor(DocKind.Receipt, 0, -1) == d.Id, "found by its number, shown once by previous / next");
+            DataTable ft = DocFindDialog.Find(d.No);
+            Check(ft.Rows.Cast<DataRow>().Count(x => Db.S(x["menu_no"]) == d.No && Db.I(x["k"]) == (int)DocKind.Receipt) == 1, "found once by the document search");
+            ReportData vr = Reports.Voucher(e);
+            Check(vr.Rows.Count == 4 && vr.Cols.Any(c => c.Header == "المخزن") && vr.Info.Any(i => i.Key == "إلى المخازن" && i.Value.Contains(Cache.Store(A)) && i.Value.Contains(Cache.Store(B))), "printed as one document with the store of every item");
+            using (Bitmap bm = Pg(vr).Image(0, 90)) bm.Save(Path.Combine(outDir, "page_receipt_stores" + (Db.IsSql ? "_sql" : "") + ".png"), ImageFormat.Png);
+            ReportParams rp = new ReportParams(); rp.From = rp.To = DateTime.Today;
+            ReportData rr = Reports.Get("receipts").Run(rp);
+            object[] rrow = rr.Rows.Single(x => Convert.ToString(x[1]) == d.No && rr.RowLink[rr.Rows.IndexOf(x)].Contains("Receipt"));
+            Check(Convert.ToDouble(rrow[6]) == 4 && Convert.ToDouble(rrow[7]) == 19, "register: one row with all its items and quantities");
 
-            // editing: one line moves to the other store
-            Doc e = Posting.Load(DocKind.Receipt, d.Id);
+            // editing: lines move between stores, a store is added, the number stays
             foreach (DocLine l in e.Lines) l.Store = l.ItemNo == it[2] ? B : A;
-            docs = Posting.SaveByStore(e);
-            Check(docs.Count == 2 && Bal(it[2], A) == a2 && Posting.Load(DocKind.Receipt, e.Id).Lines.Count == 1, "editing: a line moved to another store becomes a receipt there");
-            Doc second = docs[1];
+            Posting.Save(e);
+            e = Posting.Load(DocKind.Receipt, d.Id);
+            Check(e.No == d.No && e.Lines.Count == 4 && Bal(it[2], A) == a2 && Bal(it[1], B) == b1 && Bal(it[0], A) == a0 + 9, "editing: a line moved to another store, same number");
+            foreach (DocLine l in e.Lines) l.Store = B;
+            e.Store = B; Posting.Save(e);
+            e = Posting.Load(DocKind.Receipt, d.Id);
+            Check(e.No == d.No && e.Id == d.Id && e.Store == B && e.Lines.Count == 4 && Bal(it[0], A) == a0 && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE doc_grp = ?", d.Id)) == 0 && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == rows0 + 1, "everything into one store: one row again");
+            foreach (DocLine l in e.Lines) l.Store = l.ItemNo == it[0] ? A : B;
+            e.Store = A; Posting.Save(e);
+            Check(Posting.Load(DocKind.Receipt, d.Id).No == d.No && Bal(it[0], A) == a0 + 9 && Bal(it[1], B) == b1 + 7, "split again");
+            Check((Fails(delegate { Doc x1 = Posting.Load(DocKind.Receipt, d.Id), x2 = Posting.Load(DocKind.Receipt, d.Id); x1.Lines.Last().Qty += 1; Posting.Save(x1); x2.Lines.First().Qty += 1; Posting.Save(x2); }) ?? "").Contains("من حاسوب آخر"), "changed on another computer (in another store's row): refused");
+            Check((Fails(delegate { Doc x1 = new Doc(); x1.Kind = DocKind.Receipt; x1.Date = DateTime.Today; x1.Person = Supplier(); x1.Store = A; x1.Lines.Add(new DocLine { ItemNo = it[0], Qty = 1 }); Posting.Save(x1); if (x1.No == d.No) throw new UserError("same number"); Posting.Delete(Posting.Load(DocKind.Receipt, x1.Id)); })) == null, "the next receipt gets its own number");
 
             // a line already issued from cannot move
             Doc iss = new Doc(); iss.Kind = DocKind.Issue; iss.Date = DateTime.Today; iss.Store = A;
@@ -190,8 +210,8 @@ namespace Stores
             Posting.Save(iss);
             e = Posting.Load(DocKind.Receipt, d.Id);
             double before = Bal(it[0], A); int count = Db.I(Db.Scalar("SELECT COUNT(*) FROM shop"));
-            e.Lines[0].Store = B; e.Lines.Add(new DocLine { ItemNo = it[1], Qty = 1, Store = A });
-            string msg = Fails(delegate { Posting.SaveByStore(e); });
+            e.Lines.First(l => l.ItemNo == it[0]).Store = B; e.Lines.Add(new DocLine { ItemNo = it[1], Qty = 1, Store = A });
+            string msg = Fails(delegate { Posting.Save(e); });
             Check(msg != null && msg.Contains("أُخرج منها"), "a line already issued from cannot move: " + msg);
             Check(Bal(it[0], A) == before && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == count, "refused: nothing changed");
             Posting.Delete(Posting.Load(DocKind.Issue, iss.Id));
@@ -199,19 +219,66 @@ namespace Stores
             // all or nothing: the second part fails (quantity 0)
             count = Db.I(Db.Scalar("SELECT COUNT(*) FROM shop"));
             Doc bad = Receipt(A, it[0], 5, A, it[1], 0, B);
-            msg = Fails(delegate { Posting.SaveByStore(bad); });
-            Check(bad.Lines.Count == 2, "refused: the document keeps its lines");
+            msg = Fails(delegate { Posting.Save(bad); });
+            Check(bad.Lines.Count == 2 && bad.Id == 0, "refused: the document keeps its lines");
             Check(msg != null && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == count, "one bad part: no document is saved");
-            foreach (int id in new[] { second.Id, Db.I(Db.Scalar("SELECT MAX(shop_no) FROM shop WHERE menu_no = ?", (long.Parse(d.No) + 1).ToString())), d.Id }.Distinct())
-            {
-                Doc x = Posting.Load(DocKind.Receipt, id);
-                if (x != null && x.Note.Contains("اختبار")) Posting.Delete(x);
-            }
-            Check(Bal(it[0], A) == a0 && Bal(it[1], B) == b1 && Bal(it[0], B) == b0, "balances back after deleting");
-            Doc one = Receipt(A, it[0], 5, A);
-            Check(Posting.SaveByStore(one).Count == 1, "one store → one receipt as before");
+            Posting.Delete(Posting.Load(DocKind.Receipt, d.Id));
+            Check(Bal(it[0], A) == a0 && Bal(it[1], B) == b1 && Bal(it[0], B) == b0 && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == rows0, "deleting removes it from every store");
+            Doc one = Receipt(A, it[0], 5, A); Posting.Save(one);
+            Check(Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == rows0 + 1 && Db.I(Db.Scalar("SELECT doc_grp FROM shop WHERE shop_no = ?", one.Id)) == 0, "one store: one row as before");
+            Doc other = Posting.Load(DocKind.Receipt, one.Id); other.Store = B; Posting.Save(other);
+            Check(Posting.Load(DocKind.Receipt, one.Id).Store == B && Bal(it[0], B) == b0 + 5 && Bal(it[0], A) == a0, "the whole document into another store, as before");
             Posting.Delete(Posting.Load(DocKind.Receipt, one.Id));
+
+            // a purchase request linked to a receipt of two stores counts both
+            if (Db.HasPreq)
+            {
+                PReq pq = new PReq(); pq.Lines.Add(new PReqLine { ItemNo = it[0], Qty = 9 });
+                int pid = PurchaseRequests.Save(pq);
+                Doc pr = Receipt(A, it[0], 5, A, it[0], 4, B); Posting.Save(pr);
+                PurchaseRequests.Link(pr.Id, pid);
+                Check(Db.D(Db.Scalar("SELECT SUM(received_qty) FROM preq_menu WHERE seq = ?", pid)) == 9 && PurchaseRequests.Receipts(pid).Count == 1, "purchase request: both stores are counted, one receipt number");
+                PurchaseRequests.Link(pr.Id, 0); Db.Exec("DELETE FROM preq_menu WHERE seq = ?", pid); Db.Exec("DELETE FROM preq WHERE preq_no = ?", pid);
+                Posting.Delete(Posting.Load(DocKind.Receipt, pr.Id));
+            }
+            // the first row was deleted by the original program: the rest stays one document and is repaired by saving
+            int[] all = Cache.Stores.Rows.Cast<DataRow>().Select(r => Db.I(r["stor_no"])).ToArray();
+            if (all.Length < 3) { Db.Exec("INSERT INTO stor (stor_name) VALUES (?)", "مخزن اختبار ٣"); Cache.LoadAll(); all = Cache.Stores.Rows.Cast<DataRow>().Select(r => Db.I(r["stor_no"])).ToArray(); }
+            Doc o3 = Receipt(all[0], it[0], 1, all[0], it[1], 2, all[1], it[2], 3, all[2]); Posting.Save(o3);
+            Db.Exec("DELETE FROM shop_menu WHERE seq = ?", o3.Id); Db.Exec("DELETE FROM shop WHERE shop_no = ?", o3.Id);
+            int left = Posting.FindByNo(DocKind.Receipt, o3.No);
+            Doc orphan = left > 0 ? Posting.Load(DocKind.Receipt, left) : null;
+            Check(orphan != null && orphan.Lines.Count == 2 && DocFindDialog.Find(o3.No).Rows.Cast<DataRow>().Count(x => Db.S(x["menu_no"]) == o3.No && Db.I(x["k"]) == (int)DocKind.Receipt) == 1, "first row deleted by the old program: the rest is still one document");
+            ReportParams rp3 = new ReportParams(); rp3.From = rp3.To = DateTime.Today;
+            Check(Reports.Get("receipts").Run(rp3).Rows.Count(x => Convert.ToString(x[1]) == o3.No && Convert.ToDouble(x[6]) == 2) == 1, "and one row in the register");
+            Posting.Save(orphan); orphan = Posting.Load(DocKind.Receipt, orphan.Id);
+            Check(orphan.No == o3.No && orphan.Lines.Count == 2 && Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE doc_grp = ?", orphan.Id)) == 2, "saving repairs it");
+            Posting.Delete(orphan); Posting.RecalcBalances();
+
+            // an unpriced line takes its cost from earlier receipts, not from this document's other store
+            Doc c1 = Receipt(A, it[2], 10, A); c1.Lines[0].Price = 3; c1.Date = DateTime.Today.AddDays(-1); Posting.Save(c1);
+            Doc c2 = Receipt(A, it[2], 1, A, it[2], 1, B); c2.Lines[0].Price = 5000; c2.Lines[1].Price = 0; Posting.Save(c2);
+            Func<double> cost = delegate { return Db.D(Db.Scalar("SELECT l.cost FROM shop_menu AS l INNER JOIN shop AS h ON h.shop_no = l.seq WHERE h.doc_grp = ? AND h.stor = ?", c2.Id, B)); };
+            Check(cost() == 3, "unpriced line in the second store: cost of the earlier receipt (" + cost() + ")");
+            Doc c3 = Posting.Load(DocKind.Receipt, c2.Id); c3.Lines[1].Price = 5000; Posting.Save(c3); c3 = Posting.Load(DocKind.Receipt, c2.Id); c3.Lines[1].Price = 0; Posting.Save(c3);
+            Check(cost() == 3, "price cleared again: cost of the earlier receipt (" + cost() + ")");
+
+            // the history names the right line; a change of another row's header is noticed
+            Doc a1 = Posting.Load(DocKind.Receipt, c2.Id); int log0 = Db.I(Db.Scalar("SELECT MAX(id) FROM app_log_detail"));
+            a1.Lines.RemoveAt(0); Posting.Save(a1);
+            DataTable det = Db.Query("SELECT * FROM app_log_detail WHERE id > ?", log0);
+            string txt = string.Join(" | ", det.Rows.Cast<DataRow>().Select(x => string.Join(",", x.ItemArray.Select(v => Convert.ToString(v)).ToArray())).ToArray());
+            Check(txt.Contains("مادة محذوفة") && txt.Contains("المخزن: " + Cache.Store(A)) && !txt.Contains("الكمية: "), "audit trail: the deleted line with its store, no false change");
+            Doc h2 = Receipt(A, it[0], 1, A, it[1], 1, B); Posting.Save(h2); h2 = Posting.Load(DocKind.Receipt, h2.Id);
+            Db.Exec("UPDATE shop SET [note] = ? WHERE doc_grp = ? AND shop_no <> ?", "تغيير من البرنامج القديم", h2.Id, h2.Id);
+            Check((Fails(delegate { Posting.Save(h2); }) ?? "").Contains("من حاسوب آخر"), "a change of the second row's header elsewhere is noticed");
+            foreach (int id in new[] { h2.Id, c2.Id, c1.Id }) { Doc x = Posting.Load(DocKind.Receipt, id); if (x != null) Posting.Delete(x); }
+
+            int audit = Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE doc_grp IS NOT NULL"));
+            Check(audit == 0, "nothing left behind");
         }
+
+        static ReportPages Pg(ReportData r) { ReportPages p = new ReportPages(r); p.Build(); return p; }
 
         static void ReceiptScreen()
         {
@@ -499,6 +566,29 @@ namespace Stores
             return n;
         }
 
+        /// <summary>Ten automatic daily backups stay; a new one replaces the oldest; others are never touched.</summary>
+        static void Backups()
+        {
+            Console.WriteLine("\n-- backups");
+            string dir = Path.Combine(outDir, "نسخ"); if (Directory.Exists(dir)) Directory.Delete(dir, true); Directory.CreateDirectory(dir);
+            for (int i = 1; i <= 14; i++) File.WriteAllText(Path.Combine(dir, "تلقائي " + DateTime.Today.AddDays(-i * 3).ToString("yyyy-MM-dd") + ".AMR"), "x");
+            string[] others = { "يدوي 2020-01-01 101010.AMR", "قبل إقفال سنة 2019 2020-01-01 101010.AMR", "تلقائي مهم.AMR" };
+            foreach (string f in others) File.WriteAllText(Path.Combine(dir, f), "x");
+            File.WriteAllText(Path.Combine(dir, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + " شركة أخرى.AMR"), "x");
+            Backup.Prune(dir, " بيانات.AMR");
+            Check(File.Exists(Path.Combine(dir, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + " شركة أخرى.AMR")), "another data file's backup is not touched");
+            File.Delete(Path.Combine(dir, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + " شركة أخرى.AMR"));
+            string[] auto = Directory.GetFiles(dir, "تلقائي 2*").Select(Path.GetFileName).OrderBy(f => f).ToArray();
+            Check(auto.Length == 10 && auto[0].Contains(DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")), "the newest ten automatic backups stay, from " + auto[0]);
+            Check(others.All(f => File.Exists(Path.Combine(dir, f))), "backups made by hand or before an operation are never deleted");
+            string own = Settings.BackupDir; int before = Directory.Exists(own) ? Directory.GetFiles(own, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + "*").Length : 0;
+            typeof(Backup).GetField("done", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, null);
+            foreach (string f in Directory.GetFiles(own, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + "*")) File.Delete(f);
+            Db.Close(); Backup.DailyAuto(); Backup.DailyAuto();
+            string[] today = Directory.GetFiles(own, "تلقائي " + DateTime.Today.ToString("yyyy-MM-dd") + "*");
+            Check(today.Length == 1 && new FileInfo(today[0]).Length == new FileInfo(Db.DataPath).Length, "today's backup is complete, made once (" + today.Length + ", " + before + " before)");
+        }
+
         static void Review()
         {
             Console.WriteLine("\n-- findings of the code review");
@@ -546,6 +636,29 @@ namespace Stores
                 Call(v, "SetClean", "", Color.Black);
             }
 
+            // saved and opened again on the screen: one document, the stores of the lines stay
+            using (Form f = Host(1280, 720))
+            {
+                DocView v = new DocView(null, DocKind.Receipt, 0, 0); v.Dock = DockStyle.Fill; f.Controls.Add(v); f.Show(); Pump(150);
+                DataGridView g = (DataGridView)Field(v, "grid"); ComboBox cs = (ComboBox)Field(v, "cmbStore");
+                UI.SetSel(cs, st[0]); Call(v, "AddFromBar", it[0], 2.0, 0.0);
+                UI.SetSel(cs, st[1]); Call(v, "AddFromBar", it[1], 3.0, 0.0); Call(v, "AddFromBar", it[0], 1.0, 0.0);
+                ((PersonPicker)Field(v, "person")).Value = Supplier();
+                int rows0 = Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")); bool ok = false;
+                int boxes = Answer(delegate { ok = (bool)Call(v, "Save"); });
+                Doc saved = (Doc)Field(v, "doc");
+                Check(ok && boxes == 0 && saved.Id > 0, "screen: saved without questions, No. " + saved.No);
+                List<DataGridViewRow> gr = g.Rows.Cast<DataGridViewRow>().Where(x => !x.IsNewRow).ToList();
+                Check(gr.Count == 3 && Db.I(gr[0].Cells["store"].Value) == st[0] && Db.I(gr[1].Cells["store"].Value) == st[1] && Db.I(gr[2].Cells["store"].Value) == st[1], "all lines stay on the screen with their stores");
+                gr[2].Cells["store"].Value = st[0];
+                boxes = Answer(delegate { ok = (bool)Call(v, "Save"); });
+                Check(ok && boxes == 0 && ((Doc)Field(v, "doc")).No == saved.No && Posting.Load(DocKind.Receipt, saved.Id).Lines.Count(l => l.Store == st[0]) == 2, "changed and saved again: same number");
+                Shot(f, Path.Combine(outDir, "receipt_saved.png"));
+                Posting.Delete(Posting.Load(DocKind.Receipt, saved.Id));
+                Check(Db.I(Db.Scalar("SELECT COUNT(*) FROM shop")) == rows0, "deleted");
+                Call(v, "SetClean", "", Color.Black);
+            }
+
             // the exact number among many newer documents that mention it
             string no = "9" + (DateTime.Now.Ticks % 100000).ToString("00000");
             Doc old = Receipt(st[0], it[0], 1, st[0]); old.Date = DateTime.Today.AddDays(-2); Posting.Save(old);
@@ -583,6 +696,40 @@ namespace Stores
             using (Form f = Host(600, 400)) { f.Show(); done = (bool)typeof(Pdf).GetMethod("SaveWithWindow", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { f, pdf, r, null }); }
             tm.Dispose();
             Check(done && seen && File.Exists(pdf) && !Application.OpenForms.OfType<WaitForm>().Any(), "PDF of a long report behind the progress window: " + sw.ElapsedMilliseconds + " ms");
+
+            // numbers as they are typed
+            Func<string, string> num = delegate(string x) { double v; return UI.TryNum(x, out v) ? v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) : "no"; };
+            Check(num("1,5") == "1.5" && num("1,500") == "1500" && num("1,500.25") == "1500.25" && num("١،٠٠٠") == "1000" && num("١٫٥") == "1.5" && num("NaN") == "no" && num("1e15") == "no" && num("1,2,3") == "no" && num("-2") == "-2" && num(((char)0x200E) + "-2") == "-2", "typed numbers: decimal comma, thousands, Arabic digits, nonsense refused");
+            Check((Fails(delegate { Doc neg = Receipt(st[0], it[0], 1, st[0]); neg.Lines[0].Price = -1; Posting.Save(neg); }) ?? "").Contains("سالبا"), "negative price refused");
+
+            // two computers: the price changed elsewhere; searching special characters
+            Doc p1 = Receipt(st[0], it[0], 1, st[0]); Posting.Save(p1);
+            Doc pa = Posting.Load(DocKind.Receipt, p1.Id), pb = Posting.Load(DocKind.Receipt, p1.Id);
+            pb.Lines[0].Price = 250; Posting.Save(pb); pa.Note = "تعديل";
+            Check((Fails(delegate { Posting.Save(pa); }) ?? "").Contains("من حاسوب آخر"), "price changed on another computer: noticed");
+            Posting.Delete(Posting.Load(DocKind.Receipt, p1.Id));
+            Check(DocFindDialog.Find("[") != null && Db.Like("a[%_") == "%a[[][%][_]%", "searching [ % _");
+
+            // a receipt already issued from does not move to another store
+            Doc mv = Receipt(st[0], it[1], 10, st[0]); Posting.Save(mv);
+            Db.Exec("UPDATE shop_menu SET qty_sale = 8 WHERE seq = ?", mv.Id);
+            Doc mv2 = Posting.Load(DocKind.Receipt, mv.Id); mv2.Store = st[1];
+            Check((Fails(delegate { Posting.Save(mv2); }) ?? "").Contains("أُخرج منها"), "whole receipt already issued from: not moved to another store");
+            Db.Exec("UPDATE shop_menu SET qty_sale = 0 WHERE seq = ?", mv.Id); Posting.Delete(Posting.Load(DocKind.Receipt, mv.Id));
+
+            // one writer at a time on an Access file
+            if (!Db.IsSql)
+            {
+                bool waited = false;
+                using (FileStream l = new FileStream(Db.DataPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                {
+                    Thread t2 = new Thread(delegate() { Thread.Sleep(900); l.Close(); }); t2.Start();
+                    Stopwatch w2 = Stopwatch.StartNew(); Db.InTx(delegate(System.Data.Common.DbTransaction tx) { }); waited = w2.ElapsedMilliseconds > 700; t2.Join();
+                }
+                Check(waited, "a second computer waits while the first one saves");
+                Stopwatch w3 = Stopwatch.StartNew(); for (int i = 0; i < 10; i++) Db.InTx(delegate(System.Data.Common.DbTransaction tx) { Db.S1(tx, "SELECT COUNT(*) FROM item"); });
+                Check(w3.ElapsedMilliseconds < 4000, "cost of the lock: " + w3.ElapsedMilliseconds / 10 + " ms per save");
+            }
 
             // nothing found inside the report = an empty print, not the whole report
             ReportData none = r.Subset(new List<int>());

@@ -125,7 +125,9 @@ namespace Stores
         public static string BuildSqlConnStr(string server, string database, string user, string password, bool trustCert)
         {
             SqlConnectionStringBuilder b = new SqlConnectionStringBuilder();
-            b.DataSource = server;
+            // the server on this computer: without any network connection Windows cannot resolve the name «localhost»
+            string s = (server ?? "").Trim();
+            b.DataSource = s.StartsWith("localhost,", StringComparison.OrdinalIgnoreCase) ? "127.0.0.1" + s.Substring("localhost".Length) : server;
             b.InitialCatalog = database;
             if (string.IsNullOrEmpty(user)) b.IntegratedSecurity = true;
             else { b.UserID = user; b.Password = password; }
@@ -290,7 +292,38 @@ namespace Stores
             return I(S1(tx, "SELECT @@IDENTITY"));
         }
 
+        /// <summary>Access file: one writer at a time across all computers, like the application lock on SQL Server. An empty
+        /// file next to the data file, held open while writing. null: it cannot be created there (no lock, as before).</summary>
+        static FileStream WriterLock()
+        {
+            DateTime end = DateTime.Now.AddSeconds(20);
+            while (true)
+            {
+                try { return new FileStream(DataPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1); }
+                catch (IOException ex)
+                {
+                    int code = System.Runtime.InteropServices.Marshal.GetHRForException(ex) & 0xFFFF;
+                    if (code != 32 && code != 33) return null;        // 32, 33: in use by another computer
+                    if (DateTime.Now > end) throw new UserError("البيانات مشغولة بحفظ من حاسوب آخر. حاول مرة ثانية بعد لحظة.");
+                    System.Threading.Thread.Sleep(40);
+                }
+                catch (UnauthorizedAccessException) { return null; }
+            }
+        }
+
         public static void InTx(Action<DbTransaction> work)
+        {
+            if (IsSql || string.IsNullOrEmpty(DataPath)) { Tx(work); return; }
+            using (FileStream l = WriterLock())
+            {
+                // a new connection: Jet otherwise reads what this computer cached some seconds ago, not what another one just saved
+                if (l != null) Close();
+                try { Tx(work); }
+                finally { if (l != null) Close(); }        // everything is written before the next computer starts
+            }
+        }
+
+        static void Tx(Action<DbTransaction> work)
         {
             DbTransaction tx = Conn.BeginTransaction(IsolationLevel.ReadCommitted);
             try
@@ -308,6 +341,9 @@ namespace Stores
         }
 
         // ---------------------------------------------------------------- dialect helpers
+        /// <summary>«contains» value for LIKE: the characters [ % _ are searched as they are.</summary>
+        public static string Like(string s) { return "%" + (s ?? "").Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]") + "%"; }
+
         /// <summary>Numeric value of a text column such as "7898" or "7898C".</summary>
         public static string NumOf(string col)
         {
@@ -434,6 +470,10 @@ namespace Stores
                 "CREATE TABLE preq_menu (id COUNTER PRIMARY KEY, seq INT, item_no INT, qty DOUBLE, received_qty DOUBLE)");
             AddColumn("shop", "preq_no");
             HasPreq = TableExists("preq") && TableExists("preq_menu") && ColumnExists("shop", "preq_no");
+            // receipts with items in several stores: one row per store, same number (Posting.Parts)
+            AddColumn("shop", "doc_grp");
+            HasDocGrp = ColumnExists("shop", "doc_grp");
+
             WriteOffs.EnsureSchema();   // write-offs «سندات الإتلاف» (wo_head / wo_menu, permission 83), posted as sale.doc_kind 3
             // audit trail with before / after values (app_log_detail) and the month lock permission (command 84)
             AuditTrail.EnsureSchema();
@@ -446,6 +486,21 @@ namespace Stores
         public static bool HasMinMax;
         /// <summary>True when the purchase request tables (preq, preq_menu) and shop.preq_no exist.</summary>
         public static bool HasPreq;
+
+        /// <summary>True when shop.doc_grp exists (a receipt with items in several stores, see Posting.Parts).</summary>
+        public static bool HasDocGrp;
+
+        /// <summary>While the column is missing (it could not be added when the program started): another computer may have added it since.</summary>
+        public static void CheckDocGrp() { if (!HasDocGrp) HasDocGrp = ColumnExists("shop", "doc_grp"); }
+
+        /// <summary>SQL fragment: one row per receipt document (not the rows of its other stores): the first row, or — when the
+        /// original program deleted that one — the smallest that is left. Alias "" = the table «shop» itself.</summary>
+        public static string MainShop(string alias)
+        {
+            if (!HasDocGrp) return " 1=1 ";
+            string a = (string.IsNullOrEmpty(alias) ? "shop" : alias) + ".";
+            return " (" + a + "doc_grp IS NULL OR " + a + "doc_grp = " + a + "shop_no OR NOT EXISTS (SELECT 1 FROM shop AS gr WHERE gr.doc_grp = " + a + "doc_grp AND (gr.shop_no = " + a + "doc_grp OR gr.shop_no < " + a + "shop_no))) ";
+        }
 
         /// <summary>True when the physical stock count tables and shop.doc_kind exist.</summary>
         public static bool HasCount;
@@ -472,12 +527,15 @@ namespace Stores
 
         public static void SetSetting(string key, string value)
         {
-            try
-            {
-                if (Exec("UPDATE app_settings SET v = ? WHERE k = ?", value ?? "", key) == 0)
-                    Exec("INSERT INTO app_settings (k, v) VALUES (?, ?)", key, value ?? "");
-            }
+            try { SaveSetting(key, value); }
             catch { }
+        }
+
+        /// <summary>For settings that matter (a locked year): an error is reported, not swallowed.</summary>
+        public static void SaveSetting(string key, string value)
+        {
+            if (Exec("UPDATE app_settings SET v = ? WHERE k = ?", value ?? "", key) == 0)
+                Exec("INSERT INTO app_settings (k, v) VALUES (?, ?)", key, value ?? "");
         }
 
         /// <summary>SQL fragment: sale rows that are normal issues (not purchase returns, not stock count shortages, not write-offs).</summary>

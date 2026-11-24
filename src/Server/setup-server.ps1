@@ -5,7 +5,7 @@
 #  - Opens it to the local network: TCP 1433 + SQL Browser (so other PCs find it) + firewall rules
 #  - Creates database EngStores and login storesapp (password derived by the program from the owner's
 #    server password; least privilege: read/write data, create/alter its own tables, back up)
-#  - Schedules a daily backup (last 14 days kept)
+#  - Schedules a daily backup (the last 10 are kept)
 #  Started by the program through a small elevated command that first copies this script into
 #  %ProgramFiles%\EngStores\setup (writable by Administrators/SYSTEM only) and checks its SHA-256.
 #  Everything this script runs or schedules lives in that folder. The package is copied into it, and that copy must
@@ -46,6 +46,30 @@ function Protect-Folder([string]$dir) {
     if ($LASTEXITCODE -ne 0) { Stop-Setup ('تعذر حماية مجلد الإعداد: ' + $dir) }
 }
 
+# The certificates inside a signed .exe. Without internet Windows cannot download the intermediate certificate («Microsoft
+# Code Signing PCA»), and a clean Windows does not have it: the chain is built with the file's own copy.
+function Get-SignatureCertificates([string]$file) {
+    $all = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2Collection
+    try {
+        Add-Type -AssemblyName System.Security
+        $fs = [IO.File]::OpenRead($file)
+        try {
+            $r = New-Object IO.BinaryReader $fs
+            $fs.Position = 0x3C; $pe = $r.ReadInt32()
+            $fs.Position = $pe + 24; $magic = $r.ReadUInt16()               # 0x10b = 32-bit, 0x20b = 64-bit
+            $dir = $pe + 24 + $(if ($magic -eq 0x20b) { 112 } else { 96 }) + 4 * 8   # data directory 4 = certificates
+            $fs.Position = $dir; $off = [long]$r.ReadUInt32(); $len = [long]$r.ReadUInt32()
+            if ($off -gt 0 -and $len -gt 8 -and $off + $len -le $fs.Length) {
+                $fs.Position = $off; $size = $r.ReadUInt32(); [void]$r.ReadUInt32()   # WIN_CERTIFICATE header
+                $cms = New-Object System.Security.Cryptography.Pkcs.SignedCms
+                $cms.Decode($r.ReadBytes([int]$size - 8))
+                $all.AddRange($cms.Certificates)
+            }
+        } finally { $fs.Close() }
+    } catch { }
+    return , $all
+}
+
 # A valid Authenticode signature is not enough: the signer and its root must be Microsoft Corporation.
 function Test-MicrosoftSigned([string]$file) {
     if (-not $file -or -not (Test-Path -LiteralPath $file)) { return $false }
@@ -54,6 +78,7 @@ function Test-MicrosoftSigned([string]$file) {
     if ($sig.SignerCertificate.Subject -notmatch '(^|,\s*)O=Microsoft Corporation(\s*,|$)') { return $false }
     $chain = New-Object System.Security.Cryptography.X509Certificates.X509Chain
     $chain.ChainPolicy.RevocationMode = 'NoCheck'
+    [void]$chain.ChainPolicy.ExtraStore.AddRange((Get-SignatureCertificates $file))
     [void]$chain.Build($sig.SignerCertificate)
     if ($chain.ChainElements.Count -lt 2) { return $false }
     $root = $chain.ChainElements[$chain.ChainElements.Count - 1].Certificate
@@ -244,7 +269,7 @@ ALTER ROLE db_backupoperator ADD MEMBER [storesapp];
 [void](Invoke-Sql "ALTER LOGIN [sa] DISABLE")
 $AppPassword = $null; $pw = $null
 
-# ---------------------------------------------------------------- 4. daily backup (keeps 14 days)
+# ---------------------------------------------------------------- 4. daily backup (keeps the last 10)
 Say 'إعداد النسخ الاحتياطي اليومي…' 5 30
 $backupDir = [string](Invoke-Sql "SELECT CAST(SERVERPROPERTY('InstanceDefaultBackupPath') AS nvarchar(4000))")
 if ([string]::IsNullOrWhiteSpace($backupDir)) {
@@ -254,17 +279,20 @@ if ([string]::IsNullOrWhiteSpace($backupDir)) {
 }
 $backupScript = Join-Path $Work 'backup.ps1'   # run daily as SYSTEM: lives in the protected folder only
 @"
+`$ErrorActionPreference = 'Stop'
 `$f = Join-Path '$backupDir' ('$Database' + '_' + (Get-Date -Format 'yyyy-MM-dd') + '.bak')
 `$c = New-Object System.Data.SqlClient.SqlConnection 'Server=.\$Instance;Database=$Database;Integrated Security=True;Encrypt=False'
 `$c.Open(); `$cmd = `$c.CreateCommand(); `$cmd.CommandTimeout = 3600
 `$cmd.CommandText = "BACKUP DATABASE [$Database] TO DISK = N'" + `$f + "' WITH INIT, CHECKSUM"
 [void]`$cmd.ExecuteNonQuery(); `$c.Close()
-Get-ChildItem '$backupDir' -Filter '$Database*.bak' | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-14) } | Remove-Item -Force
+# the last 10 daily backups stay; older ones are replaced (only after today's was made)
+Get-ChildItem '$backupDir' -Filter '${Database}_????-??-??.bak' | Sort-Object Name -Descending | Select-Object -Skip 10 | Remove-Item -Force
 "@ | Set-Content -Path $backupScript -Encoding UTF8
 $psExe    = Join-Path $env:windir 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $action   = New-ScheduledTaskAction -Execute $psExe -Argument ('-NoProfile -ExecutionPolicy Bypass -File "' + $backupScript + '"')
 $trigger  = New-ScheduledTaskTrigger -Daily -At '14:00'
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+# also on battery (a laptop as the main server): Windows' default would leave the task waiting
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 Register-ScheduledTask -TaskName 'EngStores Daily Backup' -Action $action -Trigger $trigger -Settings $settings -User 'SYSTEM' -RunLevel Highest -Force | Out-Null
 Protect-Folder $Work   # also covers backup.ps1
 # older versions kept the setup files and the SYSTEM backup script in a folder users could write: remove it

@@ -30,7 +30,7 @@ namespace Stores
         Timer flashTimer;
         Button btnSave, btnNew, btnDelete, btnPrint, btnFile, btnPrev, btnNext, btnFind, btnAllStore;
 
-        /// <summary>Receipts: every line can go into its own store (owner's request); saved as one receipt per store.</summary>
+        /// <summary>Receipts: every line can go into its own store (owner's request); one document, one number.</summary>
         bool LineStores { get { return kind == DocKind.Receipt && Cache.Stores.Rows.Count > 1; } }
 
         bool Adv { get { return Session.Advanced; } }
@@ -143,6 +143,7 @@ namespace Stores
             f2.Controls.Add(txtNote); f2.Controls.Add(ln);
 
             head.Controls.Add(f2); head.Controls.Add(f1); head.Controls.Add(lblGuide); head.Controls.Add(band);
+            band.TabIndex = 0; f1.TabIndex = 1; f2.TabIndex = 2;        // Tab goes as it is read: fields, notes, items, buttons
             UI.FitHeight(head);
 
             // grid
@@ -223,6 +224,7 @@ namespace Stores
             if (kind == DocKind.Receipt && Session.Can(Session.Items)) entry.EnableNewItem(AddNewItem);
             Panel sep = new Panel(); sep.Dock = DockStyle.Top; sep.Height = 1; sep.BackColor = Theme.Border;
             gridCard.Controls.Add(sep); gridCard.Controls.Add(entry);
+            entry.TabIndex = 0; grid.TabIndex = 1;
             flashTimer = new Timer(); flashTimer.Interval = 1400;
             flashTimer.Tick += delegate { flashTimer.Stop(); flashItem = 0; grid.Invalidate(); };
 
@@ -251,6 +253,7 @@ namespace Stores
             bottom.Controls.Add(lblTotals); bottom.Controls.Add(hint);
 
             Controls.Add(gridCard); Controls.Add(head); Controls.Add(actions); Controls.Add(bottom);
+            head.TabIndex = 0; gridCard.TabIndex = 1; actions.TabIndex = 2; bottom.TabIndex = 3;
 
             // events
             grid.EnterPressed += delegate { OnEnter(); };
@@ -380,7 +383,7 @@ namespace Stores
                 r.Cells["code"].Value = Cache.ItemCode(l.ItemNo);
                 r.Cells["name"].Value = Cache.ItemName(l.ItemNo);
                 r.Cells["qty"].Value = l.Qty;
-                if (LineStores) r.Cells["store"].Value = d.Store;
+                if (LineStores) r.Cells["store"].Value = l.Store > 0 ? l.Store : d.Store;
                 r.Cells["price"].Value = l.Price == 0 ? null : (object)l.Price;
                 r.Cells["used"].Value = l.Used == 0 ? null : (object)l.Used;
                 if (l.Used > 0) anyUsed = true;
@@ -500,7 +503,7 @@ namespace Stores
             {
                 List<string> l = new List<string>();
                 foreach (KeyValuePair<int, int> kv in per) l.Add(StoreName(kv.Key) + " (" + kv.Value + ")");
-                stores = "     " + string.Join(" • ", l.ToArray()) + "  •  يُحفظ سند لكل مخزن";
+                stores = "     " + string.Join(" • ", l.ToArray());
             }
             lblTotals.Text = "عدد المواد: " + n + "     مجموع الكميات: " + UI.Num(q) + stores;
         }
@@ -901,8 +904,6 @@ namespace Stores
                     catch (UserError ue) { UI.Warn(ue.Message); return false; }
                 }
             }
-            // a line of a saved receipt that goes into another store makes a new receipt there
-            if (LineStores && d.Id > 0 && d.Lines.Exists(l => l.Store != d.Store) && !Session.Demand(PermAdd)) return false;
 
             if (OutDoc)
             {
@@ -932,38 +933,37 @@ namespace Stores
                 if (d.Person > 0) s.Add((kind == DocKind.Issue ? "المستلم: " : "الجهة: ") + Cache.Person(d.Person));
                 List<string> into = new List<string>();
                 foreach (DocLine l in d.Lines) if (l.Store > 0 && !into.Contains(Cache.Store(l.Store))) into.Add(Cache.Store(l.Store));
-                if (into.Count > 1) s.Add("إلى المخازن: " + string.Join("، ", into.ToArray()) + "  (سند لكل مخزن)");
+                if (into.Count > 1) s.Add("إلى المخازن: " + string.Join("، ", into.ToArray()));
                 else s.Add((OutDoc ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store) + (d.Store2 > 0 ? "  ←  إلى مخزن: " + Cache.Store(d.Store2) : ""));
                 s.Add("عدد المواد: " + d.Lines.Count + "   •   مجموع الكميات: " + UI.Num(tq));
                 if (!UI.Confirm("تأكيد قبل الحفظ:\n\n" + string.Join("\n", s.ToArray()) + "\n\nهل المعلومات صحيحة؟")) return false;
             }
 
+            bool saved = false;
             try
             {
                 UI.WaitCursor(true);
-                List<Doc> docs = Posting.SaveByStore(d);
+                Posting.Save(d);
+                saved = true;
                 if (mreqNo > 0) mreqIssue = Requisitions.IssueSaved(mreqNo, mreqIssue, doc.Id, d);   // «صرف الطلب»: update the request
-                foreach (Doc sd in docs)
-                    foreach (DocLine l in sd.Lines)
-                    {
-                        DataRow ir = Cache.Item(l.ItemNo);
-                        if (ir != null) ir["bal"] = Cache.StockAll(l.ItemNo);
-                    }
+                foreach (DocLine l in d.Lines)
+                {
+                    DataRow ir = Cache.Item(l.ItemNo);
+                    if (ir != null) ir["bal"] = Cache.StockAll(l.ItemNo);
+                }
                 Show(d);
                 SetClean("✓ تم الحفظ • رقم السند " + d.No, Theme.Success);
-                if (docs.Count > 1)
-                {
-                    UI.WaitCursor(false);
-                    List<string> sl = new List<string>();
-                    foreach (Doc sd in docs) sl.Add("• سند رقم " + sd.No + "  •  " + StoreName(sd.Store) + "  •  عدد المواد: " + sd.Lines.Count);
-                    UI.Info("✓ تم الحفظ. المواد موزعة على أكثر من مخزن، لذلك حُفظ سند إدخال لكل مخزن:\n\n" + string.Join("\n", sl.ToArray()));
-                }
-                if (kind == DocKind.Receipt) PurchaseRequests.AfterReceiptSave(FindForm(), docs);   // optional link to a purchase request
+                if (kind == DocKind.Receipt) PurchaseRequests.AfterReceiptSave(FindForm(), d);   // optional link to a purchase request
                 return true;
             }
-            catch (UserError ue) { UI.Warn(ue.Message); return false; }
-            catch (Exception ex) { UI.Error(ex); return false; }
-            finally { UI.WaitCursor(false); }
+            catch (UserError ue) { UI.Warn(ue.Message); return saved; }
+            catch (Exception ex) { UI.Error(ex); return saved; }
+            finally
+            {
+                UI.WaitCursor(false);
+                // the document is saved, only what follows failed (connection): pressing save again must not add it twice
+                if (saved && doc.Id != d.Id) { doc = d; txtNo.Text = d.No; SetClean("✓ تم الحفظ • رقم السند " + d.No, Theme.Success); }
+            }
         }
 
         void DeleteDoc()

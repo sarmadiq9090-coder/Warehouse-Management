@@ -247,7 +247,8 @@ namespace Stores
         static double LastKnownCost(DbTransaction tx, int item, DateTime date, int exceptShop)
         {
             DateTime dayEx = date.Date.AddDays(1);
-            string b = "SELECT TOP 1 l.cost FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq WHERE l.item_no = ? AND l.cost > 0 AND h.shop_no <> ?";
+            string b = "SELECT TOP 1 l.cost FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq WHERE l.item_no = ? AND l.cost > 0 AND h.shop_no <> ?" +
+                       (Db.HasDocGrp && exceptShop > 0 ? " AND (h.doc_grp IS NULL OR h.doc_grp <> " + exceptShop.ToString(CultureInfo.InvariantCulture) + ")" : "");   // nor its other stores' rows
             string rec = " AND h.shop_type <> 3 AND " + Db.NotCountAdj("h");
             string[] conds = {
                 b + rec + " AND h.menu_date < ? ORDER BY h.menu_date DESC, l.auto_seq DESC",

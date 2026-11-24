@@ -31,6 +31,7 @@ namespace Stores
             Panel right = UI.Card(); right.Dock = DockStyle.Fill; right.Padding = new Padding(16); right.Margin = new Padding(8);
             FlowLayoutPanel top = UI.Flow(); top.WrapContents = true;
             txtName = UI.Text(200); txtPass = UI.Text(200); txtPass.UseSystemPasswordChar = true;
+            txtName.MaxLength = 30; txtPass.MaxLength = 20;
             top.Controls.AddRange(new Control[] { UI.Field("اسم المستخدم", txtName), UI.Field("كلمة مرور جديدة", txtPass) });
             note = new Label(); note.Dock = DockStyle.Top; note.Height = 48; note.ForeColor = Theme.Muted; note.Padding = new Padding(0, 4, 0, 4);
             note.Text = "اترك كلمة المرور فارغة لإبقائها كما هي.\nالمستخدم رقم 1 هو مدير النظام وله كل الصلاحيات.";

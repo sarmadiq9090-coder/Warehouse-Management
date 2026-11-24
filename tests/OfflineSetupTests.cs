@@ -317,7 +317,7 @@ namespace Stores
                 "function Stop-Setup([string]$m) { Done ('ERR|' + $m); exit 1 }\n" +
                 "trap { Stop-Setup ('trap: ' + $_.Exception.Message + $_.InvocationInfo.PositionMessage) }\n" +
                 "$tk = $null; $er = $null\n$ast = [Management.Automation.Language.Parser]::ParseFile('" + script + "', [ref]$tk, [ref]$er)\n" +
-                "foreach ($f in $ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] }, $false)) { if ('Test-MicrosoftSigned','Test-Package','Get-CheckedPackage','Expand-Package','Remove-InstallFiles','Get-InstallHelp' -contains $f.Name) { . ([ScriptBlock]::Create($f.Extent.Text)) } }\n" +
+                "foreach ($f in $ast.FindAll({ param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] }, $false)) { if ('Get-SignatureCertificates','Test-MicrosoftSigned','Test-Package','Get-CheckedPackage','Expand-Package','Remove-InstallFiles','Get-InstallHelp' -contains $f.Name) { . ([ScriptBlock]::Create($f.Extent.Text)) } }\n" +
                 "foreach ($a in $ast.FindAll({ param($n) $n -is [Management.Automation.Language.AssignmentStatementAst] }, $false)) { if ('$PkgName','$PkgSize','$PkgHash' -contains $a.Left.Extent.Text) { . ([ScriptBlock]::Create($a.Extent.Text)) } }\n" +
                 body + "\n";
             File.WriteAllText(harness, h, new UTF8Encoding(true));
@@ -472,7 +472,7 @@ namespace Stores
             List<string> files = Directory.GetFiles(target, "*", SearchOption.AllDirectories).Select(f => f.Substring(target.Length + 1)).ToList();
             string[] must = { "Inventory Management.exe", "دليل التشغيل.txt", "إعداد الخادم المجاني.txt", @"docs\manual\index.html", SqlPackage.FolderName + "\\" + SqlPackage.FileName };
             Check(x == 0 && must.All(m => files.Contains(m)) && files.Any(f => f.StartsWith(@"docs\manual\img\")), "complete folder (" + files.Count + " files)");
-            Check(files.All(f => must.Contains(f) || f.StartsWith(@"docs\manual\")) && !files.Any(f => Regex.IsMatch(f, @"settings\.ini|logo\.png|\.(amr|mdb|mde|log|bak|ldb)$", RegexOptions.IgnoreCase)), "no settings, data, logs, logo, backups");
+            Check(files.All(f => must.Contains(f) || f == "Inventory Management Setup.exe" || f.StartsWith(@"docs\manual\")) && !files.Any(f => Regex.IsMatch(f, @"settings\.ini|logo\.png|\.(amr|mdb|mde|log|bak|ldb)$", RegexOptions.IgnoreCase)), "no settings, data, logs, logo, backups");
             Check(new SqlPackage().Check(Path.Combine(target, SqlPackage.FolderName, SqlPackage.FileName), null, null) == null, "the copied package is correct");
             Check(new SqlPackage().Find(target, Path.Combine(dir, "u"), new List<KeyValuePair<string, bool>>(), 4000).Count == 1, "the program in that folder finds it");
             x = MakeOffline(target, real, out o); Check(x == 0, "can be refreshed");

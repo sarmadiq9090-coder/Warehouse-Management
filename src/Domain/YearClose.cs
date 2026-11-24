@@ -91,7 +91,7 @@ namespace Stores
             }
 
             // 3. lock the period
-            Db.SetSetting(Key, end.ToString("yyyy-MM-dd", Inv));
+            Db.SaveSetting(Key, end.ToString("yyyy-MM-dd", Inv));
             Db.Log(null, "إقفال السنة", "سنة " + year + " — السندات حتى " + UI.Date(end) + " مقفلة" + (file != null ? " — الأرشيف: " + Path.GetFileName(file) : ""));
             return file;
         }
@@ -102,7 +102,7 @@ namespace Stores
             if (!Session.IsAdmin) throw new UserError("إعادة فتح السنة للمدير فقط.");
             int y = ClosedYear();
             if (y == 0) return 0;
-            Db.SetSetting(Key, IsYearWithData(y - 1) ? new DateTime(y - 1, 12, 31).ToString("yyyy-MM-dd", Inv) : "");
+            Db.SaveSetting(Key, IsYearWithData(y - 1) ? new DateTime(y - 1, 12, 31).ToString("yyyy-MM-dd", Inv) : "");
             Db.Log(null, "إعادة فتح سنة", "سنة " + y + " — يمكن التعديل على سنداتها");
             return y;
         }

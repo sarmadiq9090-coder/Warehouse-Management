@@ -152,6 +152,12 @@ namespace Stores
                 if (hasData)
                     import = UI.Confirm("السيرفر فيه بيانات مسبقا.\nهل تريد استبدالها بالملف المختار؟\n\n(اختر «لا» للإبقاء على بيانات السيرفر الحالية)");
                 List<string> report = null;
+                if (import && hasData)
+                {
+                    // what is replaced stays recoverable: without this backup nothing is replaced (the daily clean-up leaves it)
+                    wf.Step("جاري حفظ نسخة من بيانات السيرفر الحالية…", 10, 25);
+                    Db.Exec("BACKUP DATABASE [" + DbName + "] TO DISK = N'" + DbName + "_before_import_" + DateTime.Now.ToString("yyyyMMdd_HHmmss", System.Globalization.CultureInfo.InvariantCulture) + ".bak' WITH COPY_ONLY, INIT, CHECKSUM");
+                }
                 if (import)
                 {
                     wf.Step("جاري نقل البيانات إلى السيرفر…", 25, 0);

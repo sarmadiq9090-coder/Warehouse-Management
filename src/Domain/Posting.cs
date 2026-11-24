@@ -47,7 +47,7 @@ namespace Stores
 
         static string TypeCond(DocKind k)
         {
-            if (k == DocKind.Receipt) return " AND shop_type <> 3 AND " + Db.NotCountAdj("");
+            if (k == DocKind.Receipt) return " AND shop_type <> 3 AND " + Db.NotCountAdj("") + " AND " + Db.MainShop("");
             if (k == DocKind.Return) return " AND shop_type = 3";
             if (k == DocKind.Issue) return Db.HasProj ? " AND " + Db.IssueOnly("") : "";
             if (k == DocKind.PurchaseReturn) return " AND doc_kind = 1";
@@ -61,6 +61,14 @@ namespace Stores
         {
             Doc d = new Doc();
             d.Kind = kind; d.Id = id;
+            if (IsShop(kind))
+            {
+                Db.CheckDocGrp();
+                List<int[]> rows = Parts(null, id);
+                if (rows.Count > 0 && rows[0][0] != id) return Load(kind, rows[0][0]);      // the row of one store: the whole document
+            }
+            // read before the lines: a change saved meanwhile on another computer is then noticed when this one is saved
+            d.Fingerprint = Fingerprint(null, kind, id);
             if (IsSale(kind))
             {
                 DataTable h = Db.Query("SELECT shop_no, menu_no, menu_date, custom_no, stor, [note]" + (Db.HasProj ? ", proj_no, doc_kind" : "") + " FROM sale WHERE shop_no = ?", id);
@@ -104,21 +112,24 @@ namespace Stores
             }
             else
             {
-                DataTable h = Db.Query("SELECT shop_no, menu_no, menu_date, custom_no, stor, [note], shop_type" + ProjCols + " FROM shop WHERE shop_no = ?", id);
+                DataTable h = Db.Query("SELECT shop_no, menu_no, menu_date, custom_no, stor, [note], shop_type" + ProjCols + (Db.HasDocGrp ? ", doc_grp" : "") + " FROM shop WHERE shop_no = ?", id);
                 if (h.Rows.Count == 0) return null;
                 DataRow r = h.Rows[0];
                 d.No = Db.S(r["menu_no"]); d.Date = Db.Dt(r["menu_date"]); d.Person = Db.I(r["custom_no"]); d.Store = Db.I(r["stor"]); d.Note = Db.S(r["note"]);
                 d.RType = Db.I(r["shop_type"]);
                 if (Db.HasProj) d.Project = Db.I(r["proj_no"]);
                 d.Kind = d.RType == 3 ? DocKind.Return : DocKind.Receipt;
-                foreach (DataRow l in Db.Query("SELECT auto_seq, item_no, qty, price_dl, qty_sale FROM shop_menu WHERE seq = ? ORDER BY auto_seq", id).Rows)
-                {
-                    DocLine x = new DocLine();
-                    x.LineId = Db.I(l[0]); x.ItemNo = Db.I(l[1]); x.Qty = Db.D(l[2]); x.Price = Db.D(l[3]); x.Used = Db.D(l[4]);
-                    d.Lines.Add(x);
-                }
+                List<int[]> parts = Parts(null, id);
+                foreach (int[] p in parts)
+                    foreach (DataRow l in Db.Query("SELECT auto_seq, item_no, qty, price_dl, qty_sale FROM shop_menu WHERE seq = ? ORDER BY auto_seq", p[0]).Rows)
+                    {
+                        DocLine x = new DocLine();
+                        x.LineId = Db.I(l[0]); x.ItemNo = Db.I(l[1]); x.Qty = Db.D(l[2]); x.Price = Db.D(l[3]); x.Used = Db.D(l[4]);
+                        if (parts.Count > 1) x.Store = p[1];
+                        d.Lines.Add(x);
+                    }
+                if (parts.Count > 1) d.Lines.Sort((a, b) => a.LineId.CompareTo(b.LineId));     // as they were entered
             }
-            d.Fingerprint = Fingerprint(null, d.Kind, id);
             return d;
         }
 
@@ -145,11 +156,18 @@ namespace Stores
             else
             {
                 h = Q(tx, "SELECT menu_no, menu_date, custom_no, stor, [note], shop_type" + ProjCols + " FROM shop WHERE shop_no = ?", id);
-                l = Q(tx, "SELECT auto_seq, item_no, qty FROM shop_menu WHERE seq = ? ORDER BY auto_seq", id);
+                l = Q(tx, "SELECT auto_seq, item_no, qty, price_dl FROM shop_menu WHERE seq = ? ORDER BY auto_seq", id);
             }
             if (h.Rows.Count == 0) return "";
             foreach (object o in h.Rows[0].ItemArray) sb.Append(Str(o)).Append('|');
             foreach (DataRow r in l.Rows) { foreach (object o in r.ItemArray) sb.Append(Str(o)).Append(','); sb.Append(';'); }
+            if (IsShop(kind))
+                foreach (int[] p in Parts(tx, id).Skip(1))
+                {
+                    sb.Append("#").Append(p[1]).Append(':');
+                    foreach (DataRow r in Q(tx, "SELECT menu_date, custom_no, [note], shop_type FROM shop WHERE shop_no = ?", p[0]).Rows) foreach (object o in r.ItemArray) sb.Append(Str(o)).Append('|');
+                    foreach (DataRow r in Q(tx, "SELECT auto_seq, item_no, qty, price_dl FROM shop_menu WHERE seq = ? ORDER BY auto_seq", p[0]).Rows) { foreach (object o in r.ItemArray) sb.Append(Str(o)).Append(','); sb.Append(';'); }
+                }
             return sb.ToString();
         }
 
@@ -176,7 +194,13 @@ namespace Stores
         {
             if (lim == DateTime.MinValue) return;
             if (d.Date.Date <= lim) throw PeriodLock.Error(d.Date);
-            if (d.Id != 0)
+            if (d.Id != 0 && IsShop(d.Kind))
+                foreach (int[] p in Parts(tx, d.Id))
+                {
+                    object o = Db.S1(tx, "SELECT menu_date FROM shop WHERE shop_no = ?", p[0]);
+                    if (o is DateTime && ((DateTime)o).Date <= lim) throw PeriodLock.Error((DateTime)o);
+                }
+            else if (d.Id != 0)
             {
                 object o = Db.S1(tx, "SELECT " + (d.Kind == DocKind.Reserve ? "res_date" : "menu_date") + " FROM " + Head(d.Kind) + " WHERE " + IdCol(d.Kind) + " = ?", d.Id);
                 if (o is DateTime && ((DateTime)o).Date <= lim) throw PeriodLock.Error((DateTime)o);
@@ -203,11 +227,13 @@ namespace Stores
             string t = Head(d.Kind), idc = IdCol(d.Kind);
             for (int i = 0; i < 5; i++)
             {
-                int n = Db.I(Db.S1(tx, "SELECT COUNT(*) FROM " + t + " WHERE menu_no = ?", d.No));
-                if (n <= 1) return;
+                // the rows of one receipt (a row per store) have the same number on purpose
+                bool grp = t == "shop" && Db.HasDocGrp;
+                int n = Db.I(Db.S1(tx, "SELECT COUNT(*) FROM " + t + " WHERE menu_no = ? AND " + idc + " <> " + d.Id.ToString(Inv) + (grp ? " AND (doc_grp IS NULL OR doc_grp <> " + d.Id.ToString(Inv) + ")" : ""), d.No));
+                if (n == 0) return;
                 d.No = NextNo(d.Kind, tx);
                 if (IsSale(d.Kind)) Db.X(tx, "UPDATE sale SET menu_no = ?, mony_no = ? WHERE shop_no = ?", d.No, d.No + "C", d.Id);
-                else Db.X(tx, "UPDATE " + t + " SET menu_no = ? WHERE " + idc + " = ?", d.No, d.Id);
+                else Db.X(tx, "UPDATE " + t + " SET menu_no = ? WHERE " + idc + " = ?" + (grp ? " OR doc_grp = " + d.Id.ToString(Inv) : ""), d.No, d.Id);
             }
         }
 
@@ -266,42 +292,14 @@ namespace Stores
         }
 
         // ------------------------------------------------------------ save
-        /// <summary>A receipt whose lines go into several stores: one receipt per store, saved together (all or nothing).
-        /// The tables keep one store per document (the original program and every balance rely on it), so the lines of the
-        /// other stores become receipts of their own, with a note naming the first one. Returns all the documents, d first.</summary>
-        public static List<Doc> SaveByStore(Doc d)
-        {
-            List<Doc> extra = new List<Doc>(); List<DocLine> all = d.Lines;
-            if (d.Kind == DocKind.Receipt)
-            {
-                foreach (IGrouping<int, DocLine> g in d.Lines.Where(l => l.Store > 0 && l.Store != d.Store).GroupBy(l => l.Store).OrderBy(g => g.Key).ToList())
-                {
-                    Doc x = new Doc();
-                    x.Kind = d.Kind; x.Date = d.Date; x.Person = d.Person; x.RType = d.RType; x.Note = d.Note; x.Store = g.Key;
-                    foreach (DocLine l in g)
-                    {
-                        if (l.Used > 1e-9) throw new UserError("لا يمكن نقل المادة «" + Cache.ItemName(l.ItemNo) + "» إلى مخزن آخر لأنه أُخرج منها " + UI.Num(l.Used) + ".\nاستعمل «نقل مخزني» لنقل الباقي.");
-                        x.Lines.Add(new DocLine { ItemNo = l.ItemNo, Qty = l.Qty, Price = l.Price });
-                    }
-                    extra.Add(x);
-                }
-                if (extra.Count > 0) d.Lines = d.Lines.Where(l => l.Store == 0 || l.Store == d.Store).ToList();
-            }
-            try { foreach (Doc x in extra) Validate(x); Save(d, extra); }
-            catch { d.Lines = all; throw; }        // refused: the document is as before
-            extra.Insert(0, d);
-            return extra;
-        }
-
-        public static void Save(Doc d) { Save(d, new List<Doc>()); }
-
-        static void Save(Doc d, List<Doc> extra)
+        public static void Save(Doc d)
         {
             Validate(d);
+            Db.CheckDocGrp();
             DateTime closed = PeriodLock.Limit();   // year closing / month lock, read before the transaction starts
             // if the save fails the transaction is rolled back; put back the ids it assigned so the
             // document on screen is exactly as before and can be saved again
-            int oldId = d.Id, oldPerson = d.Person; string oldNo = d.No;
+            int oldId = d.Id, oldPerson = d.Person, oldStore = d.Store; string oldNo = d.No;
             int[] oldLines = d.Lines.Select(l => l.LineId).ToArray();
             bool newPerson = false;
             try
@@ -325,28 +323,22 @@ namespace Stores
                     if (isNew) EnsureUniqueNo(tx, d);
                     AuditTrail.LogDoc(tx, (isNew ? "إضافة " : "تعديل ") + KindName(d.Kind), "رقم " + d.No + " - " + d.Lines.Count + " مادة" + (d.Project > 0 ? " - مركز الكلفة: " + Cache.Project(d.Project) : ""),
                                       before, isNew ? null : AuditTrail.ReadDoc(tx, d.Kind, d.Id));
-                    foreach (Doc x in extra)
-                    {
-                        CheckOpenPeriod(tx, x, closed);
-                        string part = "تابع لسند الإدخال رقم " + d.No;
-                        x.Note = string.IsNullOrEmpty(x.Note) ? part : x.Note + " • " + part;
-                        SaveReceipt(tx, x);
-                        EnsureUniqueNo(tx, x);
-                        AuditTrail.LogDoc(tx, "إضافة " + KindName(x.Kind), "رقم " + x.No + " - " + x.Lines.Count + " مادة - " + part, null, null);
-                    }
                 });
             }
             catch
             {
-                d.Id = oldId; d.No = oldNo; d.Person = oldPerson;
-                foreach (Doc x in extra) { x.Id = 0; x.No = ""; }
+                d.Id = oldId; d.No = oldNo; d.Person = oldPerson; d.Store = oldStore;
                 for (int i = 0; i < d.Lines.Count && i < oldLines.Length; i++) d.Lines[i].LineId = oldLines[i];
                 throw;
             }
-            if (newPerson) Cache.LoadPersons();
-            Doc fresh = Load(d.Kind, d.Id);
-            if (fresh != null) { d.Lines = fresh.Lines; d.Fingerprint = fresh.Fingerprint; }
-            foreach (Doc x in extra) { fresh = Load(x.Kind, x.Id); if (fresh != null) { x.Lines = fresh.Lines; x.Fingerprint = fresh.Fingerprint; } }
+            // saved: when the connection breaks only now, that must not look like a failed save (it would be saved twice)
+            try
+            {
+                if (newPerson) Cache.LoadPersons();
+                Doc fresh = Load(d.Kind, d.Id);
+                if (fresh != null) { d.Lines = fresh.Lines; d.Fingerprint = fresh.Fingerprint; }
+            }
+            catch { d.Fingerprint = null; }
         }
 
         /// <summary>Adds a new issue or receipt inside the caller's transaction, through the same code as
@@ -392,6 +384,7 @@ namespace Stores
             {
                 if (l.ItemNo == 0) throw new UserError("يوجد سطر بدون مادة.");
                 if (l.Qty <= 0) throw new UserError("الكمية يجب أن تكون أكبر من صفر: " + Cache.ItemName(l.ItemNo));
+                if (l.Price < 0) throw new UserError("السعر لا يمكن أن يكون سالبا: " + Cache.ItemName(l.ItemNo));
             }
         }
 
@@ -434,17 +427,61 @@ namespace Stores
             }
         }
 
+        /// <summary>The rows of table shop a receipt consists of: {shop_no, stor}, the document itself first.
+        /// The tables keep one store per row (the original program and every balance rely on it), so a receipt whose
+        /// items go into several stores has one row per store with the same number; doc_grp = shop_no of the first.</summary>
+        static List<int[]> Parts(DbTransaction tx, int id)
+        {
+            List<int[]> l = new List<int[]>();
+            DataTable h = Q(tx, "SELECT stor" + (Db.HasDocGrp ? ", doc_grp" : "") + " FROM shop WHERE shop_no = ?", id);
+            if (h.Rows.Count == 0) return l;
+            int g = Db.HasDocGrp ? Db.I(h.Rows[0]["doc_grp"]) : 0;
+            if (g <= 0) { l.Add(new[] { id, Db.I(h.Rows[0]["stor"]) }); return l; }
+            foreach (DataRow r in Q(tx, "SELECT shop_no, stor FROM shop WHERE doc_grp = ? ORDER BY shop_no", g).Rows) l.Add(new[] { Db.I(r[0]), Db.I(r[1]) });
+            int first = l.FindIndex(p => p[0] == g);       // deleted by the original program: the smallest that is left
+            if (first > 0) { int[] m = l[first]; l.RemoveAt(first); l.Insert(0, m); }
+            return l;
+        }
+
+        /// <summary>«1,2,3»: the rows of a receipt for an IN (…) condition.</summary>
+        public static string PartIds(DbTransaction tx, int id)
+        {
+            List<int[]> l = Parts(tx, id);
+            return l.Count == 0 ? id.ToString(Inv) : string.Join(",", l.Select(p => p[0].ToString(Inv)).ToArray());
+        }
+
+        /// <summary>Receipts with items in several stores: first row → its stores, number of lines and quantity of all rows.</summary>
+        public class GroupInfo { public string Stores = ""; public int Lines; public double Qty; }
+
+        public static Dictionary<int, GroupInfo> Groups()
+        {
+            Dictionary<int, GroupInfo> d = new Dictionary<int, GroupInfo>();
+            if (!Db.HasDocGrp) return d;
+            Dictionary<int, GroupInfo> byGrp = new Dictionary<int, GroupInfo>(); Dictionary<int, int> first = new Dictionary<int, int>();
+            foreach (DataRow r in Db.Query("SELECT h.doc_grp, h.shop_no, h.stor, COUNT(*) AS n, SUM(l.qty) AS q FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq WHERE h.doc_grp IS NOT NULL GROUP BY h.doc_grp, h.shop_no, h.stor ORDER BY h.doc_grp, h.stor").Rows)
+            {
+                GroupInfo g; int grp = Db.I(r[0]), no = Db.I(r["shop_no"]), f;
+                if (!byGrp.TryGetValue(grp, out g)) byGrp[grp] = g = new GroupInfo();
+                g.Stores += (g.Stores.Length > 0 ? "، " : "") + Cache.Store(Db.I(r["stor"])); g.Lines += Db.I(r["n"]); g.Qty += Db.D(r["q"]);
+                if (!first.TryGetValue(grp, out f) || no == grp || (f != grp && no < f)) first[grp] = no;
+            }
+            foreach (KeyValuePair<int, GroupInfo> kv in byGrp) d[first[kv.Key]] = kv.Value;
+            return d;
+        }
+
         static void SaveReceipt(DbTransaction tx, Doc d)
         {
             int shopType = d.Kind == DocKind.Return ? 3 : (d.RType == 1 ? 1 : 2);
             object proj = d.Kind == DocKind.Return ? ProjVal(d) : DBNull.Value;
-            if (d.Id > 0)
-            {
-                int oldStor = Db.I(Db.S1(tx, "SELECT stor FROM shop WHERE shop_no = ?", d.Id));
-                DataTable old = Db.Q(tx, "SELECT auto_seq, item_no, qty, qty_sale FROM shop_menu WHERE seq = ?", d.Id);
-                Dictionary<int, DocLine> keep = new Dictionary<int, DocLine>();
-                foreach (DocLine l in d.Lines) if (l.LineId > 0) keep[l.LineId] = l;
-                foreach (DataRow r in old.Rows)
+            int given = d.Store; Func<DocLine, int> storeOf = l => l.Store > 0 ? l.Store : given;
+            List<int> stores = d.Lines.Select(storeOf).Distinct().ToList();
+            if (stores.Count > 1 && !Db.HasDocGrp) throw new UserError("تعذر تجهيز ملف البيانات لإدخال المواد في أكثر من مخزن. أغلق البرنامج على بقية الحواسيب ثم شغّله من جديد.");
+            List<int[]> parts = d.Id > 0 ? Parts(tx, d.Id) : new List<int[]>();
+            bool whole = stores.Count == 1 && parts.Count <= 1;      // one store before and after
+            Dictionary<int, DocLine> keep = new Dictionary<int, DocLine>();
+            foreach (DocLine l in d.Lines) if (l.LineId > 0) keep[l.LineId] = l;
+            foreach (int[] p in parts)
+                foreach (DataRow r in Db.Q(tx, "SELECT auto_seq, item_no, qty, qty_sale FROM shop_menu WHERE seq = ?", p[0]).Rows)
                 {
                     int lid = Db.I(r["auto_seq"]); int item = Db.I(r["item_no"]); double used = Db.D(r["qty_sale"]);
                     DocLine nl;
@@ -454,40 +491,72 @@ namespace Stores
                         if (!kept) throw new UserError("لا يمكن حذف المادة \"" + Cache.ItemName(item) + "\" من السند لأنه أُخرج منها " + UI.Num(used) + ".");
                         if (nl.ItemNo != item) throw new UserError("لا يمكن تغيير المادة \"" + Cache.ItemName(item) + "\" لأنه أُخرج منها " + UI.Num(used) + ".");
                         if (nl.Qty < used - 1e-9) throw new UserError("كمية \"" + Cache.ItemName(item) + "\" لا يمكن أن تقل عن " + UI.Num(used) + " لأنها أُخرجت.");
+                        if (storeOf(nl) != p[1])
+                            throw new UserError("لا يمكن نقل المادة «" + Cache.ItemName(item) + "» إلى مخزن آخر لأنه أُخرج منها " + UI.Num(used) + ".\nاستعمل «نقل مخزني» لنقل الباقي.");
                     }
-                    Adjust(tx, item, oldStor, -Db.D(r["qty"]));
+                    Adjust(tx, item, p[1], -Db.D(r["qty"]));
                     if (!kept) Db.X(tx, "DELETE FROM shop_menu WHERE auto_seq = ?", lid);
                 }
-                foreach (DocLine l in d.Lines)
-                    if (l.LineId > 0)
-                        Db.X(tx, "UPDATE shop_menu SET item_no = ?, qty = ?, price_dl = ?, cost = ? WHERE auto_seq = ?", l.ItemNo, l.Qty, l.Price, Valuation.LineCost(tx, d, l), l.LineId);
-                if (Db.HasProj)
-                    Db.X(tx, "UPDATE shop SET menu_date = ?, custom_no = ?, shop_type = ?, stor = ?, [note] = ?, proj_no = ? WHERE shop_no = ?",
-                        d.Date.Date, d.Person, shopType, d.Store, Db.Null(d.Note), proj, d.Id);
-                else
-                    Db.X(tx, "UPDATE shop SET menu_date = ?, custom_no = ?, shop_type = ?, stor = ?, [note] = ? WHERE shop_no = ?",
-                        d.Date.Date, d.Person, shopType, d.Store, Db.Null(d.Note), d.Id);
-            }
+            // the document's own row keeps its store while any line goes there
+            int main = parts.Count > 0 && stores.Contains(parts[0][1]) && !whole ? parts[0][1] : stores.Contains(d.Store) || stores.Count == 0 ? d.Store : stores[0];
+            d.Store = main;
+            if (d.Id > 0) UpdateShop(tx, d, d.Id, main, shopType, proj);
             else
             {
                 d.No = NextNo(d.Kind, tx);
-                string mony = NextShopMony(tx);
-                if (Db.HasProj)
-                    d.Id = Db.Insert(tx,
-                        "INSERT INTO shop (menu_no, menu_date, custom_no, pay_type, [note], mony_no, shop_type, stor, proj_no) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)",
-                        d.No, d.Date.Date, d.Person, Db.Null(d.Note), mony, shopType, d.Store, proj);
-                else
-                    d.Id = Db.Insert(tx,
-                        "INSERT INTO shop (menu_no, menu_date, custom_no, pay_type, [note], mony_no, shop_type, stor) VALUES (?, ?, ?, 1, ?, ?, ?, ?)",
-                        d.No, d.Date.Date, d.Person, Db.Null(d.Note), mony, shopType, d.Store);
+                d.Id = InsertShop(tx, d, main, shopType, proj);
+                EnsureUniqueNo(tx, d);
             }
+            Dictionary<int, int> row = new Dictionary<int, int>(); row[main] = d.Id;
+            object preq = Db.HasPreq && stores.Count > 1 ? Db.S1(tx, "SELECT preq_no FROM shop WHERE shop_no = ?", d.Id) : null;
+            foreach (int st in stores)
+            {
+                if (row.ContainsKey(st)) continue;
+                int[] old = parts.Skip(1).FirstOrDefault(p => p[1] == st);
+                if (old != null) { UpdateShop(tx, d, old[0], st, shopType, proj); row[st] = old[0]; }
+                else row[st] = InsertShop(tx, d, st, shopType, proj);
+                if (preq != null && !(preq is DBNull)) Db.X(tx, "UPDATE shop SET preq_no = ? WHERE shop_no = ?", preq, row[st]);
+            }
+            // before the lines: the cost of a line without a price does not come from this document's other rows
+            if (stores.Count > 1) foreach (int id in row.Values) Db.X(tx, "UPDATE shop SET doc_grp = ? WHERE shop_no = ?", d.Id, id);
             foreach (DocLine l in d.Lines)
             {
-                if (l.LineId == 0)
+                int st = storeOf(l);
+                if (l.LineId > 0)
+                {
+                    if (Db.X(tx, "UPDATE shop_menu SET seq = ?, item_no = ?, qty = ?, price_dl = ?, cost = ? WHERE auto_seq = ?", row[st], l.ItemNo, l.Qty, l.Price, Valuation.LineCost(tx, d, l), l.LineId) != 1)
+                        throw new UserError("هذا السند تم تعديله من حاسوب آخر بعد أن فتحته.\nلحماية البيانات لم يتم حفظ تعديلك. أعد فتح السند لرؤية آخر نسخة ثم عدّله.");
+                }
+                else
                     l.LineId = Db.Insert(tx, "INSERT INTO shop_menu (seq, item_no, qty, price_dl, cost, qty_sale, sale_pr) VALUES (?, ?, ?, ?, ?, 0, 0)",
-                        d.Id, l.ItemNo, l.Qty, l.Price, Valuation.LineCost(tx, d, l));   // no price: a cost from the item's history (Valuation)
-                Adjust(tx, l.ItemNo, d.Store, l.Qty);
+                        row[st], l.ItemNo, l.Qty, l.Price, Valuation.LineCost(tx, d, l));   // no price: a cost from the item's history (Valuation)
+                Adjust(tx, l.ItemNo, st, l.Qty);
             }
+            foreach (int[] p in parts.Skip(1))        // a store no line goes into any more
+                if (!row.ContainsValue(p[0])) Db.X(tx, "DELETE FROM shop WHERE shop_no = ?", p[0]);
+            if (stores.Count <= 1 && Db.HasDocGrp && parts.Count > 0) Db.X(tx, "UPDATE shop SET doc_grp = NULL WHERE shop_no = ? AND doc_grp IS NOT NULL", d.Id);
+        }
+
+        static int InsertShop(DbTransaction tx, Doc d, int store, int shopType, object proj)
+        {
+            string mony = NextShopMony(tx);
+            if (Db.HasProj)
+                return Db.Insert(tx,
+                    "INSERT INTO shop (menu_no, menu_date, custom_no, pay_type, [note], mony_no, shop_type, stor, proj_no) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)",
+                    d.No, d.Date.Date, d.Person, Db.Null(d.Note), mony, shopType, store, proj);
+            return Db.Insert(tx,
+                "INSERT INTO shop (menu_no, menu_date, custom_no, pay_type, [note], mony_no, shop_type, stor) VALUES (?, ?, ?, 1, ?, ?, ?, ?)",
+                d.No, d.Date.Date, d.Person, Db.Null(d.Note), mony, shopType, store);
+        }
+
+        static void UpdateShop(DbTransaction tx, Doc d, int id, int store, int shopType, object proj)
+        {
+            if (Db.HasProj)
+                Db.X(tx, "UPDATE shop SET menu_date = ?, custom_no = ?, shop_type = ?, stor = ?, [note] = ?, proj_no = ? WHERE shop_no = ?",
+                    d.Date.Date, d.Person, shopType, store, Db.Null(d.Note), proj, id);
+            else
+                Db.X(tx, "UPDATE shop SET menu_date = ?, custom_no = ?, shop_type = ?, stor = ?, [note] = ? WHERE shop_no = ?",
+                    d.Date.Date, d.Person, shopType, store, Db.Null(d.Note), id);
         }
 
         static void SaveTransfer(DbTransaction tx, Doc d)
@@ -534,6 +603,7 @@ namespace Stores
         // ------------------------------------------------------------ delete / cancel
         public static void Delete(Doc d)
         {
+            Db.CheckDocGrp();
             DateTime closed = PeriodLock.Limit();   // year closing / month lock, read before the transaction starts
             Db.InTx(delegate(DbTransaction tx)
             {
@@ -560,16 +630,18 @@ namespace Stores
                 }
                 else
                 {
-                    int stor = Db.I(Db.S1(tx, "SELECT stor FROM shop WHERE shop_no = ?", d.Id));
-                    DataTable lines = Db.Q(tx, "SELECT item_no, qty, qty_sale FROM shop_menu WHERE seq = ?", d.Id);
-                    List<string> used = new List<string>();
-                    foreach (DataRow r in lines.Rows)
-                        if (Db.D(r["qty_sale"]) > 1e-9) used.Add(Cache.ItemName(Db.I(r["item_no"])) + " (أُخرج منها " + UI.Num(Db.D(r["qty_sale"])) + ")");
+                    List<int[]> parts = Parts(tx, d.Id); List<string> used = new List<string>();
+                    foreach (int[] p in parts)
+                        foreach (DataRow r in Db.Q(tx, "SELECT item_no, qty_sale FROM shop_menu WHERE seq = ?", p[0]).Rows)
+                            if (Db.D(r["qty_sale"]) > 1e-9) used.Add(Cache.ItemName(Db.I(r["item_no"])) + " (أُخرج منها " + UI.Num(Db.D(r["qty_sale"])) + ")");
                     if (used.Count > 0)
                         throw new UserError("لا يمكن حذف السند لأنه أُخرج من مواده:\n" + string.Join("\n", used.ToArray()));
-                    foreach (DataRow r in lines.Rows) Adjust(tx, Db.I(r["item_no"]), stor, -Db.D(r["qty"]));
-                    Db.X(tx, "DELETE FROM shop_menu WHERE seq = ?", d.Id);
-                    Db.X(tx, "DELETE FROM shop WHERE shop_no = ?", d.Id);
+                    foreach (int[] p in parts)
+                    {
+                        foreach (DataRow r in Db.Q(tx, "SELECT item_no, qty FROM shop_menu WHERE seq = ?", p[0]).Rows) Adjust(tx, Db.I(r["item_no"]), p[1], -Db.D(r["qty"]));
+                        Db.X(tx, "DELETE FROM shop_menu WHERE seq = ?", p[0]);
+                        Db.X(tx, "DELETE FROM shop WHERE shop_no = ?", p[0]);
+                    }
                 }
                 AuditTrail.LogDoc(tx, (d.Kind == DocKind.Reserve ? "إلغاء " : "حذف ") + KindName(d.Kind), "رقم " + d.No, before,
                                   d.Kind == DocKind.Reserve ? AuditTrail.ReadDoc(tx, d.Kind, d.Id) : null);

@@ -173,6 +173,7 @@ namespace Stores
             int id = CurrentId(); if (id == 0 || !Session.Demand(Session.Items)) return;
             int used = Db.I(Db.Scalar("SELECT COUNT(*) FROM sale_menu WHERE item_no = ?", id)) + Db.I(Db.Scalar("SELECT COUNT(*) FROM shop_menu WHERE item_no = ?", id))
                      + Db.I(Db.Scalar("SELECT COUNT(*) FROM trans_menu WHERE item_no = ?", id));
+            foreach (string t in new[] { "reserve_menu", "mreq_menu", "preq_menu", "count_menu", "wo_menu" }) if (Db.TableExists(t)) used += Db.I(Db.Scalar("SELECT COUNT(*) FROM " + t + " WHERE item_no = ?", id));
             if (used > 0) { UI.Warn("لا يمكن حذف هذه المادة لأن لها " + used + " حركة في السندات.\nيمكنك تجميدها بدلا من الحذف (من شاشة التعديل)."); return; }
             if (Math.Abs(Cache.StockAll(id)) > 0.0001) { UI.Warn("لا يمكن حذف مادة لها رصيد."); return; }
             if (!UI.Confirm("حذف المادة: " + Cache.ItemName(id) + " ؟")) return;

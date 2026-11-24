@@ -74,7 +74,7 @@ namespace Stores
         public static List<string> Receipts(int id)
         {
             List<string> l = new List<string>();
-            foreach (DataRow r in Db.Query("SELECT menu_no FROM shop WHERE preq_no = ? ORDER BY menu_date, shop_no", id).Rows) l.Add(Db.S(r[0]));
+            foreach (DataRow r in Db.Query("SELECT menu_no FROM shop WHERE preq_no = ? AND " + Db.MainShop("") + " ORDER BY menu_date, shop_no", id).Rows) l.Add(Db.S(r[0]));
             return l;
         }
 
@@ -96,7 +96,10 @@ namespace Stores
 
         /// <summary>Open requests (draft / sent / partly received) of the store (or without a store) that still wait for
         /// at least one of the items: preq_no, menu_no, preq_date, p_no, pname, status_name, n (matching items), rem (their remaining qty).</summary>
-        public static DataTable OpenFor(int store, IEnumerable<int> items)
+        public static DataTable OpenFor(int store, IEnumerable<int> items) { return OpenFor(store > 0 ? new[] { store } : new int[0], items); }
+
+        /// <summary>stores: of the receipt, empty = all.</summary>
+        public static DataTable OpenFor(ICollection<int> stores, IEnumerable<int> items)
         {
             DataTable t = new DataTable();
             foreach (string c in new[] { "menu_no", "pname", "status_name" }) t.Columns.Add(c);
@@ -109,7 +112,7 @@ namespace Stores
                                            "WHERE h.status IN (0, 1, 2) ORDER BY h.preq_date DESC, h.preq_no DESC").Rows)
             {
                 int st = Db.I(x["stor"]);
-                if (store > 0 && st > 0 && st != store) continue;
+                if (stores.Count > 0 && st > 0 && !stores.Contains(st)) continue;
                 if (!want.Contains(Db.I(x["item_no"]))) continue;
                 double rem = Db.D(x["qty"]) - Db.D(x["received_qty"]);
                 if (rem <= 1e-9) continue;
@@ -289,7 +292,7 @@ namespace Stores
             Db.InTx(delegate(DbTransaction tx)
             {
                 int old = Db.I(Db.S1(tx, "SELECT preq_no FROM shop WHERE shop_no = ?", receiptId));
-                Db.X(tx, "UPDATE shop SET preq_no = ? WHERE shop_no = ?", preqNo > 0 ? (object)preqNo : DBNull.Value, receiptId);
+                Db.X(tx, "UPDATE shop SET preq_no = ? WHERE shop_no IN (" + Posting.PartIds(tx, receiptId) + ")", preqNo > 0 ? (object)preqNo : DBNull.Value);   // all its stores
                 if (preqNo > 0) Recalc(tx, preqNo);
                 if (old > 0 && old != preqNo) Recalc(tx, old);
                 Db.Log(tx, "ربط إدخال بطلب شراء", "سند " + Db.S(Db.S1(tx, "SELECT menu_no FROM shop WHERE shop_no = ?", receiptId)) + " ← طلب " +
@@ -318,20 +321,6 @@ namespace Stores
             Db.InTx(delegate(DbTransaction tx) { foreach (int id in ids) Recalc(tx, id); });
         }
 
-        /// <summary>The receipts made from one entry screen (one per store): the request chosen for the first is linked to all.</summary>
-        public static void AfterReceiptSave(IWin32Window owner, List<Doc> docs)
-        {
-            AfterReceiptSave(owner, docs[0]);
-            if (!Db.HasPreq || docs.Count < 2) return;
-            try
-            {
-                int preq = Db.I(Db.Scalar("SELECT preq_no FROM shop WHERE shop_no = ?", docs[0].Id));
-                for (int i = 1; i < docs.Count; i++)
-                    if (preq > 0) Link(docs[i].Id, preq); else AfterReceiptSave(owner, docs[i]);
-            }
-            catch (UserError ue) { UI.Warn(ue.Message); }
-            catch (Exception ex) { UI.Error(ex); }
-        }
 
         /// <summary>One-line hook for the receipt screen, called after a successful save. A receipt already linked is simply
         /// re-applied. Otherwise (advanced mode only, never in beginner mode) a small question is shown when open requests
@@ -343,7 +332,7 @@ namespace Stores
             {
                 if (Db.I(Db.Scalar("SELECT preq_no FROM shop WHERE shop_no = ?", d.Id)) > 0) { ApplyReceipt(d.Id); return; }
                 if (!Session.Advanced || !CanEdit) return;
-                DataTable open = OpenFor(d.Store, d.Lines.Select(l => l.ItemNo));
+                DataTable open = OpenFor(d.Lines.Select(l => l.Store > 0 ? l.Store : d.Store).Distinct().ToList(), d.Lines.Select(l => l.ItemNo));
                 if (open.Rows.Count == 0) return;
                 using (PreqLinkDialog dlg = new PreqLinkDialog(open, d))
                     if (dlg.ShowDialog(owner) == DialogResult.OK && dlg.Chosen > 0) Link(d.Id, dlg.Chosen);

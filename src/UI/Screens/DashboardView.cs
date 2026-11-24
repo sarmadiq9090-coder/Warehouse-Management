@@ -183,7 +183,12 @@ namespace Stores
                     DataTable rec = Db.Query(
                         "SELECT TOP 25 k, id, menu_no, menu_date, custom_no, pj FROM (" +
                         "SELECT " + kSale + " AS k, shop_no AS id, menu_no, menu_date, custom_no, " + pSale + " AS pj FROM sale WHERE " + Db.NotCountAdj("") + " UNION ALL " +
-                        "SELECT IIF(shop_type = 3, 3, 2) AS k, shop_no AS id, menu_no, menu_date, custom_no, " + pShop + " AS pj FROM shop WHERE " + Db.NotCountAdj("") + ") AS u ORDER BY menu_date DESC, id DESC");
+                        "SELECT IIF(shop_type = 3, 3, 2) AS k, shop_no AS id, menu_no, menu_date, custom_no, " + pShop + " AS pj FROM shop WHERE " + Db.NotCountAdj("") + " AND " + Db.MainShop("") + ") AS u ORDER BY menu_date DESC, id DESC");
+                    for (int i = rec.Rows.Count - 1; i >= 0; i--)      // only kinds this user may see
+                    {
+                        int k = Db.I(rec.Rows[i]["k"]);
+                        if (!Session.Can(MainForm.ViewPerm(k == 1 ? DocKind.Issue : k == 2 ? DocKind.Receipt : k == 3 ? DocKind.Return : DocKind.PurchaseReturn))) rec.Rows.RemoveAt(i);
+                    }
                     rec.Columns.Add("kname", typeof(string)); rec.Columns.Add("pname", typeof(string));
                     foreach (DataRow r in rec.Rows)
                     {
@@ -207,7 +212,7 @@ namespace Stores
                     {
                         DateTime m0 = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1), from = m0.AddMonths(-11);
                         chart.Load(Db.Query("SELECT YEAR(menu_date) AS y, MONTH(menu_date) AS m, COUNT(*) AS n FROM sale AS h WHERE " + Db.IssueOnly("h") + " AND menu_date >= ? GROUP BY YEAR(menu_date), MONTH(menu_date)", from),
-                                   Db.Query("SELECT YEAR(menu_date) AS y, MONTH(menu_date) AS m, COUNT(*) AS n FROM shop WHERE " + Db.NotCountAdj("") + " AND menu_date >= ? AND menu_date < ? GROUP BY YEAR(menu_date), MONTH(menu_date)", from, m0.AddMonths(1)),
+                                   Db.Query("SELECT YEAR(menu_date) AS y, MONTH(menu_date) AS m, COUNT(*) AS n FROM shop WHERE " + Db.NotCountAdj("") + " AND " + Db.MainShop("") + " AND menu_date >= ? AND menu_date < ? GROUP BY YEAR(menu_date), MONTH(menu_date)", from, m0.AddMonths(1)),
                                    from);
                     }
                 }

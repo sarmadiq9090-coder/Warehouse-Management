@@ -91,7 +91,7 @@ namespace Stores
             ThemePainter.Attach(this);   // dark theme: title bar, inputs and grids of the screens shown later
 
             timer = new Timer(); timer.Interval = 60000;
-            timer.Tick += delegate { Db.Heartbeat(); UpdateOnline(); if (!(current is DocView)) Cache.RefreshIfOld(); };
+            timer.Tick += delegate { Db.Heartbeat(); Backup.DailyAuto();   /* the program stays open next to the clock for days */ UpdateOnline(); if (!(current is DocView)) Cache.RefreshIfOld(); };
             timer.Start();
 
             string warn = Db.SyncWarning();
@@ -105,7 +105,7 @@ namespace Stores
                 {
                     lblWarn.Text = "⬆ يتوفر إصدار جديد " + r.Ver + " • اضغط هنا للتحديث";
                     lblWarn.ForeColor = Theme.AccentDark; lblWarn.Cursor = Cursors.Hand;
-                    lblWarn.Click += delegate { Updater.Offer(this, r); };
+                    lblWarn.Click += delegate { IView cv = current as IView; if (cv == null || cv.CanLeave()) Updater.Offer(this, r); };   // an unsaved document is asked about first
                 });
             };
             FormClosing += delegate(object s, FormClosingEventArgs e)
@@ -231,6 +231,7 @@ namespace Stores
                 BuildNav();
             };
             side.Controls.Add(toggle);
+            toggle.TabIndex = 0; for (int i = 0; i < items.Count; i++) items[i].TabIndex = i + 1;   // Tab from top to bottom
             side.Width = collapsed ? 58 : 236;
             if (navTips == null) navTips = new ToolTip();
             navTips.RemoveAll();

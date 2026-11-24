@@ -72,8 +72,8 @@ namespace Stores
             dtp = UI.DatePicker(DateTime.Today);
             project = new ProjectPicker(300);
             cmbStore = UI.Combo(170); UI.Fill(cmbStore, Cache.Stores, "stor_no", "stor_name", null);
-            txtBy = UI.Text(190);
-            txtNote = UI.Text(320);
+            txtBy = UI.Text(190); txtBy.MaxLength = 100;
+            txtNote = UI.Text(320); txtNote.MaxLength = 255;
             f.Controls.AddRange(new Control[] { UI.Field("مركز الكلفة", project), UI.Field("المخزن", cmbStore), UI.Field("التاريخ", dtp),
                                                 UI.Field("طالب المواد", txtBy), UI.Field("ملاحظات", txtNote) });
             head.Controls.Add(f); UI.FitHeight(head);

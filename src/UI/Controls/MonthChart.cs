@@ -21,7 +21,7 @@ namespace Stores
 
         public void Load(DataTable issues, DataTable receipts, DateTime from)
         {
-            for (int i = 0; i < 12; i++) { DateTime d = from.AddMonths(i); labels[i] = d.ToString("MM/yy"); a[i] = 0; b[i] = 0; }
+            for (int i = 0; i < 12; i++) { DateTime d = from.AddMonths(i); labels[i] = d.Month.ToString() + (d.Month == 1 || i == 0 ? "/" + (d.Year % 100).ToString("00") : ""); a[i] = 0; b[i] = 0; }
             foreach (DataRow r in issues.Rows) { int i = (Db.I(r["y"]) - from.Year) * 12 + Db.I(r["m"]) - from.Month; if (i >= 0 && i < 12) a[i] = Db.D(r["n"]); }
             foreach (DataRow r in receipts.Rows) { int i = (Db.I(r["y"]) - from.Year) * 12 + Db.I(r["m"]) - from.Month; if (i >= 0 && i < 12) b[i] = Db.D(r["n"]); }
             Invalidate();
@@ -36,7 +36,9 @@ namespace Stores
             int w = Width - left - right, h = Height - top - bottom;
             if (w < 50 || h < 50) return;
             double max = 1; for (int i = 0; i < 12; i++) max = Math.Max(max, Math.Max(a[i], b[i]));
-            double step = Math.Pow(10, Math.Floor(Math.Log10(max))); double nice = Math.Ceiling(max / step) * step; if (nice < max) nice = max;
+            // four whole steps (1, 2, 5, 10, 20…), so every label is exact
+            double unit = 1; for (int k = 0; unit * 4 < max; k++) unit = (k % 3 == 0 ? 2 : k % 3 == 1 ? 5 : 10) * Math.Pow(10, k / 3);
+            double nice = unit * 4;
             using (Pen grid = new Pen(Theme.ChartGrid))
             using (SolidBrush mb = new SolidBrush(Theme.Muted))
             {

@@ -748,7 +748,8 @@ namespace Stores
             ReportData r = new ReportData();
             r.Title = "سجل سندات الإدخال والمردود"; r.Subtitle = Period(p) + (p.RType > 0 ? "   —   " + Cache.ReceiptTypes[p.RType] : "") + (p.PersonNo > 0 ? "   —   " + Cache.Person(p.PersonNo) : "");
             string sql = "SELECT h.shop_no, h.menu_no, h.menu_date, h.custom_no, h.stor, h.shop_type, h.[note], (SELECT COUNT(*) FROM shop_menu m WHERE m.seq = h.shop_no) AS n, " +
-                         "(SELECT SUM(qty) FROM shop_menu m WHERE m.seq = h.shop_no) AS q FROM shop AS h WHERE " + Db.NotCountAdj("h") + " AND h.menu_date >= ? AND h.menu_date < ?";
+                         "(SELECT SUM(qty) FROM shop_menu m WHERE m.seq = h.shop_no) AS q FROM shop AS h WHERE " + Db.NotCountAdj("h") + " AND " + Db.MainShop("h") + " AND h.menu_date >= ? AND h.menu_date < ?";
+            Dictionary<int, Posting.GroupInfo> groups = Posting.Groups();      // receipts into several stores: one row
             List<object> a = new List<object> { p.From, p.ToEx };
             if (p.RType > 0) { sql += " AND h.shop_type = ?"; a.Add(p.RType); }
             if (p.PersonNo > 0) { sql += " AND h.custom_no = ?"; a.Add(p.PersonNo); }
@@ -758,8 +759,9 @@ namespace Stores
             int n = 0;
             foreach (DataRow x in Db.Query(sql, a.ToArray()).Rows)
             {
+                Posting.GroupInfo gi; groups.TryGetValue(Db.I(x["shop_no"]), out gi);
                 r.Row(Db.I(x["shop_type"]) == 3 ? "in" : null, ++n, Db.S(x["menu_no"]), Db.Dt(x["menu_date"]), Cache.ReceiptTypes[Math.Max(0, Math.Min(3, Db.I(x["shop_type"])))],
-                    Cache.Person(Db.I(x["custom_no"])), Cache.Store(Db.I(x["stor"])), Db.D(x["n"]), Db.D(x["q"]), Db.S(x["note"]));
+                    Cache.Person(Db.I(x["custom_no"])), gi != null ? gi.Stores : Cache.Store(Db.I(x["stor"])), gi != null ? gi.Lines : Db.D(x["n"]), gi != null ? gi.Qty : Db.D(x["q"]), Db.S(x["note"]));
                 r.Link(RowLinks.Doc(Db.I(x["shop_type"]) == 3 ? DocKind.Return : DocKind.Receipt, Db.I(x["shop_no"])));
             }
             r.Sum("عدد السندات", n.ToString("#,##0", Inv));
@@ -804,7 +806,7 @@ namespace Stores
             };
             string g = " GROUP BY YEAR(h.menu_date), MONTH(h.menu_date)";
             string w = " h.menu_date >= ? AND h.menu_date < ?";
-            add(Db.Query("SELECT YEAR(h.menu_date), MONTH(h.menu_date), COUNT(*) FROM shop AS h WHERE h.shop_type <> 3 AND " + Db.NotCountAdj("h") + " AND" + w + g, p.From, p.ToEx), 0);
+            add(Db.Query("SELECT YEAR(h.menu_date), MONTH(h.menu_date), COUNT(*) FROM shop AS h WHERE h.shop_type <> 3 AND " + Db.NotCountAdj("h") + " AND " + Db.MainShop("h") + " AND" + w + g, p.From, p.ToEx), 0);
             add(Db.Query("SELECT YEAR(h.menu_date), MONTH(h.menu_date), SUM(l.qty) FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq WHERE h.shop_type <> 3 AND " + Db.NotCountAdj("h") + " AND" + w + g, p.From, p.ToEx), 1);
             add(Db.Query("SELECT YEAR(h.menu_date), MONTH(h.menu_date), COUNT(*) FROM sale AS h WHERE " + Db.IssueOnly("h") + " AND" + w + g, p.From, p.ToEx), 2);
             add(Db.Query("SELECT YEAR(h.menu_date), MONTH(h.menu_date), SUM(l.qty) FROM sale AS h INNER JOIN sale_menu AS l ON h.shop_no = l.seq WHERE " + Db.IssueOnly("h") + " AND" + w + g, p.From, p.ToEx), 3);
@@ -888,12 +890,12 @@ namespace Stores
             DateTime tomorrow = DateTime.Today.AddDays(1);
             foreach (DataRow x in Db.Query("SELECT menu_no, menu_date FROM sale WHERE menu_date >= ?", tomorrow).Rows)
                 r.Row(null, ++n, "تاريخ مستقبلي", "سند إخراج رقم " + Db.S(x[0]) + " بتاريخ " + UI.Date(Db.Dt(x[1])), null, null);
-            foreach (DataRow x in Db.Query("SELECT menu_no, menu_date, shop_type FROM shop WHERE menu_date >= ?", tomorrow).Rows)
+            foreach (DataRow x in Db.Query("SELECT menu_no, menu_date, shop_type FROM shop WHERE " + Db.MainShop("") + " AND menu_date >= ?", tomorrow).Rows)
                 r.Row(null, ++n, "تاريخ مستقبلي", "سند " + (Db.I(x[2]) == 3 ? "إعادة" : "استلام") + " رقم " + Db.S(x[0]) + " بتاريخ " + UI.Date(Db.Dt(x[1])), null, null);
             // 4. duplicated numbers
             foreach (DataRow x in Db.Query("SELECT menu_no, COUNT(*) FROM sale GROUP BY menu_no HAVING COUNT(*) > 1").Rows)
                 r.Row(null, ++n, "رقم مكرر", "سند إخراج رقم " + Db.S(x[0]) + " مكرر " + Db.I(x[1]) + " مرات", null, null);
-            foreach (DataRow x in Db.Query("SELECT menu_no, COUNT(*) FROM shop GROUP BY menu_no HAVING COUNT(*) > 1").Rows)
+            foreach (DataRow x in Db.Query("SELECT menu_no, COUNT(*) FROM shop WHERE " + Db.MainShop("") + " GROUP BY menu_no HAVING COUNT(*) > 1").Rows)
                 r.Row(null, ++n, "رقم مكرر", "سند استلام رقم " + Db.S(x[0]) + " مكرر " + Db.I(x[1]) + " مرات", null, null);
             // 5. empty documents
             foreach (DataRow x in Db.Query("SELECT menu_no, menu_date FROM sale AS h WHERE NOT EXISTS (SELECT 1 FROM sale_menu m WHERE m.seq = h.shop_no)").Rows)
@@ -919,6 +921,8 @@ namespace Stores
             string adj = StockCount.AdjustmentText(d);            // count adjustment / posted write-off: no recipient
             string kind = adj ?? Posting.KindName(d.Kind);
             r.Title = kind + " رقم " + d.No;
+            List<int> stores = d.Kind == DocKind.Receipt ? d.Lines.Select(l => l.Store > 0 ? l.Store : d.Store).Distinct().OrderBy(x => x).ToList() : new List<int>();
+            bool many = stores.Count > 1;         // items in several stores: a column with the store of each
             List<string> sub = new List<string>();
             sub.Add("التاريخ: " + UI.Date(d.Date));
             if (d.Kind == DocKind.Transfer) { sub.Add("من مخزن: " + Cache.Store(d.Store)); sub.Add("إلى مخزن: " + Cache.Store(d.Store2)); }
@@ -930,7 +934,7 @@ namespace Stores
                 else if (d.Project > 0) sub.Add("مركز الكلفة: " + Cache.Project(d.Project));
                 if (d.Kind != DocKind.Reserve && !ccIsRecipient && adj == null)
                     sub.Add((d.Kind == DocKind.Issue ? "المستلم: " : d.Kind == DocKind.Return ? "الجهة المُعيدة: " : "المجهز: ") + Cache.Person(d.Person));
-                sub.Add((Posting.IsOut(d.Kind) ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store));
+                sub.Add(many ? "إلى المخازن: " + string.Join("، ", stores.Select(x => Cache.Store(x)).ToArray()) : (Posting.IsOut(d.Kind) ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store));
                 if (d.Kind == DocKind.Receipt) sub.Add("النوع: " + Cache.ReceiptTypes[d.RType == 1 ? 1 : 2]);
                 if (d.Kind == DocKind.Reserve && d.Status == 0) sub.Add("الحالة: ملغى");
             }
@@ -951,6 +955,7 @@ namespace Stores
             r.Col("ت", ColKind.Int); r.Col("الرمز", ColKind.Text); r.Col("اسم المادة", ColKind.Text); r.Col("الوحدة", ColKind.Text);
             if (bin) r.Col("الموقع", ColKind.Text);
             r.ColT("الكمية");
+            if (many) r.Col("المخزن", ColKind.Text);
             if (price) { r.Col("سعر الوحدة", ColKind.Num); r.ColT("المبلغ"); }
             int n = 0;
             foreach (DocLine l in d.Lines)
@@ -958,6 +963,7 @@ namespace Stores
                 List<object> v = new List<object> { ++n, Cache.ItemCode(l.ItemNo), Cache.ItemName(l.ItemNo), Unit(l.ItemNo) };
                 if (bin) v.Add(Cache.Bin(l.ItemNo, d.Store));
                 v.Add(l.Qty);
+                if (many) v.Add(Cache.Store(l.Store > 0 ? l.Store : d.Store));
                 if (price) { v.Add(l.Price); v.Add(l.Qty * l.Price); }
                 r.Row(null, v.ToArray());
             }

@@ -102,12 +102,21 @@ namespace Stores
                 if (!oldBy.TryGetValue(it, out o)) o = new List<SnapLine>();
                 if (!newBy.TryGetValue(it, out n)) n = new List<SnapLine>();
                 string lbl = ItemLabel(it);
+                bool stores = before.Stores || (after != null && after.Stores);
+                if (before.LineTable == "shop_menu")
+                {
+                    // receipts keep their lines: the same line before and after, then the deleted and the added ones
+                    List<SnapLine> o1 = o, n1 = n;
+                    o = o1.Concat(n1.Where(x => !o1.Any(y => y.Id == x.Id)).Select(x => (SnapLine)null)).ToList();
+                    n = o1.Select(y => n1.FirstOrDefault(x => x.Id == y.Id)).Concat(n1.Where(x => !o1.Any(y => y.Id == x.Id))).ToList();
+                }
                 for (int i = 0; i < Math.Max(o.Count, n.Count); i++)
                 {
-                    if (i >= n.Count) Detail(tx, id, before.LineTable, key, "مادة محذوفة: " + lbl, LineText(o[i], before.HasPrice), "");
-                    else if (i >= o.Count) Detail(tx, id, before.LineTable, key, "مادة مضافة: " + lbl, "", LineText(n[i], before.HasPrice));
+                    if (i >= n.Count || n[i] == null) Detail(tx, id, before.LineTable, key, "مادة محذوفة: " + lbl, LineText(o[i], before.HasPrice) + StoreText(o[i], stores), "");
+                    else if (i >= o.Count || o[i] == null) Detail(tx, id, before.LineTable, key, "مادة مضافة: " + lbl, "", LineText(n[i], before.HasPrice) + StoreText(n[i], stores));
                     else
                     {
+                        if (o[i].Store != n[i].Store && stores) Detail(tx, id, before.LineTable, key, "المخزن: " + lbl, Cache.Store(o[i].Store), Cache.Store(n[i].Store));
                         if (Math.Abs(o[i].Qty - n[i].Qty) > 1e-9) Detail(tx, id, before.LineTable, key, "الكمية: " + lbl, UI.Num(o[i].Qty), UI.Num(n[i].Qty));
                         if (before.HasPrice && Math.Abs(o[i].Price - n[i].Price) > 1e-9) Detail(tx, id, before.LineTable, key, "السعر: " + lbl, UI.Num(o[i].Price), UI.Num(n[i].Price));
                     }
@@ -125,6 +134,8 @@ namespace Stores
 
         static string LineText(SnapLine l, bool price) { return "الكمية " + UI.Num(l.Qty) + (price && Math.Abs(l.Price) > 1e-9 ? " × السعر " + UI.Num(l.Price) : ""); }
 
+        static string StoreText(SnapLine l, bool show) { return show && l.Store > 0 ? "، المخزن: " + Cache.Store(l.Store) : ""; }
+
         public static string ItemLabel(int item)
         {
             string c = Cache.ItemCode(item);
@@ -132,12 +143,12 @@ namespace Stores
         }
 
         // ------------------------------------------------------------ snapshots (inside the transaction)
-        public class SnapLine { public int Item; public double Qty, Price; }
+        public class SnapLine { public int Item, Store, Id; public double Qty, Price; }
 
         public class DocSnap
         {
             public string No, HeadTable, LineTable;
-            public bool HasPrice;
+            public bool HasPrice, Stores;     // Stores: receipt with items in several stores
             public List<KeyValuePair<string, string>> Head = new List<KeyValuePair<string, string>>();
             public List<SnapLine> Lines = new List<SnapLine>();
             public void Add(string label, string value) { Head.Add(new KeyValuePair<string, string>(label, value ?? "")); }
@@ -181,7 +192,8 @@ namespace Stores
             {
                 s.HeadTable = "shop"; s.LineTable = "shop_menu"; s.HasPrice = true;
                 h = Db.Q(tx, "SELECT menu_no, menu_date, custom_no, stor, [note], shop_type" + (Db.HasProj ? ", proj_no" : "") + " FROM shop WHERE shop_no = ?", id);
-                l = Db.Q(tx, "SELECT item_no, qty, price_dl FROM shop_menu WHERE seq = ? ORDER BY auto_seq", id);
+                l = Db.Q(tx, "SELECT l.auto_seq, l.item_no, l.qty, l.price_dl, h.stor FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq WHERE h.shop_no IN (" + Posting.PartIds(tx, id) + ") ORDER BY l.auto_seq");
+                s.Stores = l.Rows.Cast<DataRow>().Select(x => Db.I(x["stor"])).Distinct().Count() > 1;
             }
             if (h.Rows.Count == 0) return null;
             DataRow r = h.Rows[0];
@@ -195,7 +207,7 @@ namespace Stores
             }
             else
             {
-                s.Add("المخزن", Cache.Store(Db.I(r["stor"])));
+                s.Add("المخزن", s.Stores ? string.Join("، ", l.Rows.Cast<DataRow>().Select(x => Db.I(x["stor"])).Distinct().OrderBy(x => x).Select(x => Cache.Store(x)).ToArray()) : Cache.Store(Db.I(r["stor"])));
                 if (r.Table.Columns.Contains("custom_no") && !Posting.CcIsRecipient(kind))
                     s.Add(kind == DocKind.Issue ? "المستلم" : "الجهة", Cache.Person(Db.I(r["custom_no"])));
                 if (r.Table.Columns.Contains("proj_no")) s.Add("مركز الكلفة", Cache.Project(Db.I(r["proj_no"])));
@@ -212,6 +224,7 @@ namespace Stores
                 SnapLine sl = new SnapLine();
                 sl.Item = Db.I(x["item_no"]); sl.Qty = Db.D(x["qty"]);
                 if (s.HasPrice) sl.Price = Db.D(x["price_dl"]);
+                if (s.HeadTable == "shop") { sl.Store = Db.I(x["stor"]); sl.Id = Db.I(x["auto_seq"]); }
                 s.Lines.Add(sl);
             }
             return s;

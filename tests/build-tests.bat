@@ -19,6 +19,7 @@ call :one DocumentTests Stores.DocumentTestsMain DocumentTests.cs
 call :one UnitsTests Stores.UnitsTestsMain UnitsTests.cs
 call :one ServerLoginTests Stores.ServerLoginTestMain ServerLoginTests.cs
 call :one OfflineSetupTests Stores.OfflineSetupTestsMain OfflineSetupTests.cs
+call :one ServerInstallCheck Stores.ServerInstallCheckMain ServerInstallCheck.cs
 call :one StockCountTests Stores.StockCountTestsMain StockCountTests.cs
 call :one ItemEntryTests Stores.ItemEntryTestsMain ItemEntryTests.cs
 call :one CostCentreTests Stores.CostCentreTestsMain CostCentreTests.cs

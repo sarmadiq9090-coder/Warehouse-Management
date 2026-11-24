@@ -75,7 +75,7 @@ namespace Stores
             foreach (DataGridViewColumn c in grid.Columns) c.SortMode = DataGridViewColumnSortMode.NotSortable;
             gridCard.Controls.Add(grid);
 
-            Panel bottom = new Panel(); bottom.Dock = DockStyle.Bottom; bottom.Height = 82; bottom.BackColor = Theme.Bg; bottom.Padding = new Padding(0, 6, 0, 0);
+            Panel bottom = new Panel(); bottom.Dock = DockStyle.Bottom; bottom.Height = 98; bottom.BackColor = Theme.Bg; bottom.Padding = new Padding(0, 6, 0, 0);
             lblTotals = new Label(); lblTotals.Dock = DockStyle.Top; lblTotals.Height = 26; lblTotals.Font = Theme.FontBold; lblTotals.ForeColor = Theme.Primary; lblTotals.TextAlign = ContentAlignment.MiddleLeft;
             FlowLayoutPanel bar = new FlowLayoutPanel(); bar.Dock = DockStyle.Fill; bar.FlowDirection = FlowDirection.LeftToRight;
             btnSave = UI.Btn("حفظ  (Ctrl+S)", Theme.Accent, 140);

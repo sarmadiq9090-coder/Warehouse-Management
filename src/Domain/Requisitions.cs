@@ -137,7 +137,7 @@ namespace Stores
             else if (status == -3) sql += " AND h.status IN (0, 1, 2, 3, 4)";
             else if (status >= 0) { sql += " AND h.status = ?"; a.Add(status); }
             string s = UI.NormDigits((text ?? "").Trim());
-            if (s.Length > 0) { sql += " AND (h.menu_no = ? OR h.requested_by LIKE ? OR h.notes LIKE ?)"; a.Add(s); a.Add("%" + s + "%"); a.Add("%" + s + "%"); }
+            if (s.Length > 0) { sql += " AND (h.menu_no = ? OR h.requested_by LIKE ? OR h.notes LIKE ?)"; a.Add(s); a.Add(Db.Like(s)); a.Add(Db.Like(s)); }
             sql += " ORDER BY h.mreq_date DESC, h.mreq_no DESC";
             DataTable t = Db.Query(sql, a.ToArray());
             t.Columns.Add("pname", typeof(string)); t.Columns.Add("sname", typeof(string)); t.Columns.Add("status_name", typeof(string));
@@ -503,7 +503,7 @@ namespace Stores
                 double q = Db.D(x["qty"]), iq = Db.D(x["issued_qty"]);
                 double rem = st == Cancelled || st == Rejected || st == Done ? 0 : Math.Max(0, q - iq);
                 if (seen.Add(Db.I(x["mreq_no"]))) { int c; byStatus.TryGetValue(st, out c); byStatus[st] = c + 1; }
-                string cls = st == Cancelled || st == Rejected ? "muted" : st == Pending ? "open" : null;
+                string cls = st == Cancelled || st == Rejected ? "muted" : null;      // («open» rows are left out of totals)
                 r.Row(cls, ++n, Db.S(x["menu_no"]), Db.Dt(x["mreq_date"]), Cache.Project(Db.I(x["proj_no"])), Db.S(x["requested_by"]), StatusName(st),
                       Cache.ItemCode(it), Cache.ItemName(it), Cache.ItemUnit(it), q, iq, rem);
                 r.Link(RowLinks.Make("mreq", Db.I(x["mreq_no"])));

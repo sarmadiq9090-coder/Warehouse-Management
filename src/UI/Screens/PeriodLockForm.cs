@@ -88,7 +88,7 @@ namespace Stores
             try
             {
                 int n = Db.I(Db.Scalar("SELECT COUNT(*) FROM sale WHERE menu_date >= ? AND menu_date < ?", a, b)) +
-                        Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE menu_date >= ? AND menu_date < ?", a, b)) +
+                        Db.I(Db.Scalar("SELECT COUNT(*) FROM shop WHERE " + Db.MainShop("") + " AND menu_date >= ? AND menu_date < ?", a, b)) +
                         Db.I(Db.Scalar("SELECT COUNT(*) FROM trans WHERE menu_date >= ? AND menu_date < ?", a, b));
                 lblNote.Text = "في شهر " + PeriodLock.MonthName(end) + ": " + n.ToString("#,##0") + " سند • يُقفل معه كل ما قبله.";
             }
