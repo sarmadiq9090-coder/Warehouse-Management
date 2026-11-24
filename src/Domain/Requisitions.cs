@@ -506,6 +506,7 @@ namespace Stores
                 string cls = st == Cancelled || st == Rejected ? "muted" : st == Pending ? "open" : null;
                 r.Row(cls, ++n, Db.S(x["menu_no"]), Db.Dt(x["mreq_date"]), Cache.Project(Db.I(x["proj_no"])), Db.S(x["requested_by"]), StatusName(st),
                       Cache.ItemCode(it), Cache.ItemName(it), Cache.ItemUnit(it), q, iq, rem);
+                r.Link(RowLinks.Make("mreq", Db.I(x["mreq_no"])));
                 tq += q; ti += iq; tr += rem;
             }
             r.Sum("عدد الطلبات", seen.Count.ToString("#,##0", Inv));

@@ -21,6 +21,7 @@ namespace Stores
         public List<RCol> Cols = new List<RCol>();
         public List<object[]> Rows = new List<object[]>();
         public List<string> RowClass = new List<string>();
+        public List<string> RowLink = new List<string>();        // what a double click on the row opens (see RowLinks), null = nothing
         public List<KeyValuePair<string, string>> Summary = new List<KeyValuePair<string, string>>();
         public List<KeyValuePair<string, double[]>> Chart;     // label -> values (bar chart)
         public string[] ChartSeries;
@@ -32,7 +33,26 @@ namespace Stores
 
         public void Col(string h, ColKind k) { Cols.Add(new RCol(h, k, false)); }
         public void ColT(string h) { Cols.Add(new RCol(h, ColKind.Num, true)); }
-        public void Row(string cls, params object[] v) { Rows.Add(v); RowClass.Add(cls); }
+        public void Row(string cls, params object[] v) { Rows.Add(v); RowClass.Add(cls); RowLink.Add(null); }
+
+        /// <summary>A double click on the row just added opens this (RowLinks.Doc / Item / …).</summary>
+        public void Link(string link) { RowLink[RowLink.Count - 1] = link; }
+
+        /// <summary>A copy with only these rows, in this order (rows found / sorted inside the report).</summary>
+        public ReportData Subset(List<int> rows)
+        {
+            ReportData t = (ReportData)MemberwiseClone();
+            t.Rows = new List<object[]>(); t.RowClass = new List<string>(); t.RowLink = new List<string>();
+            foreach (int i in rows)
+                if (i >= 0 && i < Rows.Count) { t.Rows.Add(Rows[i]); t.RowClass.Add(RowClass[i]); t.RowLink.Add(RowLink[i]); }
+            if (t.Rows.Count < Rows.Count)
+            {
+                // the boxes and the chart belong to the whole report
+                t.Summary = new List<KeyValuePair<string, string>>(); t.Chart = null;
+                t.Subtitle = (string.IsNullOrEmpty(Subtitle) ? "" : Subtitle + " — ") + "المعروض: " + t.Rows.Count + " من " + Rows.Count;
+            }
+            return t;
+        }
         public void Sum(string k, string v) { Summary.Add(new KeyValuePair<string, string>(k, v)); }
     }
 

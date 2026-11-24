@@ -384,7 +384,7 @@ namespace Stores
         {
             if (doc == null || doc.No == 0) return;
             if (dirty) { if (!UI.Confirm("يجب حفظ السند قبل الطباعة. حفظ الآن؟") || !Save()) return; }
-            using (ReportViewerForm f = new ReportViewerForm(WriteOffs.Print(doc))) f.ShowDialog(FindForm());
+            PrintPreviewForm.Show(FindForm(), WriteOffs.Print(doc));
         }
 
         public bool CanLeave()

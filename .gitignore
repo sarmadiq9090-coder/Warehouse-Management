@@ -19,3 +19,4 @@ logo.png
 tests/bin/
 dist/
 *.tmp
+installer/obj/

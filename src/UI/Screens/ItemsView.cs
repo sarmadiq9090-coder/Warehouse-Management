@@ -59,7 +59,7 @@ namespace Stores
             gc.Controls.Add(grid);
             lblCount = new Label(); lblCount.Dock = DockStyle.Bottom; lblCount.Height = 26; lblCount.ForeColor = Theme.Muted; lblCount.TextAlign = ContentAlignment.MiddleLeft;
 
-            Controls.Add(gc); Controls.Add(lblCount); Controls.Add(bar); Controls.Add(filt); Controls.Add(ViewHelp.Title("المواد"));
+            Controls.Add(gc); Controls.Add(lblCount); Controls.Add(bar); Controls.Add(filt); Controls.Add(ViewHelp.Title("بطاقة مادة"));
 
             txt.TextChanged += delegate { ApplyFilter(); };
             txt.KeyDown += delegate(object s, KeyEventArgs e)
@@ -152,7 +152,7 @@ namespace Stores
             }
             ReportData rd = new ReportData(); rd.Title = "المواد"; rd.Subtitle = "";
             rd.Col("الرمز", ColKind.Text); rd.Col("اسم المادة", ColKind.Text); rd.Col("النوع", ColKind.Text); rd.Col("المجموعة", ColKind.Text); rd.Col("الوحدة", ColKind.Text); rd.Col("الرصيد الكلي", ColKind.Num); rd.Col("حد إعادة الطلب", ColKind.Num);
-            rd.Rows = data; foreach (object[] o in data) rd.RowClass.Add(null);
+            foreach (object[] o in data) rd.Row(null, o);
             Excel.Export(FindForm(), rd);
         }
 

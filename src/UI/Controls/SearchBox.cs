@@ -29,11 +29,46 @@ namespace Stores
             Click += delegate { Box.Focus(); };
         }
 
+        // ---- one box, several things to look for: a small list at the end of the box
+        Label chooser; string[] names, hints; Action<int> chosen;
+        const int ChooserW = 138;
+        public int Choice { get; private set; }
+
+        /// <summary>What can be searched: names and the hint of each; changed is called when the user picks another.</summary>
+        public void SetChoices(string[] itemNames, string[] itemHints, int index, Action<int> changed)
+        {
+            names = itemNames; hints = itemHints; chosen = changed;
+            chooser = new Label(); chooser.AutoSize = false; chooser.TextAlign = ContentAlignment.MiddleCenter; chooser.Cursor = Cursors.Hand;
+            chooser.Font = Theme.FontBold; chooser.ForeColor = Theme.Primary; chooser.BackColor = Theme.Select;
+            Controls.Add(chooser);
+            ContextMenuStrip menu = new ContextMenuStrip(); menu.RightToLeft = Lang.English ? RightToLeft.No : RightToLeft.Yes; menu.Font = Theme.Font;
+            for (int i = 0; i < names.Length; i++) { int n = i; menu.Items.Add(Lang.T(names[i]), null, delegate { Choose(n, true); Box.Focus(); }); }
+            chooser.Click += delegate { menu.Show(chooser, new Point(0, chooser.Height)); };
+            Disposed += delegate { menu.Dispose(); };
+            Choose(Math.Max(0, Math.Min(names.Length - 1, index)), false);
+        }
+
+        void Choose(int i, bool tell)
+        {
+            Choice = i;
+            chooser.Text = Lang.T(names[i]) + "  ▾";
+            SetHint(hints[i]);
+            if (tell && chosen != null) chosen(i);
+        }
+
+        void SetHint(string h)
+        {
+            if (Box.IsHandleCreated) SendMessage(Box.Handle, 0x1501, (IntPtr)1, Lang.T(h));
+            else Box.HandleCreated += delegate { SendMessage(Box.Handle, 0x1501, (IntPtr)1, Lang.T(h)); };
+        }
+
         protected override void OnLayout(LayoutEventArgs e)
         {
             base.OnLayout(e);
             icon.Bounds = new Rectangle(Width - 44, 4, 36, Height - 8);
-            Box.Bounds = new Rectangle(14, (Height - Box.PreferredHeight) / 2 + 1, Width - 14 - 48, Box.PreferredHeight);
+            int left = 14;
+            if (chooser != null) { chooser.Bounds = new Rectangle(8, 8, ChooserW, Height - 16); left = ChooserW + 16; }
+            Box.Bounds = new Rectangle(left, (Height - Box.PreferredHeight) / 2 + 1, Width - left - 48, Box.PreferredHeight);
         }
 
         protected override void OnPaintBackground(PaintEventArgs e)

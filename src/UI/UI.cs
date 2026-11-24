@@ -33,6 +33,8 @@ namespace Stores
             if (ue != null) { Warn(ue.Message); return; }
             string msg = ex.Message;
             if (msg.Contains("could not be found") || msg.Contains("Could not find file")) msg = "ملف البيانات غير متاح. تأكد من الاتصال بالشبكة.\n\n" + msg;
+            else if (msg.Contains("attempting to change the same data"))   // Jet's message when it meets a damaged record
+                msg = "يوجد سجل تالف قديم في ملف البيانات.\nالإصلاح: «الإعدادات» ← «ضغط وإصلاح ملف البيانات» (تُؤخذ نسخة احتياطية تلقائيا أولا).\n\n" + msg;
             else if (msg.Contains("locked") || msg.Contains("currently in use")) msg = "السجل مستخدم حاليا من جهاز آخر، حاول مرة ثانية.\n\n" + msg;
             MessageBox.Show(Lang.T("حدث خطأ:\n" + msg), Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, Rtl);
             try { File.AppendAllText(Path.Combine(Settings.AppDir, "errors.log"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + ex + "\r\n\r\n", Encoding.UTF8); } catch { }
@@ -254,6 +256,9 @@ namespace Stores
         }
 
         /// <summary>A label and its control kept together on one line when the row wraps.</summary>
+        /// <summary>Guide lines with numbered steps: a right-to-left mark keeps «Enter» before the next step's number.</summary>
+        public static string Steps(string s) { return Lang.English ? s : s.Replace("Enter   ", "Enter" + (char)0x200F + "   "); }
+
         public static FlowLayoutPanel Field(string label, Control c) { return Field(Lbl(label), c); }
 
         public static FlowLayoutPanel Field(Label label, Control c)

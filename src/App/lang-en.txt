@@ -171,7 +171,7 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 اختيار	Select
 اختيار  (Enter	Select  (Enter
 اختيار صورة	Choose image
-ادخل باسم المستخدم 1 وكلمة المرور 1، ثم غيّر كلمة المرور.\nابدأ بإضافة المواد من شاشة «المواد	Sign in with user name 1 and password 1, then change the password.\nStart by adding items on the "Items
+ادخل باسم المستخدم 1 وكلمة المرور 1، ثم غيّر كلمة المرور.\nابدأ بإضافة المواد من شاشة «بطاقة مادة	Sign in with user name 1 and password 1, then change the password.\nStart by adding items on the "Item Card
 استعراض	Browse
 استلام	Receive
 استلام مواد من مجهز	Receive items from a supplier
@@ -355,7 +355,6 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 المخزن	Store
 المخزن الرئيسي	Main store
 المخزون	Stock
-المدة المتوقعة: 10–20 دقيقة (مرة واحدة فقط	Expected time: 10–20 minutes (one time only
 المدة المتوقعة: 1–3 دقائق	Expected time: 1–3 minutes
 المدير	Manager
 المساحة الفارغة في القرص	Free disk space
@@ -509,7 +508,7 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 تم إنشاء بيانات جديدة فارغة	New empty data was created
 تم الاتصال بالسيرفر الرئيسي	Connected to the main server
 تم الاتصال بنجاح	Connected successfully
-تم التحويل إلى الوضع المتقدم:\nتظهر كل الشاشات (النقل المخزني، سجل السندات، الإعدادات، الأدوات) والإدخال السريع بلوحة المفاتيح	Switched to Advanced mode:\nAll screens are shown (Transfer, Document log, Settings, Tools) with fast keyboard entry
+تم التحويل إلى الوضع المتقدم:\nتظهر كل الشاشات (النقل المخزني، الجرد الفعلي، طلبات الشراء، المخازن والأنواع، المستخدمون) والإدخال السريع بلوحة المفاتيح	Switched to Advanced mode:\nAll screens are shown (Transfer, Stock count, Purchase requests, Stores and types, Users) with fast keyboard entry
 تم التحويل إلى وضع المبتدئ:\nشاشات مبسطة مع شرح لكل خطوة وتأكيد قبل الحفظ	Switched to Beginner mode:\nSimplified screens with an explanation for each step and confirmation before saving
 تم التصدير	Exported
 تم التنصيب لكن تعذر الاتصال بالسيرفر	Installed, but could not connect to the server
@@ -535,11 +534,9 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 تنبيه: هذه المادة مجمدة	Note: this item is frozen
 توسيع القائمة	Expand Menu
 تُطلب مرة واحدة فقط على هذا الحاسوب، ثم تُحفظ فيه مشفرة	Asked only once on this computer, then stored on it encrypted
-جاري إعداد السيرفر الرئيسي — العملية تعمل الآن	Setting up the main server — the process is running now
 جاري الاتصال بالسيرفر	Connecting to the server
 جاري البحث عن السيرفر الرئيسي في الشبكة	Searching the network for the main server
 جاري تجربة الاتصال بـ	Testing the connection to
-جاري تنصيب السيرفر الرئيسي — التنصيب يعمل الآن	Installing the main server — the installation is running now
 جاري نقل البيانات إلى السيرفر	Transferring the data to the server
 جدار الحماية في السيرفر لا يسمح لهذا الحاسوب بالاتصال	The server's firewall does not allow this computer to connect
 جدول	Table
@@ -578,7 +575,6 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 حذف مادة	Delete item
 حركات النقل بين المخازن	Transfers between stores
 حركة في السندات.\nيمكنك تجميدها بدلا من الحذف (من شاشة التعديل	movements in documents.\nYou can freeze it instead of deleting it (from the edit screen
-حزمة SQL Server غير موجودة في مجلد «مكونات» بجانب البرنامج، ولا يوجد اتصال بالإنترنت لتنزيلها.\nانسخ مجلد البرنامج كاملا (مع مجلد مكونات) أو اتصل بالإنترنت	The SQL Server package is not in the "مكونات" (components) folder next to the program, and there is no internet connection to download it.\nCopy the whole program folder (with the components folder) or connect to the internet
 حفظ	Save
 حفظ  (Ctrl+S	Save  (Ctrl+S
 حفظ جرد نهاية السنة (Excel) في: المستندات ← مخازن الشركة الهندسية - إقفال السنوات	Save the year-end inventory (Excel) in: Documents → مخازن الشركة الهندسية - إقفال السنوات
@@ -649,7 +645,6 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 سيرفر SQL Server • للعمل من أي مكان ومن عدة حواسيب (موصى به	SQL Server • to work from anywhere and from several computers (recommended
 سيرفر ثانوي	Secondary server
 سيرفر ثانوي — كلمة سر السيرفر	Secondary server — server password
-سيُنصّب عليه SQL Server Express (قد يستغرق 10–20 دقيقة في المرة الأولى	SQL Server Express will be installed on it (may take 10–20 minutes the first time
 شغّل البرنامج كمسؤول (Run as administrator) ثم أعد التحديث	Run the program as administrator (Run as administrator), then update again
 شكرا، تم تسجيل التبليغ.\n\n• سُجّل في «سجل العمليات» ليراه المدير	Thank you, the report has been recorded.\n\n• It was logged in the "Activity log" for the manager to see
 صادر	Out
@@ -899,7 +894,7 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 مقفلة.\nلا يمكن إضافة أو تعديل أو حذف سند بتاريخ	closed.\nNo document can be added, edited or deleted with a date
 مكان ملف البيانات الجديد	New data file location
 مكرر	Duplicate
-مكونات	Components
+مكونات	مكونات
 ملء الشاشة	Full Screen
 ملاحظات	Notes
 ملاحظات / لجنة الجرد	Notes / Count Committee
@@ -926,7 +921,6 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 من مخزن	From Store
 من ملف Access	from an Access file
 منذ	since
-مهم: أبقِ هذا الحاسوب شغالا، ولا تستعمل البرنامج القديم بعد الآن	Important: keep this computer running, and do not use the old program any more
 مواد أُخرج منها أكثر من رصيدها — يجب تدقيقها	Items issued beyond their balance — must be checked
 مواد تحتاج تعزيز	Items Needing Replenishment
 مواد رجعت من مركز كلفة	Items returned from a cost centre
@@ -988,7 +982,6 @@ toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
 هذا السند تم تعديله من حاسوب آخر بعد أن فتحته.\nلحماية البيانات لم يتم حفظ تعديلك. أعد فتح السند لرؤية آخر نسخة ثم عدّله	This document was changed on another computer after you opened it.\nTo protect the data your change was not saved. Reopen the document to see the latest version, then edit it
 هذا السند حُذف من حاسوب آخر. لا يمكن حفظ التعديل.\nأعد فتح السند أو أنشئ سندا جديدا	This document was deleted on another computer. The change cannot be saved.\nReopen the document or create a new one
 هذا الشهر	This Month
-هذه الخطوة أبطأ من المعتاد على هذا الحاسوب — هذا طبيعي، يرجى الانتظار	This step is slower than usual on this computer — this is normal, please wait
 هذه السنة	This Year
 هل أنت متأكد	Are you sure
 هل المعلومات صحيحة	Is the information correct
@@ -1533,3 +1526,190 @@ auto_seq\tالنوع\tرقم السند\tالتاريخ\tالرمز\tالماد�
 فتح الدليل	Open the manual
 لا يمكن تغيير الرصيد الافتتاحي بعد قفل الفترة حتى	The opening balance cannot be changed after the period is locked up to
 يغيّر أرصدة الفترة المقفلة	it changes the balances of the locked period
+أغلقه ثم أعد الحفظ، أو اختر اسما آخر	Close it and save again, or choose another name
+أُضيفت المادة الجديدة	New item added
+إدخال كل المواد المضافة في المخزن المختار (ويمكن تغيير مخزن كل مادة من عمود «المخزن	Put every added item into the chosen store (each item's store can also be changed in the "Store" column
+إلى المخازن	Into the stores
+إلى مخزن آخر لأنه أُخرج منها	to another store because some of it was issued:
+استعمل «نقل مخزني» لنقل الباقي	Use "Transfer" to move the rest
+اضغط «إضافة» لإضافتها كمادة جديدة	press "Add" to add it as a new item
+البرنامج مفتوح مسبقا في هذا الحاسوب.\nإذا لم تظهر نافذته فابحث عن أيقونته بجانب الساعة وانقر عليها مرتين	The program is already open on this computer.\nIf its window does not appear, find its icon next to the clock and double-click it
+الصفحة التالية	Next Page
+الصفحة السابقة	Previous Page
+المخزن المختار للمواد التالية • لنقل كل المواد إليه اضغط «لكل المواد»، ولتغيير مادة واحدة انقر على مخزنها في الجدول	The chosen store applies to the next items • press "All Items" to move every item to it, or click one item's store in the table
+الملف مفتوح في برنامج آخر	The file is open in another program
+الورق	Paper
+انقر مرتين على أي سطر لعرض المستند	double-click any row to view its document
+بحث عن مركز كلفة	Find a Cost Centre
+بحث عن مستند	Find a Document
+بحث عن مستند: الرقم أو مركز الكلفة أو المجهز أو الملاحظات	Find a document: number, cost centre, supplier or notes
+بطاقة مادة	Item Card
+تابع لسند الإدخال رقم	Part of receipt No.
+تعذر إنشاء ملف PDF: طابعة «Microsoft Print to PDF» غير موجودة في هذا الحاسوب.\nفعّلها من: إعدادات ويندوز ← الميزات الاختيارية، أو احفظ السند كملف Excel	Could not create the PDF file: the "Microsoft Print to PDF" printer is missing on this computer.\nTurn it on in Windows Settings → Optional features, or save the document as Excel
+تعذر استعمال الطابعة	The printer could not be used
+تعذرت الطباعة	Printing failed
+تم الحفظ. المواد موزعة على أكثر من مخزن، لذلك حُفظ سند إدخال لكل مخزن	Saved. The items go into more than one store, so one receipt per store was saved
+حفظ Excel	Save Excel
+حفظ PDF	Save PDF
+حفظ كملف	Save as File
+حفظ كملف Excel	Save as Excel
+حفظ كملف PDF	Save as PDF
+رقم السند أو مركز الكلفة أو المجهز أو الملاحظات	Document number, cost centre, supplier or notes
+سند رقم	Document No.
+سند لكل مخزن	one document per store
+طولي	Portrait
+عرضي	Landscape
+غير موجودة.\n\nهل تريد إضافتها كمادة جديدة؟\n(قائمة الإدخال الحالية تبقى كما هي	does not exist.\n\nAdd it as a new item?\n(the current receipt list stays as it is
+فتح المستند	Open Document
+فتح المستند للتعديل	Open for Editing
+كشف حساب مادة: اكتب الرمز أو الاسم…   (Ctrl+F	Item statement: type a code or name…   (Ctrl+F
+كشف مجهز أو جهة: اكتب الاسم	Supplier / party statement: type the name
+كشف مركز كلفة: اكتب الاسم أو الرمز	Cost centre statement: type the name or code
+كل المواد إلى مخزن	All items into store
+كملف	as file
+لا توجد طابعة معرّفة في هذا الحاسوب.\nيمكنك حفظ المستند كملف PDF أو Excel	No printer is set up on this computer.\nYou can save the document as PDF or Excel
+لا يمكن نقل المادة	Cannot move the item
+لا يوجد مستند مطابق	No matching document
+لكل المواد	All Items
+لم يكتمل إنشاء ملف PDF. أعد المحاولة	The PDF file was not completed. Try again
+مجهز / جهة	Supplier / Party
+مستند	Document
+معاينة قبل الطباعة	Print Preview
+معاينة وطباعة	Preview & Print
+معاينة وطباعة  (Ctrl+P	Preview & Print  (Ctrl+P
+ملء العرض	Fit Width
+هذا المستند غير موجود (ربما حُذف	This document does not exist (it may have been deleted
+يجب حفظ السند أولا. حفظ الآن	The document must be saved first. Save now
+يوجد سجل تالف قديم في ملف البيانات.\nالإصلاح: «الإعدادات» ← «ضغط وإصلاح ملف البيانات» (تُؤخذ نسخة احتياطية تلقائيا أولا	The data file has an old damaged record.\nTo repair it: "Settings" → "Compact and Repair Data File" (a backup is taken automatically first
+يُحفظ سند لكل مخزن	one document per store is saved
+SQL Server لا يستجيب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	SQL Server does not respond. Restart the computer, then click "Main server" again
+SQL Server منصّب مسبقا، يجري إعداده	SQL Server is already installed, setting it up
+SQL Server يحتاج ويندوز 64 بت	SQL Server needs 64-bit Windows
+أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	Restart the computer, then click "Main server" again
+أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية (لا يُعاد التنصيب، يُكمل فقط	Restart the computer, then click "Main server" again (it does not install again, it only continues
+أعد تشغيل هذا الحاسوب الآن (طلبه تنصيب SQL Server)، ثم افتح البرنامج	Restart this computer now (the SQL Server installation asked for it), then open the program
+أُلغي التنصيب. اضغط «السيرفر الرئيسي» مرة ثانية	The installation was cancelled. Click "Main server" again
+أُلغيت العملية	The operation was cancelled
+إذا انقطع الاتصال يُكمل التنزيل من حيث توقف تلقائيا.\nبعد التنزيل يبدأ التنصيب: 4–10 دقائق حسب سرعة الحاسوب	If the connection drops, the download continues by itself from where it stopped.\nThe installation starts after the download: 4–10 minutes, depending on the computer
+إذا طلبت النافذة كلمة سر: فهي كلمة سر مدير هذا الحاسوب (ويندوز)، وليست كلمة سر السيرفر	If the window asks for a password, it is the Windows administrator password of this computer, not the server password
+إعداد النسخ الاحتياطي اليومي	Setting up the daily backup
+إلغاء التنزيل	Cancel download
+إلغاء الفحص	Cancel check
+إنشاء قاعدة البيانات وحساب البرنامج	Creating the database and the program's account
+اختر ملف حزمة SQL Server	Choose the SQL Server package file
+اختيار الملف من فلاش أو الشبكة	Choose the file from a flash drive or the network
+استعمل الملف من فلاش	Use the file from a flash drive
+التأكد أن الملف كامل وسليم قبل التنصيب (أقل من دقيقة عادة	Making sure the file is complete and correct before installing (usually under a minute
+التفاصيل في	Details in
+السرعة	Speed
+السيرفر الرئيسي • حزمة SQL Server	Main server • SQL Server package
+المدة المتوقعة: 4–10 دقائق حسب سرعة الحاسوب (مرة واحدة فقط	Expected time: 4–10 minutes, depending on the computer (one time only
+المساحة الفارغة في القرص لا تكفي. فرّغ 6 غيغابايت ثم اضغط «السيرفر الرئيسي» مرة ثانية	There is not enough free disk space. Free up 6 GB, then click "Main server" again
+المساحة الفارغة لا تكفي في القرص	There is not enough free space on drive
+الملف المنزّل لا يطابق ملف مايكروسوفت الأصلي فحُذف. أعد التنزيل، أو استعمل الملف من فلاش	The downloaded file does not match Microsoft's original file, so it was deleted. Download it again, or use the file from a flash drive
+الملف تالف أو معدّل (لا يطابق ملف مايكروسوفت الأصلي). انسخه من جديد من مصدر سليم	The file is damaged or modified (it does not match Microsoft's original file). Copy it again from a good source
+الملف تالف أو معدّل، لا يطابق ملف مايكروسوفت الأصلي	the file is damaged or modified, it does not match Microsoft's original file
+الملف غير موقّع من مايكروسوفت	the file is not signed by Microsoft
+الملف ناقص: حجمه	The file is incomplete: it is
+الملف ناقص، النسخ لم يكتمل	the file is incomplete, copying did not finish
+الموقع أعاد شيئا غير الملف المطلوب (قد تحتاج شبكتك تسجيل دخول في المتصفح، أو تغيّر الملف في الموقع). استعمل الملف من فلاش	The site returned something else than the file (your network may need a sign-in in the browser, or the file on the site has changed). Use the file from a flash drive
+الموقع لا يستجيب	The site does not respond
+الموقع مشغول (الرمز	The site is busy (code
+انتظار جاهزية SQL Server	Waiting for SQL Server to be ready
+انسخ مجلد «مكونات» من «النسخة الكاملة بدون إنترنت» إلى جانب البرنامج، ثم اضغط «السيرفر الرئيسي» مرة ثانية	Copy the folder "مكونات" from the complete offline copy to the program's folder, then click "Main server" again
+انقطع الاتصال	The connection was lost
+بدون إنترنت (الأسرع): صل الفلاش الذي فيه «النسخة الكاملة بدون إنترنت» واختر الملف منه،\nأو اختره من حاسوب آخر في الشبكة	Without internet (fastest): connect the flash drive with the offline copy\nand choose the file, or choose it from another computer on the network
+برامج	Programs
+برنامج تنصيب SQL Server غير موقّع من مايكروسوفت	The SQL Server setup program is not signed by Microsoft
+بياناتك لم تتغير. بعد حل السبب اضغط «السيرفر الرئيسي» مرة ثانية	Your data has not changed. After solving the cause, click "Main server" again
+تأكد أن الفلاش موصول، ثم اضغط «السيرفر الرئيسي» مرة ثانية	Make sure the flash drive is connected, then click "Main server" again
+تأكد من وجود 6 غيغابايت فارغة في القرص C	Make sure drive C has 6 GB free
+تعاد المحاولة تلقائيا	trying again automatically
+تعذر إكمال التنزيل	The download could not be completed
+تعذر الاتصال الآمن (تأكد من تاريخ الحاسوب ووقته	A secure connection could not be made (check the computer's date and time
+تعذر حذف ملفات محاولة سابقة	Could not delete the files of an earlier attempt
+تعذر حفظ الملف المنزّل	Could not save the downloaded file
+تعذر حماية مجلد الإعداد	Could not protect the setup folder
+تعذر فك ضغط حزمة SQL Server (رمز	Could not extract the SQL Server package (code
+تعذر نسخ الملف إلى هذا الحاسوب	Could not copy the file to this computer
+تعذرت قراءة الملف	Could not read the file
+تعذرت قراءة حزمة SQL Server	Could not read the SQL Server package
+تم التنصيب لكن خدمة SQL Server لم تبدأ. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية. إذا تكرر فقد يكون قرص هذا الحاسوب غير متوافق: اختر حاسوبا آخر ليكون السيرفر الرئيسي	SQL Server was installed but its service did not start. Restart the computer, then click "Main server" again. If it happens again, this computer's disk may not be compatible: choose another computer to be the main server
+تم تنزيل	Downloaded
+تنزيل من الإنترنت	Download from the internet
+تنصيب SQL Server من محاولة سابقة ما زال يعمل. انتظر 10 دقائق ثم اضغط «السيرفر الرئيسي» مرة ثانية، أو أعد تشغيل الحاسوب	The SQL Server installation of an earlier attempt is still running. Wait 10 minutes, then click "Main server" again, or restart the computer
+تنصيب SQL Server… (أطول خطوة: عادة 2–7 دقائق حسب سرعة الحاسوب	Installing SQL Server… (the longest step: usually 2–7 minutes, depending on the computer
+جاري إعداد السيرفر الرئيسي	Setting up the main server
+جاري الاتصال بموقع مايكروسوفت	Connecting to Microsoft's site
+جاري تنزيل SQL Server من الإنترنت	Downloading SQL Server from the internet
+جاري تنصيب السيرفر الرئيسي	Installing the main server
+جاري فحص الملف	Checking the file
+جاري فحص حزمة SQL Server	Checking the SQL Server package
+حزمة SQL Server غير صالحة	The SQL Server package is not usable
+خدمة SQL Server لا تبدأ على هذا الحاسوب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية. إذا تكرر فاختر حاسوبا آخر ليكون السيرفر الرئيسي	The SQL Server service does not start on this computer. Restart the computer, then click "Main server" again. If it happens again, choose another computer to be the main server
+خطأ غير متوقع	Unexpected error
+خطأ في منصّب ويندوز. أعد تشغيل الحاسوب، وأوقف برنامج مكافحة الفيروسات مؤقتا، ثم اضغط «السيرفر الرئيسي» مرة ثانية	Windows Installer error. Restart the computer, pause the antivirus for a while, then click "Main server" again
+سيُنصّب عليه SQL Server Express (عادة 4–10 دقائق في المرة الأولى، بدون إنترنت	SQL Server Express will be installed on it (usually 4–10 minutes the first time, without internet
+شبكة الشركة (البروكسي) تطلب كلمة سر للإنترنت. استعمل الملف من فلاش	The company network (proxy) asks for an internet password. Use the file from a flash drive
+فتح الاتصال للشبكة وإعادة تشغيل SQL Server	Opening the connection to the network and restarting SQL Server
+فحص الملف	Checking the file
+فحص حزمة SQL Server	Checking the SQL Server package
+فشل تنصيب SQL Server (رمز	SQL Server installation failed (code
+فك ضغط حزمة SQL Server	Extracting the SQL Server package
+فك ضغط حزمة SQL Server لم يكتمل (قد يكون برنامج مكافحة الفيروسات منعه	Extracting the SQL Server package did not finish (the antivirus may have blocked it
+في مجلد «مكونات	in the folder "مكونات
+كلمة سر حساب البرنامج غير صالحة	The password of the program's account is not valid
+كيلوبايت في الثانية	KB per second
+لا يوجد اتصال بالإنترنت	There is no internet connection
+لتجهيز السيرفر الرئيسي يحتاج البرنامج ملف SQL Server المجاني من مايكروسوفت،\nولم يجده على هذا الحاسوب: الملف	To set up the main server the program needs Microsoft's free SQL Server file,\nand did not find it on this computer:
+لم يتغير شيء في هذا الحاسوب. اضغط «السيرفر الرئيسي» مرة ثانية	Nothing was changed on this computer. Click "Main server" again
+لم يتم العثور على SQL Server بعد التنصيب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	SQL Server was not found after the installation. Restart the computer, then click "Main server" again
+ليس الملف المطلوب، حجمه مختلف	it is not the right file, its size is different
+ملف حزمة SQL Server غير موجود	The SQL Server package file was not found
+من موقع مايكروسوفت مباشرة. المدة حسب سرعة الإنترنت، وإذا انقطع الاتصال يُكمل من حيث توقف	Directly from Microsoft's site. The time depends on the internet speed; after a dropped connection it continues from where it stopped
+مهم: أبقِ هذا الحاسوب شغالا (أوقف وضع السكون)، ولا تستعمل البرنامج القديم بعد الآن	Important: keep this computer switched on (turn sleep off), and do not use the old program any more
+موقع مايكروسوفت لا يعطي الملف (الرمز	Microsoft's site does not provide the file (code
+ميغابايت	MB
+ميغابايت في الثانية	MB per second
+ميغابايت والمطلوب	MB and should be
+ميغابايت وهي محفوظة، والتنزيل التالي يُكمل من حيث توقف	MB, which are kept; the next download continues from there
+ميغابايت). فرّغ مساحة ثم أعد المحاولة	MB). Free up space and try again
+ميغابايت. النسخ أو التنزيل لم يكتمل، انسخه من جديد	MB. The copy or download did not finish, copy it again
+نزل	Downloaded
+نسخ الملف من الشبكة وفحصه	Copying the file from the network and checking it
+هذا الويندوز لا يدعم SQL Server (يحتاج ويندوز 10 أو 11 أو Server، نسخة 64 بت	This Windows does not support SQL Server (it needs 64-bit Windows 10, 11 or Server
+هذا ليس الملف المطلوب، حجمه مختلف. المطلوب	This is not the right file, its size is different. Needed
+هذه الخطوة أبطأ من المعتاد على هذا الحاسوب، وهذا طبيعي. يرجى الانتظار	This step is slower than usual on this computer, which is normal. Please wait
+ويندوز منع التنصيب (صلاحيات أو برنامج حماية). شغّل البرنامج بحساب مدير الحاسوب، وأوقف برنامج مكافحة الفيروسات مؤقتا، ثم أعد المحاولة	Windows blocked the installation (permissions or security software). Run the program as an administrator of this computer, pause the antivirus for a while, then try again
+ويندوز ينتظر إعادة تشغيل (تحديث أو برنامج لم يكتمل تنصيبه). أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	Windows is waiting for a restart (an update or a program whose installation is not finished). Restart the computer, then click "Main server" again
+ويندوز ينتظر إعادة تشغيل. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية	Windows is waiting for a restart. Restart the computer, then click "Main server" again
+ويندوز ينصّب برنامجا آخر الآن. انتظر حتى ينتهي ثم اضغط «السيرفر الرئيسي» مرة ثانية	Windows is installing another program now. Wait until it finishes, then click "Main server" again
+يجب تشغيل الإعداد من البرنامج	The setup must be started from the program
+من أصل	of
+يُكمل التنزيل السابق: نزل منه	Continues the earlier download:
+إعداد الخادم المجاني.txt	إعداد الخادم المجاني.txt
+دليل التشغيل.txt	دليل التشغيل.txt
+البرنامج القديم مفتوح (قد يكون بجانب الساعة).\nاحفظ عملك فيه وأغلقه: زر الفأرة الأيمن على أيقونته ← خروج.\n\nهل أغلقته وتريد المتابعة	The old program is open (it may be next to the clock).\nSave your work in it and close it: right-click its icon → Exit.\n\nIs it closed, continue now
+البيانات والإعدادات والنسخ الاحتياطية لا تتغير	Data, settings and backups stay as they are
+تم استبدال النسخة القديمة، لكن تعذر تشغيلها	The old copy was replaced, but it could not be started
+لا توجد صلاحية كتابة في مجلد البرنامج القديم	You may not write into the folder of the old program
+لديك نسخة أقدم	You have an older version
+في المجلد	in the folder
+لم تُستبدل النسخة القديمة	The old copy was not replaced
+ما زال البرنامج القديم مفتوحا.\nهل حفظت عملك وتريد إنهاءه الآن؟\nما لم يُحفظ يضيع	The old program is still open.\nIs your work saved, end it now?\nUnsaved work is lost
+ملف البرنامج القديم مفتوح (حساب آخر أو حاسوب آخر). أغلقه ثم أعد المحاولة	The old program file is in use (another account or computer). Close it and try again
+هل تريد استبدالها بهذه النسخة	Replace it with this version
+وبعض ملفاتها لم تُسترجع. نسخة منها في	and some of its files could not be put back. A copy of them is in
+اختر مجلدا آخر	Choose another folder
+التقرير طويل	The report is long
+الصفحة	Page
+المخزن المختار أعلى السند هو	The store chosen at the top is
+توجد نسخة أقدم من البرنامج مفتوحة في هذا الحاسوب (ربما بجانب الساعة).\nأغلقها أولا: زر الفأرة الأيمن على أيقونتها ← خروج.\n\nهل تريد فتح هذه النسخة رغم ذلك	An older version of the program is open on this computer (maybe next to the clock).\nClose it first: right-click its icon → Exit.\n\nOpen this version anyway
+جاري إكمال الملف	Completing the file
+جاري حفظ ملف PDF	Saving the PDF file
+صفحة.\nحفظه كملف PDF قد يستغرق عدة دقائق، أما «Excel» فيُحفظ أسرع.\n\nهل تريد المتابعة	pages.\nSaving it as PDF may take several minutes; "Excel" is faster.\n\nContinue
+لا يمكن الحفظ في هذا المكان	Cannot save in this place
+لا: الحفظ كما في الجدول	No: save as in the table
+لكن كل المواد في الجدول تدخل إلى	but every item in the table goes into
+نعم: إدخال كل المواد إلى	Yes: put every item into
+هذه المادة غير موجودة (ربما حُذفت من حاسوب آخر	This item does not exist (it may have been deleted on another computer

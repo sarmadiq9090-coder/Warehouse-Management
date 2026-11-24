@@ -266,7 +266,36 @@ namespace Stores
         }
 
         // ------------------------------------------------------------ save
-        public static void Save(Doc d)
+        /// <summary>A receipt whose lines go into several stores: one receipt per store, saved together (all or nothing).
+        /// The tables keep one store per document (the original program and every balance rely on it), so the lines of the
+        /// other stores become receipts of their own, with a note naming the first one. Returns all the documents, d first.</summary>
+        public static List<Doc> SaveByStore(Doc d)
+        {
+            List<Doc> extra = new List<Doc>(); List<DocLine> all = d.Lines;
+            if (d.Kind == DocKind.Receipt)
+            {
+                foreach (IGrouping<int, DocLine> g in d.Lines.Where(l => l.Store > 0 && l.Store != d.Store).GroupBy(l => l.Store).OrderBy(g => g.Key).ToList())
+                {
+                    Doc x = new Doc();
+                    x.Kind = d.Kind; x.Date = d.Date; x.Person = d.Person; x.RType = d.RType; x.Note = d.Note; x.Store = g.Key;
+                    foreach (DocLine l in g)
+                    {
+                        if (l.Used > 1e-9) throw new UserError("لا يمكن نقل المادة «" + Cache.ItemName(l.ItemNo) + "» إلى مخزن آخر لأنه أُخرج منها " + UI.Num(l.Used) + ".\nاستعمل «نقل مخزني» لنقل الباقي.");
+                        x.Lines.Add(new DocLine { ItemNo = l.ItemNo, Qty = l.Qty, Price = l.Price });
+                    }
+                    extra.Add(x);
+                }
+                if (extra.Count > 0) d.Lines = d.Lines.Where(l => l.Store == 0 || l.Store == d.Store).ToList();
+            }
+            try { foreach (Doc x in extra) Validate(x); Save(d, extra); }
+            catch { d.Lines = all; throw; }        // refused: the document is as before
+            extra.Insert(0, d);
+            return extra;
+        }
+
+        public static void Save(Doc d) { Save(d, new List<Doc>()); }
+
+        static void Save(Doc d, List<Doc> extra)
         {
             Validate(d);
             DateTime closed = PeriodLock.Limit();   // year closing / month lock, read before the transaction starts
@@ -296,17 +325,28 @@ namespace Stores
                     if (isNew) EnsureUniqueNo(tx, d);
                     AuditTrail.LogDoc(tx, (isNew ? "إضافة " : "تعديل ") + KindName(d.Kind), "رقم " + d.No + " - " + d.Lines.Count + " مادة" + (d.Project > 0 ? " - مركز الكلفة: " + Cache.Project(d.Project) : ""),
                                       before, isNew ? null : AuditTrail.ReadDoc(tx, d.Kind, d.Id));
+                    foreach (Doc x in extra)
+                    {
+                        CheckOpenPeriod(tx, x, closed);
+                        string part = "تابع لسند الإدخال رقم " + d.No;
+                        x.Note = string.IsNullOrEmpty(x.Note) ? part : x.Note + " • " + part;
+                        SaveReceipt(tx, x);
+                        EnsureUniqueNo(tx, x);
+                        AuditTrail.LogDoc(tx, "إضافة " + KindName(x.Kind), "رقم " + x.No + " - " + x.Lines.Count + " مادة - " + part, null, null);
+                    }
                 });
             }
             catch
             {
                 d.Id = oldId; d.No = oldNo; d.Person = oldPerson;
+                foreach (Doc x in extra) { x.Id = 0; x.No = ""; }
                 for (int i = 0; i < d.Lines.Count && i < oldLines.Length; i++) d.Lines[i].LineId = oldLines[i];
                 throw;
             }
             if (newPerson) Cache.LoadPersons();
             Doc fresh = Load(d.Kind, d.Id);
             if (fresh != null) { d.Lines = fresh.Lines; d.Fingerprint = fresh.Fingerprint; }
+            foreach (Doc x in extra) { fresh = Load(x.Kind, x.Id); if (fresh != null) { x.Lines = fresh.Lines; x.Fingerprint = fresh.Fingerprint; } }
         }
 
         /// <summary>Adds a new issue or receipt inside the caller's transaction, through the same code as

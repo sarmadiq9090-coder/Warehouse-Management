@@ -15,9 +15,10 @@ call :one ExcelExportCheck Stores.XlCheckMain ExcelExportCheck.cs
 call :one UiClickTest Stores.UiTestMain UiClickTest.cs
 call :one UiShots Stores.UiShotsMain UiShots.cs
 call :one ManualShots Stores.ManualShotsMain ManualShots.cs
-call :one PrintToPdfTest Stores.PrintTestMain PrintToPdfTest.cs
+call :one DocumentTests Stores.DocumentTestsMain DocumentTests.cs
 call :one UnitsTests Stores.UnitsTestsMain UnitsTests.cs
 call :one ServerLoginTests Stores.ServerLoginTestMain ServerLoginTests.cs
+call :one OfflineSetupTests Stores.OfflineSetupTestsMain OfflineSetupTests.cs
 call :one StockCountTests Stores.StockCountTestsMain StockCountTests.cs
 call :one ItemEntryTests Stores.ItemEntryTestsMain ItemEntryTests.cs
 call :one CostCentreTests Stores.CostCentreTestsMain CostCentreTests.cs
@@ -27,6 +28,7 @@ call :one PurchasingTests Stores.PurchasingTestsMain PurchasingTests.cs
 call :one WriteOffTests Stores.WriteOffTestsMain WriteOffTests.cs
 call :one PeriodLockTests Stores.PeriodLockTestsMain PeriodLockTests.cs
 call :one LangTests Stores.LangTestsMain LangTests.cs "%T%..\tools\ExtractStrings.cs"
+call :one InstallerTests Stores.InstallerTestsMain InstallerTests.cs "%T%..\installer\*.cs"
 call :one ValuationTests Stores.ValuationTestsMain ValuationTests.cs
 call :one DemoData Stores.DemoMain DemoData.cs
 call :one MakeTemplate Stores.MakeTemplateMain MakeTemplate.cs

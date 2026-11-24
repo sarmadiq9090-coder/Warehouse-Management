@@ -5,7 +5,7 @@ using System;
 
 namespace Stores
 {
-    /// <summary>Lists every Arabic string literal of src/**/*.cs (comments skipped) and compares it with the
+    /// <summary>Lists every Arabic string literal of src/**/*.cs and *.ps1 (comments skipped) and compares it with the
     /// English dictionary src/App/lang-en.txt («arabic TAB english» per line).
     ///   build : csc /out:tools\ExtractStrings.exe tools\ExtractStrings.cs src\App\LangKey.cs
     ///   run   : tools\ExtractStrings.exe src src\App\lang-en.txt [missing.txt [unused.txt]]
@@ -18,10 +18,11 @@ namespace Stores
         public static SortedDictionary<string, string> Extract(string srcDir)
         {
             SortedDictionary<string, string> found = new SortedDictionary<string, string>(StringComparer.Ordinal);
-            string[] files = Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories);
-            Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+            List<string> files = new List<string>(Directory.GetFiles(srcDir, "*.cs", SearchOption.AllDirectories));
+            files.AddRange(Directory.GetFiles(srcDir, "*.ps1", SearchOption.AllDirectories));   // progress and error texts shown by the program
+            files.Sort(StringComparer.OrdinalIgnoreCase);
             foreach (string f in files)
-                foreach (string lit in Literals(File.ReadAllText(f, Encoding.UTF8)))
+                foreach (string lit in f.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase) ? PsLiterals(File.ReadAllText(f, Encoding.UTF8)) : Literals(File.ReadAllText(f, Encoding.UTF8)))
                 {
                     if (!LangKey.HasArabic(lit)) continue;
                     // HTML / JavaScript / «ERR|…» protocol pieces: each text between markup characters is its own key
@@ -33,6 +34,20 @@ namespace Stores
                     }
                 }
             return found;
+        }
+
+        /// <summary>The 'single quoted' literals of a PowerShell script (whole-line and end-of-line comments skipped).</summary>
+        public static List<string> PsLiterals(string s)
+        {
+            List<string> res = new List<string>();
+            foreach (string raw in s.Split('\n'))
+            {
+                string line = raw.Trim();
+                if (line.StartsWith("#")) continue;
+                foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(line, "'([^']*)'|\\s#\\s.*$"))
+                    if (m.Groups[1].Success) res.Add(m.Groups[1].Value);
+            }
+            return res;
         }
 
         /// <summary>The string literals of a C# 5 source file (regular, verbatim and char literals; comments skipped).</summary>

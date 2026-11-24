@@ -36,6 +36,36 @@ namespace Stores
         public Func<int, double, double, bool> AddLine;   // item, quantity, price → true when added
         public Func<List<int>> Recent;                     // last used items of this document kind
         public string RecentTitle = "آخر المواد المستعملة";
+        /// <summary>Receipts: adds a new item with this name (the items window), returns its number or 0. The document's
+        /// lines stay untouched (owner's request).</summary>
+        public Func<string, int> NewItem;
+        Button btnNewItem;
+
+        /// <summary>Shows the «مادة جديدة» button beside «إضافة».</summary>
+        public void EnableNewItem(Func<string, int> f)
+        {
+            NewItem = f;
+            btnNewItem = UI.BtnLight("مادة جديدة", 112); btnNewItem.Dock = DockStyle.Left; btnNewItem.Height = 42; btnNewItem.TabStop = false;
+            Panel g2 = new Panel(); g2.Dock = DockStyle.Left; g2.Width = 8;
+            Control row = btnAdd.Parent;
+            row.Controls.Add(g2); row.Controls.Add(btnNewItem);
+            g2.SendToBack(); btnNewItem.SendToBack();          // docked last at the left end
+            btnNewItem.Click += delegate { AddNew(pending == 0 ? Search.Text.Trim() : "", false); };
+        }
+
+        /// <summary>The typed item does not exist: offer to add it, keeping the typed quantity and price.</summary>
+        void AddNew(string text, bool ask)
+        {
+            if (NewItem == null || !Enabled) return;
+            drop.Visible = false;
+            if (ask && !UI.Confirm("المادة «" + text + "» غير موجودة.\n\nهل تريد إضافتها كمادة جديدة؟\n(قائمة الإدخال الحالية تبقى كما هي)")) { Search.Focus(); return; }
+            string q = Qty.Text, p = Price.Text;
+            int id = NewItem(text);
+            if (id == 0) { Search.Focus(); Search.SelectionStart = Search.TextLength; return; }
+            Pick(id);
+            Qty.Text = q; Price.Text = p; Qty.Focus(); Qty.SelectAll();
+            Status("✓ أُضيفت المادة الجديدة: " + Cache.ItemName(id) + "   •   اكتب الكمية ثم Enter", Theme.Success);
+        }
 
         public ItemEntryBar(Control overlayHost)
         {
@@ -288,7 +318,7 @@ namespace Stores
             int exact = Cache.FindItemByCode(t);
             if (exact != 0) { Pick(exact); return; }
             RunSearch();
-            if (drop.Count == 0) Status("✗ لا توجد مادة تطابق «" + t + "»", Theme.Danger);
+            if (drop.Count == 0) Status("✗ لا توجد مادة تطابق «" + t + "»" + (NewItem != null ? "   •   اضغط «إضافة» لإضافتها كمادة جديدة" : ""), Theme.Danger);
         }
 
         // ------------------------------------------------------------ pick / add
@@ -317,6 +347,14 @@ namespace Stores
         {
             if (pending == 0)
             {
+                string t = Search.Text.Trim();
+                if (t.Length > 0 && NewItem != null)
+                {
+                    int known = Cache.FindItemByCode(t); if (known == 0) known = Cache.FindItemByName(t);
+                    if (known != 0) { string q0 = Qty.Text; Pick(known); Qty.Text = q0; Qty.SelectAll(); return; }
+                    int total; ItemIndex.Search(t, false, 1, out total);
+                    if (total == 0) { AddNew(t, true); return; }
+                }
                 Status(Search.TextLength == 0 ? "اكتب رمز المادة أو اسمها أولا" : "اختر المادة من القائمة أولا (↓ ثم Enter)", Theme.Warning);
                 Search.Focus();
                 return;

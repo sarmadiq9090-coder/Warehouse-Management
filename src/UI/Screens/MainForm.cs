@@ -70,7 +70,7 @@ namespace Stores
                 BuildNav();
                 Show(new DashboardView(this));
                 UI.Info(Session.Advanced
-                    ? "تم التحويل إلى الوضع المتقدم:\nتظهر كل الشاشات (النقل المخزني، سجل السندات، الإعدادات، الأدوات) والإدخال السريع بلوحة المفاتيح."
+                    ? "تم التحويل إلى الوضع المتقدم:\nتظهر كل الشاشات (النقل المخزني، الجرد الفعلي، طلبات الشراء، المخازن والأنواع، المستخدمون) والإدخال السريع بلوحة المفاتيح."
                     : "تم التحويل إلى وضع المبتدئ:\nشاشات مبسطة مع شرح لكل خطوة وتأكيد قبل الحفظ.");
             };
 
@@ -162,12 +162,19 @@ namespace Stores
             }
         }
 
-        void FromTray()
+        public void FromTray()
         {
             Show();
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
             Activate();
             if (tray != null) tray.Visible = false;
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            // a second start of the program (or its shortcut) shows this window, also from next to the clock
+            if (SingleInstance.IsShowMessage(ref m)) { if (!Visible) FromTray(); SingleInstance.Shown(this); return; }
+            base.WndProc(ref m);
         }
 
         /// <summary>Really closes the program (side menu «خروج», tray «خروج», «تسجيل الخروج»).</summary>
@@ -198,8 +205,8 @@ namespace Stores
             items.Add(Nav("طلبات الصرف", "", delegate { Show(new RequisitionsView(this)); }, Requisitions.Ready && (Session.Can(Session.IssView) || Requisitions.CanApprove)));
             items.Add(Nav("نقل مخزني", "", delegate { OpenDoc(DocKind.Transfer, 0); }, adv && Session.Can(Session.Transfer)));
             items.Add(Nav("مراكز الكلفة", "", delegate { Show(new ProjectsView()); }, true));
-            items.Add(Nav("المواد", "", delegate { Show(new ItemsView(this)); }, true));
-            items.Add(Nav("سجل السندات", "", delegate { Show(new DocListView(this)); }, adv));
+            items.Add(Nav("بطاقة مادة", "", delegate { Show(new ItemsView(this)); }, true));
+            items.Add(Nav("سجل السندات", "", delegate { Show(new DocListView(this)); }, true));
             items.Add(Nav("طلبات الشراء", "\uE7BF", delegate { Show(new PurchaseRequestsView()); }, adv && Db.HasPreq && Session.Can(Session.RecView)));
             items.Add(Nav("سندات الإتلاف", "", delegate { Show(new WriteOffsView(this)); }, WriteOffs.Ready && (adv || WriteOffs.CanApprove) && (WriteOffs.CanPrepare || Session.Can(Session.IssView))));
             items.Add(Nav("الجرد الفعلي", "", delegate { Show(new StockCountsView(this)); }, adv && (Session.Can(Session.RecView) || Session.Can(Session.IssView))));
@@ -265,7 +272,7 @@ namespace Stores
             Lang.Apply(v);
             if (v is DashboardView) Activate("الرئيسية");
             else if (v is DocListView) Activate("سجل السندات");
-            else if (v is ItemsView) Activate("المواد");
+            else if (v is ItemsView) Activate("بطاقة مادة");
             else if (v is ReportsView) Activate("التقارير");
             else if (v is ProjectsView) Activate("مراكز الكلفة");
             else if (v is PersonsView) Activate("الجهات والأشخاص");
@@ -317,17 +324,42 @@ namespace Stores
             ReportsWindow.Open(this, key, itemNo, personNo, projNo);   // separate window, the current screen stays open
         }
 
-        /// <summary>Instant item lookup from anywhere (Ctrl+F): the chosen item opens for editing
-        /// (owner's request); users without the items permission see its card instead.</summary>
+        /// <summary>Document lookup from the home screen: number, cost centre / supplier or notes.</summary>
+        public void FindDoc(string text)
+        {
+            using (DocFindDialog d = new DocFindDialog(text))
+                if (d.ShowDialog(this) == DialogResult.OK && d.Id > 0) OpenDoc(d.Kind, d.Id);
+        }
+
+        /// <summary>Home search: a cost centre's statement.</summary>
+        public void FindProject(string text)
+        {
+            if (!Db.HasProj || !Session.Demand(Session.Reports)) return;
+            using (SearchDialog d = new SearchDialog("بحث عن مركز كلفة", Cache.Projects, "proj_no", new[] { "proj_name", "proj_code", "type_name" },
+                                                     new[] { "الاسم", "الرمز", "النوع" }, new[] { 0, 120, 140 }, text ?? ""))
+                if (d.ShowDialog(this) == DialogResult.OK && d.SelectedId > 0) ReportsWindow.Open(this, "project", 0, 0, d.SelectedId);
+        }
+
+        /// <summary>Home search: the statement of a supplier / person.</summary>
+        public void FindPerson(string text)
+        {
+            if (!Session.Demand(Session.Reports)) return;
+            int id = SearchDialog.PickPerson(this, text ?? "");
+            if (id > 0) ReportsWindow.Open(this, "person", 0, id, 0);
+        }
+
+        /// <summary>Instant item lookup from anywhere (Ctrl+F): the chosen item's account statement (item card) opens
+        /// (owner's request); users without the reports permission get the item itself.</summary>
         public void QuickFind(string text)
         {
             int id = SearchDialog.PickItem(this, text ?? "", true);
             if (id == 0) return;
-            if (Session.Can(Session.Items))
+            if (Session.Can(Session.Reports)) ReportsWindow.Open(this, "card", id, 0, 0);
+            else if (Session.Can(Session.Items))
             {
                 using (ItemDialog d = new ItemDialog(id)) if (d.ShowDialog(this) == DialogResult.OK) Cache.LoadItems();
             }
-            else ReportViewerForm.ShowItemCard(this, id);
+            else Session.Demand(Session.Reports);
         }
 
         void UpdateOnline()

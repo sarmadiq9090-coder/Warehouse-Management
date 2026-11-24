@@ -82,11 +82,17 @@ namespace Stores
             Button ok = UI.Btn("دخول", Theme.Primary, 340); ok.Location = new Point(36, 248); ok.Height = 42; ok.Font = new Font(Theme.FontName, 12f, FontStyle.Bold);
             lblErr = Line("", 296, Theme.Danger);
             // the network / server setup buttons live in the connection window (beginners clicked them here by mistake)
-            LinkLabel conn = new LinkLabel(); conn.Text = "إعدادات الاتصال والسيرفر"; conn.AutoSize = false; conn.Bounds = new Rectangle(36, 330, 340, 24);
+            LinkLabel conn = new LinkLabel(); conn.Text = "إعدادات الاتصال والسيرفر"; conn.AutoSize = false; conn.Bounds = new Rectangle(196, 330, 180, 24);
             conn.TextAlign = ContentAlignment.MiddleLeft; conn.Font = Theme.FontBold; conn.LinkColor = Theme.Primary; conn.ActiveLinkColor = Theme.PrimaryDark;
             conn.LinkBehavior = LinkBehavior.HoverUnderline; conn.TabStop = false;
             Label where = Line(Db.Describe, 358, Theme.Muted); where.Font = Theme.FontSmall; where.Height = 36; where.AutoEllipsis = true; where.TextAlign = ContentAlignment.TopLeft;
-            card.Controls.AddRange(new Control[] { title, sub, l1, cmbUser, l2, txtPass, ok, lblErr, conn, where });
+            // update before signing in (owner's request)
+            LinkLabel upd = new LinkLabel(); upd.Text = "تحديث البرنامج"; upd.AutoSize = false; upd.Bounds = new Rectangle(36, 330, 150, 24);
+            upd.TextAlign = ContentAlignment.MiddleRight; upd.Font = Theme.FontBold; upd.LinkColor = Theme.Accent; upd.ActiveLinkColor = Theme.AccentDark;
+            upd.LinkBehavior = LinkBehavior.HoverUnderline; upd.TabStop = false;
+            upd.LinkClicked += delegate { Updater.CheckNow(this); };
+            new ToolTip().SetToolTip(upd, Lang.T("الإصدار الحالي: ") + Program.Version);
+            card.Controls.AddRange(new Control[] { title, sub, l1, cmbUser, l2, txtPass, ok, lblErr, conn, upd, where });
             LinkLabel lang = LangLink(); card.Controls.Add(lang); lang.BringToFront();   // above the title's empty part
             form.Controls.Add(card);
 
@@ -106,6 +112,12 @@ namespace Stores
         }
 
         protected override void OnLoad(EventArgs e) { base.OnLoad(e); Lang.Apply(this); }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (SingleInstance.IsShowMessage(ref m)) { SingleInstance.Shown(this); return; }
+            base.WndProc(ref m);
+        }
 
         /// <summary>«English» / «عربي» at the top end of the card: the login screen reopens in that language
         /// (this computer's default, and the user's own choice after signing in).</summary>

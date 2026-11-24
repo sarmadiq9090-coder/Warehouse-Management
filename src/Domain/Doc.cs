@@ -25,6 +25,7 @@ namespace Stores
         public double Qty;
         public double Price;
         public double Used;     // receipts: quantity already issued from this line (qty_sale)
+        public int Store;       // receipts being entered: the line's own store (0 = the document's), see Posting.SaveByStore
     }
 
     class Doc

@@ -1,16 +1,18 @@
 ﻿# ============================================================================
 #  Main server setup for "مخازن الشركة الهندسية" (embedded in the program, run elevated by it)
-#  - Installs Microsoft SQL Server 2022 Express (free) if missing
+#  - Installs Microsoft SQL Server 2022 Express (free) if missing, from the package given in -MediaFile.
+#    No internet: this script never downloads anything (the program finds, checks or downloads the package first)
 #  - Opens it to the local network: TCP 1433 + SQL Browser (so other PCs find it) + firewall rules
 #  - Creates database EngStores and login storesapp (password derived by the program from the owner's
 #    server password; least privilege: read/write data, create/alter its own tables, back up)
 #  - Schedules a daily backup (last 14 days kept)
 #  Started by the program through a small elevated command that first copies this script into
 #  %ProgramFiles%\EngStores\setup (writable by Administrators/SYSTEM only) and checks its SHA-256.
-#  Everything this script runs or schedules lives in that folder, and every Microsoft package is
-#  checked to be signed by Microsoft Corporation before it is run.
-#  Usage: setup-server.ps1 -PasswordFile <file> -ResultFile <file> [-MediaFile <SQLEXPR*.exe>] [-ProgressFile <file>]
-#  Result file: "OK|<backup folder>"  or  "ERR|<message>"
+#  Everything this script runs or schedules lives in that folder. The package is copied into it, and that copy must
+#  have the pinned SHA-256 and be signed by Microsoft Corporation before it is run.
+#  Usage: setup-server.ps1 -PasswordFile <file> -ResultFile <file> [-MediaFile <SQLEXPR_x64_ENU.exe>] [-ProgressFile <file>]
+#         (-MediaFile is needed unless SQL Server is installed already or a checked copy is left from an earlier attempt)
+#  Result file: "OK|<backup folder>"  or  "OK|<backup folder>|reboot"  or  "ERR|<message>"
 # ============================================================================
 param([string]$PasswordFile, [string]$ResultFile, [string]$MediaFile, [string]$ProgressFile)
 $ErrorActionPreference = 'Stop'
@@ -21,8 +23,10 @@ $Login    = 'storesapp'
 $ProgFiles = if ($env:ProgramW6432) { $env:ProgramW6432 } else { $env:ProgramFiles }
 $Work     = Join-Path $ProgFiles 'EngStores\setup'      # Administrators + SYSTEM only (see Protect-Folder)
 $OldWork  = Join-Path $env:ProgramData 'EngStoresSetup'   # used by older versions (writable by users) - removed
-$SseiUrl  = 'https://download.microsoft.com/download/29654887-7cde-4397-bba3-d7f087970845/SQL2022-SSEI-Expr.exe'
-$SseiHash = 'E2B8E8AAD30D8B1A1922C6C0976C806F0A2E08D04B2DE100A9D70B9F94750BB1'
+# the package (the same three values as src\Server\SqlPackage.cs)
+$PkgName  = 'SQLEXPR_x64_ENU.exe'
+$PkgSize  = 279293816
+$PkgHash  = '2E61C8BBDE6021F9026C54AD9DB4BBB1227E68761D4C00A6A50A2C70FE7AFE05'
 $svcName  = 'MSSQL$' + $Instance
 
 # Progress for the program's window: "<expected seconds of this step>|<expected seconds of everything after it>|<text>"
@@ -56,6 +60,86 @@ function Test-MicrosoftSigned([string]$file) {
     return ($root.Subject -match '(^|,\s*)O=Microsoft Corporation(\s*,|$)') -and ($root.Subject -match 'Microsoft Root')
 }
 
+# ---- the SQL Server package (tests\OfflineSetupTests.cs runs these functions alone, with its own $Work)
+# '' = exactly Microsoft's package, otherwise why not
+function Test-Package([string]$file) {
+    if (-not $file -or -not (Test-Path -LiteralPath $file -PathType Leaf)) { return 'الملف غير موجود' }
+    $len = (Get-Item -LiteralPath $file).Length
+    if ($len -lt $PkgSize) { return 'الملف ناقص، النسخ لم يكتمل (' + [int]($len / 1MB) + ' من أصل ' + [int]($PkgSize / 1MB) + ' ميغابايت)' }
+    if ($len -ne $PkgSize) { return 'ليس الملف المطلوب، حجمه مختلف' }
+    if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $PkgHash) { return 'الملف تالف أو معدّل، لا يطابق ملف مايكروسوفت الأصلي' }
+    if (-not (Test-MicrosoftSigned $file)) { return 'الملف غير موقّع من مايكروسوفت' }
+    return ''
+}
+
+# A normal user can write next to the program, so the package is copied into the protected folder first and only that copy,
+# once checked, is run. A checked copy left by an earlier attempt is used again.
+function Get-CheckedPackage([string]$media) {
+    $copy = Join-Path $Work $PkgName
+    if (Test-Path -LiteralPath $copy) {
+        if ((Test-Package $copy) -eq '') { return $copy }
+        Remove-Item -LiteralPath $copy -Force -ErrorAction SilentlyContinue
+    }
+    $again = ' انسخ مجلد «مكونات» من «النسخة الكاملة بدون إنترنت» إلى جانب البرنامج، ثم اضغط «السيرفر الرئيسي» مرة ثانية.'
+    if (-not $media -or -not (Test-Path -LiteralPath $media -PathType Leaf)) { Stop-Setup ('ملف حزمة SQL Server غير موجود.' + $again) }
+    try { Copy-Item -LiteralPath $media -Destination $copy -Force }
+    catch {
+        Remove-Item -LiteralPath $copy -Force -ErrorAction SilentlyContinue
+        Stop-Setup ('تعذرت قراءة حزمة SQL Server (' + $_.Exception.Message + '). تأكد أن الفلاش موصول، ثم اضغط «السيرفر الرئيسي» مرة ثانية.')
+    }
+    $bad = Test-Package $copy
+    if ($bad -ne '') {
+        Remove-Item -LiteralPath $copy -Force -ErrorAction SilentlyContinue
+        Stop-Setup ('حزمة SQL Server غير صالحة: ' + $bad + '.' + $again)
+    }
+    return $copy
+}
+
+# Always into an empty folder: what an interrupted attempt left there may be incomplete. Returns the path of setup.exe.
+function Expand-Package([string]$pkg) {
+    $extract = Join-Path $Work 'extract'
+    $restart = ' أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.'
+    if (Test-Path -LiteralPath $extract) {
+        # never pull the files away from a setup that is still running
+        if (Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($extract + '\', [StringComparison]::OrdinalIgnoreCase) }) {
+            Stop-Setup 'تنصيب SQL Server من محاولة سابقة ما زال يعمل. انتظر 10 دقائق ثم اضغط «السيرفر الرئيسي» مرة ثانية، أو أعد تشغيل الحاسوب.'
+        }
+        Remove-Item -LiteralPath $extract -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path -LiteralPath $extract) { Stop-Setup ('تعذر حذف ملفات محاولة سابقة: ' + $extract + '.' + $restart) }
+    }
+    $p = Start-Process -FilePath $pkg -ArgumentList '/q', ('/x:"' + $extract + '"') -Wait -PassThru -WindowStyle Hidden
+    if ($p.ExitCode -ne 0) { Stop-Setup ('تعذر فك ضغط حزمة SQL Server (رمز ' + $p.ExitCode + '). تأكد من وجود 6 غيغابايت فارغة في القرص C.' + $restart) }
+    $setup = Join-Path $extract 'setup.exe'
+    if (-not (Test-Path -LiteralPath $setup)) { Stop-Setup ('فك ضغط حزمة SQL Server لم يكتمل (قد يكون برنامج مكافحة الفيروسات منعه).' + $restart) }
+    if (-not (Test-MicrosoftSigned $setup)) { Stop-Setup 'برنامج تنصيب SQL Server غير موقّع من مايكروسوفت.' }
+    return $setup
+}
+
+# Not needed once SQL Server is installed (about 0.6 GB); backup.ps1 and this script stay.
+# The last two names are what older versions downloaded.
+function Remove-InstallFiles {
+    foreach ($n in 'extract', $PkgName, 'media', 'SQL2022-SSEI-Expr.exe') {
+        $f = Join-Path $Work $n
+        if (Test-Path -LiteralPath $f) { Remove-Item -LiteralPath $f -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+}
+
+# What to do about an exit code of SQL Server's setup ('' = nothing special known)
+function Get-InstallHelp([int]$code) {
+    switch ($code) {
+        -2067919934 { return 'ويندوز ينتظر إعادة تشغيل (تحديث أو برنامج لم يكتمل تنصيبه). أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }       # 0x84BE0BC2
+        3017        { return 'ويندوز ينتظر إعادة تشغيل. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
+        -2061893606 { return 'تم التنصيب لكن خدمة SQL Server لم تبدأ. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية. إذا تكرر فقد يكون قرص هذا الحاسوب غير متوافق: اختر حاسوبا آخر ليكون السيرفر الرئيسي.' }   # 0x851A001A
+        1618        { return 'ويندوز ينصّب برنامجا آخر الآن. انتظر حتى ينتهي ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
+        1602        { return 'أُلغي التنصيب. اضغط «السيرفر الرئيسي» مرة ثانية.' }
+        1603        { return 'خطأ في منصّب ويندوز. أعد تشغيل الحاسوب، وأوقف برنامج مكافحة الفيروسات مؤقتا، ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
+        1633        { return 'هذا الويندوز لا يدعم SQL Server (يحتاج ويندوز 10 أو 11 أو Server، نسخة 64 بت).' }
+        -2147024784 { return 'المساحة الفارغة في القرص لا تكفي. فرّغ 6 غيغابايت ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }   # 0x80070070
+        -2147024891 { return 'ويندوز منع التنصيب (صلاحيات أو برنامج حماية). شغّل البرنامج بحساب مدير الحاسوب، وأوقف برنامج مكافحة الفيروسات مؤقتا، ثم أعد المحاولة.' }   # 0x80070005
+    }
+    return ''
+}
+
 if (-not [Environment]::Is64BitOperatingSystem) { Stop-Setup 'SQL Server يحتاج ويندوز 64 بت.' }
 # 32-bit PowerShell sees the 32-bit registry only -> restart this script in 64-bit PowerShell
 if (-not [Environment]::Is64BitProcess) {
@@ -76,67 +160,50 @@ Write-Host '  Setting up the main server - please wait, do not close this window
 Write-Host '================================================================' -ForegroundColor Yellow
 
 # ---------------------------------------------------------------- 1. install SQL Server Express if missing
+$reboot = $false
 if (-not (Get-Service -Name $svcName -ErrorAction SilentlyContinue)) {
-    # 1a. the package bundled with the program (folder «مكونات») - no internet needed.
-    #     A normal user can write next to the program, so it is copied into the protected folder first
-    #     and only the checked copy is run.
-    $pkg = $null
-    if ($MediaFile -and (Test-Path -LiteralPath $MediaFile)) {
-        Say 'فحص حزمة SQL Server المرفقة مع البرنامج…' 15 635
-        $copy = Join-Path $Work 'SQLEXPR_x64_ENU.exe'
-        Copy-Item -LiteralPath $MediaFile -Destination $copy -Force
-        if (Test-MicrosoftSigned $copy) { $pkg = Get-Item -LiteralPath $copy } else { Remove-Item -LiteralPath $copy -Force -ErrorAction SilentlyContinue }
-    }
-    # 1b. otherwise download it from Microsoft
-    if (-not $pkg) {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $ssei = Join-Path $Work 'SQL2022-SSEI-Expr.exe'
-        if (-not (Test-Path $ssei)) { Say 'تنزيل برنامج تنصيب SQL Server من مايكروسوفت…' 60 1235; Invoke-WebRequest -Uri $SseiUrl -OutFile $ssei -UseBasicParsing }
-        if ((Get-FileHash $ssei -Algorithm SHA256).Hash -ne $SseiHash) { Remove-Item $ssei -Force; Stop-Setup 'ملف التنصيب المنزّل غير مطابق لملف مايكروسوفت الأصلي. أعد المحاولة.' }
-        if (-not (Test-MicrosoftSigned $ssei)) { Stop-Setup 'ملف التنصيب غير موقّع من مايكروسوفت.' }
-        $media = Join-Path $Work 'media'
-        $pkg = Get-ChildItem $media -Filter 'SQLEXPR*.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-        if (-not $pkg) {
-            Say 'تنزيل حزمة SQL Server من مايكروسوفت (نحو 280 ميغابايت — حسب سرعة الإنترنت)…' 600 635
-            Start-Process -FilePath $ssei -ArgumentList '/ACTION=Download', ('/MEDIAPATH="' + $media + '"'), '/MEDIATYPE=Core', '/QUIET' -Wait -WindowStyle Hidden
-            $pkg = Get-ChildItem $media -Filter 'SQLEXPR*.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if (-not $pkg) { Stop-Setup 'تعذر تنزيل SQL Server. تأكد من الإنترنت وأعد المحاولة.' }
-        }
-    }
-    if (-not (Test-MicrosoftSigned $pkg.FullName)) { Stop-Setup 'حزمة SQL Server غير موقّعة من مايكروسوفت.' }
-
-    $extract = Join-Path $Work 'extract'
-    if (-not (Test-Path (Join-Path $extract 'setup.exe'))) {
-        Say 'فك ضغط حزمة SQL Server…' 60 575
-        Start-Process -FilePath $pkg.FullName -ArgumentList '/q', ('/x:"' + $extract + '"') -Wait -WindowStyle Hidden
-    }
-    if (-not (Test-MicrosoftSigned (Join-Path $extract 'setup.exe'))) { Stop-Setup 'برنامج تنصيب SQL Server غير موقّع من مايكروسوفت.' }
+    Say 'فحص حزمة SQL Server…' 20 300
+    $pkg = Get-CheckedPackage $MediaFile
+    Say 'فك ضغط حزمة SQL Server…' 25 275
+    $setupExe = Expand-Package $pkg
     # random strong password for "sa"; the account is disabled after setup
     $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!#%+-='
     $rnd = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($rnd)
     $sa = 'Aa1!' + (-join ($rnd | ForEach-Object { $chars[$_ % $chars.Length] }))
-    Say 'تنصيب SQL Server… (أطول خطوة: عادة 5–15 دقيقة حسب سرعة الحاسوب)' 480 95
+    Say 'تنصيب SQL Server… (أطول خطوة: عادة 2–7 دقائق حسب سرعة الحاسوب)' 195 80
     $setupArgs = @('/Q', '/ACTION=Install', '/FEATURES=SQLEngine', ('/INSTANCENAME=' + $Instance),
                    '/SQLSYSADMINACCOUNTS="BUILTIN\Administrators"', '/SECURITYMODE=SQL', ('/SAPWD="' + $sa + '"'),
                    '/TCPENABLED=1', '/BROWSERSVCSTARTUPTYPE=Automatic', '/UPDATEENABLED=0', '/IACCEPTSQLSERVERLICENSETERMS')
-    $p = Start-Process -FilePath (Join-Path $extract 'setup.exe') -ArgumentList $setupArgs -Wait -PassThru -WindowStyle Hidden
-    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) {
-        Stop-Setup ('فشل تنصيب SQL Server (رمز ' + $p.ExitCode + '). التفاصيل في: C:\Program Files\Microsoft SQL Server\160\Setup Bootstrap\Log\Summary.txt')
+    # /Q = fully silent: no window ever appears
+    $p = Start-Process -FilePath $setupExe -ArgumentList $setupArgs -Wait -PassThru -WindowStyle Hidden
+    $sa = $null
+    $code = $p.ExitCode
+    if ($code -eq 3010 -or $code -eq 1641) { $reboot = $true }   # installed, but Windows wants a restart
+    elseif ($code -ne 0) {
+        $logDir = Join-Path $ProgFiles 'Microsoft SQL Server\160\Setup Bootstrap\Log'
+        $why = Select-String -LiteralPath (Join-Path $logDir 'Summary.txt') -Pattern '^\s*Exit message:\s*(.+)$' -ErrorAction SilentlyContinue | Select-Object -First 1
+        $m = 'فشل تنصيب SQL Server (رمز ' + $code + '). '
+        $help = Get-InstallHelp $code
+        if ($help) { $m += $help } else { $m += 'أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
+        if ($why) { $m += "`n" + $why.Matches[0].Groups[1].Value.Trim() }
+        Stop-Setup ($m + "`n" + 'التفاصيل في: ' + (Join-Path $logDir 'Summary.txt'))
     }
-} else { Say 'SQL Server منصّب مسبقا — يجري إعداده…' 5 95 }
+} else { Say 'SQL Server منصّب مسبقا، يجري إعداده…' 5 80 }
+Remove-InstallFiles
 
 # ---------------------------------------------------------------- 2. network: password logins + port 1433 + SQL Browser + firewall
 $instKey = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL').$Instance
-if (-not $instKey) { Stop-Setup 'لم يتم العثور على SQL Server بعد التنصيب.' }
+if (-not $instKey) { Stop-Setup 'لم يتم العثور على SQL Server بعد التنصيب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
 $base = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instKey\MSSQLServer"
 Set-ItemProperty -Path $base -Name LoginMode -Value 2 -Type DWord
 $tcp = "$base\SuperSocketNetLib\Tcp"
 Set-ItemProperty -Path $tcp -Name Enabled -Value 1 -Type DWord
 Set-ItemProperty -Path "$tcp\IPAll" -Name TcpDynamicPorts -Value ''
 Set-ItemProperty -Path "$tcp\IPAll" -Name TcpPort -Value '1433'
-Say 'فتح الاتصال للشبكة وإعادة تشغيل SQL Server…' 30 65
+Say 'فتح الاتصال للشبكة وإعادة تشغيل SQL Server…' 20 60
 Set-Service -Name $svcName -StartupType Automatic
-Restart-Service -Name $svcName -Force
+try { Restart-Service -Name $svcName -Force }
+catch { Stop-Setup ('خدمة SQL Server لا تبدأ على هذا الحاسوب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية. إذا تكرر فاختر حاسوبا آخر ليكون السيرفر الرئيسي.' + "`n" + $_.Exception.Message) }
 if (Get-Service -Name 'SQLBrowser' -ErrorAction SilentlyContinue) { Set-Service -Name 'SQLBrowser' -StartupType Automatic; Start-Service -Name 'SQLBrowser' -ErrorAction SilentlyContinue }
 if (-not (Get-NetFirewallRule -DisplayName 'EngStores SQL Server (TCP 1433)' -ErrorAction SilentlyContinue)) {
     New-NetFirewallRule -DisplayName 'EngStores SQL Server (TCP 1433)' -Direction Inbound -Protocol TCP -LocalPort 1433 -Action Allow -Profile Domain, Private | Out-Null
@@ -152,7 +219,7 @@ function Invoke-Sql([string]$sql, [string]$db = 'master') {
     try { $cmd = $c.CreateCommand(); $cmd.CommandTimeout = 600; $cmd.CommandText = $sql; return $cmd.ExecuteScalar() }
     finally { $c.Close() }
 }
-Say 'انتظار جاهزية SQL Server…' 20 45
+Say 'انتظار جاهزية SQL Server…' 15 45
 $ready = $false
 for ($i = 0; $i -lt 30 -and -not $ready; $i++) { try { [void](Invoke-Sql 'SELECT 1'); $ready = $true } catch { Start-Sleep -Seconds 3 } }
 if (-not $ready) { Stop-Setup 'SQL Server لا يستجيب. أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية.' }
@@ -199,9 +266,9 @@ $action   = New-ScheduledTaskAction -Execute $psExe -Argument ('-NoProfile -Exec
 $trigger  = New-ScheduledTaskTrigger -Daily -At '14:00'
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
 Register-ScheduledTask -TaskName 'EngStores Daily Backup' -Action $action -Trigger $trigger -Settings $settings -User 'SYSTEM' -RunLevel Highest -Force | Out-Null
-Protect-Folder $Work   # also covers backup.ps1 and the downloaded/extracted files
+Protect-Folder $Work   # also covers backup.ps1
 # older versions kept the setup files and the SYSTEM backup script in a folder users could write: remove it
 if (Test-Path -LiteralPath $OldWork) { Remove-Item -LiteralPath $OldWork -Recurse -Force -ErrorAction SilentlyContinue }
 
-Done ('OK|' + $backupDir)
+if ($reboot) { Done ('OK|' + $backupDir + '|reboot') } else { Done ('OK|' + $backupDir) }
 exit 0

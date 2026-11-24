@@ -225,7 +225,7 @@ namespace Stores
         void Print()
         {
             if (req.Id == 0 || dirty) { if (ReadOnlyReq || !UI.Confirm("يجب حفظ الطلب قبل الطباعة. حفظ الآن؟") || !Save()) return; }
-            using (ReportViewerForm f = new ReportViewerForm(PurchaseReports.Request(req))) f.ShowDialog(this);
+            PrintPreviewForm.Show(this, PurchaseReports.Request(req));
         }
 
         void ChangeStatus(int status, string question)

@@ -64,91 +64,22 @@ namespace Stores
             Settings.Save();
         }
 
-        // ------------------------------------------------------------ progress window
-        // Shows: what is happening, a progress bar, elapsed time, the expected remaining time and a "do not close" note.
-        // Each step comes with its expected duration and the expected duration of everything after it; the bar and the
-        // remaining time are computed from these and from the real elapsed time (the bar never goes backwards).
-        class WaitForm : Form
-        {
-            Label lblTitle, lblStep, lblTime, lblNote;
-            ProgressBar pb;
-            System.Windows.Forms.Timer tmr;
-            DateTime start = DateTime.Now, stepStart = DateTime.Now;
-            string step = "", detail = null;
-            int stepSec, afterSec, shown;
-
-            public WaitForm(string title, string note)
-            {
-                Text = Program.AppName; RightToLeft = RightToLeft.Yes; Font = Theme.Font; Icon = Theme.AppIcon; BackColor = Color.White;
-                FormBorderStyle = FormBorderStyle.FixedDialog; ControlBox = false; StartPosition = FormStartPosition.CenterScreen;
-                ClientSize = new Size(560, 214); TopMost = true; ShowInTaskbar = true;
-                Panel band = new Panel(); band.Bounds = new Rectangle(0, 0, 560, 5); band.BackColor = Theme.Accent; Controls.Add(band);
-                lblTitle = L(new Rectangle(16, 14, 528, 30), Theme.FontBold, Theme.Primary); lblTitle.Text = title;
-                lblStep = L(new Rectangle(16, 46, 528, 46), Theme.Font, Color.FromArgb(45, 45, 45));
-                pb = new ProgressBar(); pb.Bounds = new Rectangle(16, 98, 528, 24); pb.Maximum = 1000;
-                pb.Style = ProgressBarStyle.Marquee; pb.MarqueeAnimationSpeed = 30; Controls.Add(pb);
-                lblTime = L(new Rectangle(16, 128, 528, 26), Theme.FontBold, Theme.Primary);
-                lblNote = L(new Rectangle(16, 160, 528, 44), Theme.Font, Color.FromArgb(176, 64, 0)); lblNote.Text = note;
-                tmr = new System.Windows.Forms.Timer(); tmr.Interval = 500; tmr.Tick += delegate { Draw(); }; tmr.Start();
-                FormClosed += delegate { tmr.Stop(); tmr.Dispose(); };
-                Draw();
-            }
-            Label L(Rectangle r, Font f, Color c)
-            {
-                Label l = new Label(); l.Bounds = r; l.Font = f; l.ForeColor = c; l.TextAlign = ContentAlignment.MiddleCenter; Controls.Add(l); return l;
-            }
-
-            /// <summary>Step without a time estimate (moving bar + elapsed time only).</summary>
-            public void Set(string text) { Step(text, 0, 0); }
-
-            /// <summary>New step: expected seconds for it and for everything after it.</summary>
-            public void Step(string text, int seconds, int secondsAfter)
-            {
-                if (text != step || seconds != stepSec || secondsAfter != afterSec)
-                { step = text; detail = null; stepSec = seconds; afterSec = secondsAfter; stepStart = DateTime.Now; }
-                Draw(); Application.DoEvents();
-            }
-
-            /// <summary>Changes the text under the current step without restarting its timing.</summary>
-            public void Detail(string text) { detail = text; Draw(); Application.DoEvents(); }
-
-            void Draw()
-            {
-                double el = (DateTime.Now - start).TotalSeconds;
-                double inStep = (DateTime.Now - stepStart).TotalSeconds;
-                bool slow = stepSec > 0 && inStep > stepSec;
-                lblStep.Text = (detail ?? step) + (slow ? "\nهذه الخطوة أبطأ من المعتاد على هذا الحاسوب — هذا طبيعي، يرجى الانتظار." : "");
-                if (stepSec <= 0 && afterSec <= 0)
-                {
-                    if (pb.Style != ProgressBarStyle.Marquee) pb.Style = ProgressBarStyle.Marquee;
-                    lblTime.Text = "الوقت المنقضي: " + Clock(el);
-                    return;
-                }
-                double left = Math.Max(stepSec - inStep, Math.Min(stepSec, Math.Max(10, stepSec * 0.15)));
-                double remaining = left + afterSec;
-                int target = (int)(1000 * el / (el + remaining));
-                if (target > 990) target = 990;
-                if (target > shown) shown = target;
-                if (pb.Style != ProgressBarStyle.Continuous) pb.Style = ProgressBarStyle.Continuous;
-                pb.Value = shown;
-                lblTime.Text = (shown / 10) + "٪     •     الوقت المنقضي: " + Clock(el) + "     •     المتبقي المتوقع: " + Remaining(remaining);
-            }
-            static string Clock(double s) { int t = (int)s; return (t / 60) + ":" + (t % 60).ToString("00"); }
-            static string Remaining(double s)
-            {
-                if (s < 60) return "أقل من دقيقة";
-                int n = (int)Math.Ceiling(s / 60);
-                return "نحو " + (n == 1 ? "دقيقة" : n == 2 ? "دقيقتين" : n <= 10 ? n + " دقائق" : n + " دقيقة");
-            }
-        }
-
         static void Pump(Func<bool> done)
         {
             while (!done()) { Application.DoEvents(); Thread.Sleep(100); }
         }
 
         // ------------------------------------------------------------ main server
+        static bool running;
+
         public static bool RunMain(IWin32Window owner)
+        {
+            if (running) return false;   // (messages are pumped while it works: a second click on the button)
+            running = true;
+            try { return SetUpMain(owner); } finally { running = false; }
+        }
+
+        static bool SetUpMain(IWin32Window owner)
         {
             string pw = ServerPasswordDialog.AskNew(owner);
             if (pw == null) return false;
@@ -169,28 +100,51 @@ namespace Stores
                 }
             }
 
-            // check this computer before installing anything
-            string media = Path.Combine(Settings.AppDir, "مكونات", "SQLEXPR_x64_ENU.exe");
+            // check this computer, then find the package, before installing anything (and before the Windows permission prompt)
             bool sqlInstalled = IsSqlExpressInstalled();
-            string problem = CheckComputer(sqlInstalled, File.Exists(media));
+            string problem = CheckComputer(sqlInstalled);
             if (problem != null) { UI.Warn("لا يمكن تجهيز السيرفر الرئيسي على هذا الحاسوب:\n\n" + problem); return false; }
+            string media = null;
+            if (!sqlInstalled)
+            {
+                media = GetPackage(owner);
+                if (media == null) return false;
+            }
 
-            WaitForm wf = new WaitForm(sqlInstalled ? "جاري إعداد السيرفر الرئيسي — العملية تعمل الآن" : "جاري تنصيب السيرفر الرئيسي — التنصيب يعمل الآن",
-                "⚠ لا تغلق البرنامج ولا تطفئ الحاسوب حتى تظهر رسالة الانتهاء.\n" + (sqlInstalled ? "المدة المتوقعة: 1–3 دقائق." : "المدة المتوقعة: 10–20 دقيقة (مرة واحدة فقط)."));
-            wf.Show(owner);
-            wf.Step("بدء التنصيب… اضغط «نعم» إذا ظهرت نافذة صلاحيات ويندوز.", 15, sqlInstalled ? 95 : 635);
+            WaitForm wf = new WaitForm(sqlInstalled ? "جاري إعداد السيرفر الرئيسي" : "جاري تنصيب السيرفر الرئيسي",
+                "⚠ لا تغلق البرنامج ولا تطفئ الحاسوب حتى تظهر رسالة الانتهاء.\n" + (sqlInstalled ? "المدة المتوقعة: 1–3 دقائق." : "المدة المتوقعة: 4–10 دقائق حسب سرعة الحاسوب (مرة واحدة فقط)."), null);
+            wf.ShowOver(owner);
+            wf.Step("بدء التنصيب… اضغط «نعم» إذا ظهرت نافذة صلاحيات ويندوز.", 15, sqlInstalled ? 80 : 320);
             try
             {
                 // 1. install / configure SQL Server (elevated PowerShell script embedded in the program)
                 string res = RunSetupScript(media, delegate(string s, int sec, int after) { wf.Step(s, sec, after); });
-                if (res == null) { UI.Warn("يجب الضغط «نعم» في نافذة صلاحيات ويندوز لإكمال التنصيب."); return false; }
-                if (!res.StartsWith("OK")) { UI.Warn("لم يكتمل تجهيز السيرفر:\n\n" + res.Substring(Math.Min(4, res.Length))); return false; }
-                string backupDir = res.Length > 3 ? res.Substring(3) : "";
+                if (res == null)
+                {
+                    UI.Warn("يجب الضغط «نعم» في نافذة صلاحيات ويندوز لإكمال التنصيب.\n\n" +
+                            "لم يتغير شيء في هذا الحاسوب. اضغط «السيرفر الرئيسي» مرة ثانية.\n" +
+                            "إذا طلبت النافذة كلمة سر: فهي كلمة سر مدير هذا الحاسوب (ويندوز)، وليست كلمة سر السيرفر.");
+                    return false;
+                }
+                if (!res.StartsWith("OK"))
+                {
+                    UI.Warn("لم يكتمل تجهيز السيرفر:\n\n" + res.Substring(Math.Min(4, res.Length)) + "\n\n" +
+                            "بياناتك لم تتغير. بعد حل السبب اضغط «السيرفر الرئيسي» مرة ثانية.");
+                    return false;
+                }
+                string[] okParts = res.Split('|');   // "OK|<backup folder>[|reboot]"
+                string backupDir = okParts.Length > 1 ? okParts[1] : "";
+                bool reboot = okParts.Length > 2 && okParts[2] == "reboot";
 
                 // 2. connect to it
                 wf.Step("جاري الاتصال بالسيرفر…", 5, 25);
                 string err = Db.InitSql(ConnStr("localhost,1433"));
-                if (err != null) { UI.Warn("تم التنصيب لكن تعذر الاتصال بالسيرفر:\n" + err); return false; }
+                if (err != null)
+                {
+                    UI.Warn("تم التنصيب لكن تعذر الاتصال بالسيرفر:\n" + err + "\n\n" +
+                            "أعد تشغيل الحاسوب ثم اضغط «السيرفر الرئيسي» مرة ثانية (لا يُعاد التنصيب، يُكمل فقط).");
+                    return false;
+                }
 
                 // 3. move the data (unless the server already has data)
                 bool hasData = Db.TableExists("item") && Db.I(Db.Scalar("SELECT COUNT(*) FROM item")) > 0;
@@ -207,19 +161,131 @@ namespace Stores
                 SaveSettings("localhost,1433");
                 Db.Log(null, "تجهيز السيرفر الرئيسي", Environment.MachineName);
                 wf.Close();
+                // a copy kept only for this installation (program on the network / in a read-only folder) is not needed any more
+                if (media != null && string.Equals(Path.GetDirectoryName(media), SqlPackage.UserDir, StringComparison.OrdinalIgnoreCase))
+                    try { File.Delete(media); } catch { }
 
                 UI.Info("✓ هذا الحاسوب أصبح السيرفر الرئيسي.\n\n" +
+                        (reboot ? "⚠ أعد تشغيل هذا الحاسوب الآن (طلبه تنصيب SQL Server)، ثم افتح البرنامج.\n\n" : "") +
                         "اسمه على الشبكة: " + Environment.MachineName + "\n" + LocalIPs() + "\n\n" +
                         (report != null ? "تم نقل البيانات (" + report.Count + " جدول) ✓\n" : "") +
                         "النسخة الاحتياطية اليومية في: " + backupDir + "\n\n" +
                         "على كل حاسوب آخر: افتح البرنامج ← «إعدادات الاتصال والسيرفر» ← «سيرفر ثانوي»،\n" +
                         "واكتب كلمة سر السيرفر التي اخترتها الآن (مرة واحدة لكل حاسوب). احتفظ بها في مكان آمن.\n" +
                         (hasData ? "إذا غيّرت كلمة السر عن السابقة: أعد «سيرفر ثانوي» على كل حاسوب آخر.\n" : "") +
-                        "مهم: أبقِ هذا الحاسوب شغالا، ولا تستعمل البرنامج القديم بعد الآن.");
+                        "مهم: أبقِ هذا الحاسوب شغالا (أوقف وضع السكون)، ولا تستعمل البرنامج القديم بعد الآن.");
                 return true;
             }
             catch (Exception ex) { UI.Error(ex); return false; }
             finally { if (!wf.IsDisposed) wf.Close(); }
+        }
+
+        // ------------------------------------------------------------ the SQL Server package
+        /// <summary>A usable package on this computer's own disk: found by itself, picked or downloaded by the user (asked
+        /// every time; nothing is downloaded otherwise). null = the user cancelled.</summary>
+        static string GetPackage(IWin32Window owner)
+        {
+            SqlPackage p = new SqlPackage();
+            List<string> found = null;
+            UI.WaitCursor(true);
+            try { found = InBackground(delegate { return p.Find(); }, null); } finally { UI.WaitCursor(false); }
+            string note = null;
+            foreach (string f in found)
+            {
+                string ready;
+                note = TakePackage(owner, p, f, out ready);
+                if (note == null) return ready;
+                if (note == SqlPackage.Cancelled) break;
+            }
+            string dest = SqlPackage.DownloadPath();
+            while (true)
+            {
+                if (note == SqlPackage.Cancelled) note = null;
+                using (SqlPackageDialog d = new SqlPackageDialog(note, SqlPackage.PartSize(dest), p.Size))
+                {
+                    d.ShowDialog(owner);
+                    if (d.Result == SqlPackageDialog.Choice.Cancel) return null;
+                    if (d.Result == SqlPackageDialog.Choice.File)
+                    {
+                        string ready;
+                        note = TakePackage(owner, p, d.Picked, out ready);
+                        if (note == null) return ready;
+                    }
+                    else
+                    {
+                        note = DownloadPackage(owner, p, dest);
+                        if (note == null) return dest;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Checks a package before the Windows permission prompt; one on the network is copied to this computer first
+        /// (the elevated setup does not see mapped network drives). null = usable (ready = the file to install from),
+        /// SqlPackage.Cancelled, or why not.</summary>
+        static string TakePackage(IWin32Window owner, SqlPackage p, string file, out string ready)
+        {
+            ready = file;
+            string local = SqlPackage.IsLocal(file) ? null : Path.Combine(SqlPackage.UserDir, SqlPackage.FileName);
+            WaitForm wf = new WaitForm("جاري فحص حزمة SQL Server", "التأكد أن الملف كامل وسليم قبل التنصيب (أقل من دقيقة عادة).", "إلغاء الفحص");
+            wf.ShowOver(owner);
+            try
+            {
+                Share share = new Share();
+                string text = SqlPackage.Ltr(file, 60);
+                Func<string> work = delegate
+                {
+                    if (local != null)
+                    {
+                        string e = p.Copy(file, local, share.Set, delegate { return wf.CancelPressed; });
+                        if (e != null) return e;
+                    }
+                    return p.Check(local ?? file, share.Set, delegate { return wf.CancelPressed; });
+                };
+                string res = InBackground(work, delegate { wf.Progress((local != null ? "نسخ الملف من الشبكة وفحصه:" : "فحص الملف:") + "\n" + text, share.Get(), -1); });
+                if (res == null && local != null) ready = local;
+                return res;
+            }
+            finally { wf.Close(); }
+        }
+
+        /// <summary>Downloads the package in a window with percent, speed, remaining time and «إلغاء التنزيل».</summary>
+        static string DownloadPackage(IWin32Window owner, SqlPackage p, string dest)
+        {
+            WaitForm wf = new WaitForm("جاري تنزيل SQL Server من الإنترنت",
+                "إذا انقطع الاتصال يُكمل التنزيل من حيث توقف تلقائيا.\nبعد التنزيل يبدأ التنصيب: 4–10 دقائق حسب سرعة الحاسوب.", "إلغاء التنزيل");
+            wf.ShowOver(owner);
+            try
+            {
+                object gate = new object();
+                long done = SqlPackage.PartSize(dest); double speed = 0; string error = null; int failures = 0;
+                Func<string> work = delegate
+                {
+                    return p.Download(dest, delegate(long d, double s, string e, int f) { lock (gate) { done = d; speed = s; error = e; failures = f; } },
+                                      delegate { return wf.CancelPressed; });
+                };
+                return InBackground(work, delegate { lock (gate) wf.Download(done, p.Size, speed, error, failures, p.MaxFailures); });
+            }
+            finally { wf.Close(); }
+        }
+
+        /// <summary>Share of a work done on another thread.</summary>
+        class Share
+        {
+            double v;
+            public void Set(long done, long total) { lock (this) v = total <= 0 ? 0 : (double)done / total; }
+            public double Get() { lock (this) return v; }
+        }
+
+        /// <summary>Runs work on a background thread and keeps the windows alive meanwhile (tick = about 10 times a second).</summary>
+        static T InBackground<T>(Func<T> work, Action tick) where T : class
+        {
+            T res = null; Exception error = null;
+            Thread t = new Thread(delegate() { try { res = work(); } catch (Exception ex) { error = ex; } });
+            t.IsBackground = true; t.Start();
+            Pump(delegate { if (tick != null) tick(); return !t.IsAlive; });
+            if (error != null) throw new InvalidOperationException(error.Message, error);
+            return res;
         }
 
         /// <summary>Text of the setup script embedded in the program.</summary>
@@ -256,7 +322,8 @@ namespace Stores
                 "} catch { [IO.File]::WriteAllText($res, ('ERR|' + $_.Exception.Message), (New-Object Text.UTF8Encoding $false)); exit 1 }\n";
         }
 
-        /// <summary>Runs the embedded setup script elevated and hidden. Returns "OK|backupDir", "ERR|message",
+        /// <summary>Runs the embedded setup script elevated and hidden. media: the checked package (null when SQL Server is
+        /// installed already). Returns "OK|backupDir" (or "OK|backupDir|reboot"), "ERR|message",
         /// or null when the Windows permission prompt was refused.</summary>
         public static string RunSetupScript(string media, Action<string, int, int> progress)
         {
@@ -326,18 +393,18 @@ namespace Stores
             return b.OpenSubKey(path);
         }
 
+        /// <summary>The same test as setup-server.ps1: the SQLEXPRESS service exists.</summary>
         static bool IsSqlExpressInstalled()
         {
             try
             {
-                using (Microsoft.Win32.RegistryKey k = Hklm64(@"SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL"))
-                    return k != null && k.GetValue("SQLEXPRESS") != null;
+                using (Microsoft.Win32.RegistryKey k = Hklm64(@"SYSTEM\CurrentControlSet\Services\MSSQL$SQLEXPRESS")) return k != null;
             }
             catch { return false; }
         }
 
         /// <summary>null when this computer can become the main server, otherwise the reason (Arabic).</summary>
-        static string CheckComputer(bool sqlInstalled, bool mediaBundled)
+        static string CheckComputer(bool sqlInstalled)
         {
             if (!Environment.Is64BitOperatingSystem) return "SQL Server يحتاج ويندوز 64 بت. اختر حاسوبا آخر ليكون السيرفر الرئيسي.";
             if (sqlInstalled) return null;
@@ -357,11 +424,6 @@ namespace Stores
                     return "المساحة الفارغة في القرص " + d.Name + " أقل من 6 غيغابايت (المتوفر " + (d.AvailableFreeSpace / 1024 / 1024 / 1024) + " غيغابايت). فرّغ مساحة ثم أعد المحاولة.";
             }
             catch { }
-            if (!mediaBundled)
-            {
-                try { Dns.GetHostAddresses("download.microsoft.com"); }
-                catch { return "حزمة SQL Server غير موجودة في مجلد «مكونات» بجانب البرنامج، ولا يوجد اتصال بالإنترنت لتنزيلها.\nانسخ مجلد البرنامج كاملا (مع مجلد مكونات) أو اتصل بالإنترنت."; }
-            }
             return null;
         }
 
@@ -380,8 +442,8 @@ namespace Stores
         // ------------------------------------------------------------ secondary
         public static bool RunSecondary(IWin32Window owner)
         {
-            WaitForm wf = new WaitForm("جاري البحث عن السيرفر الرئيسي في الشبكة", "يرجى الانتظار… المدة المتوقعة أقل من نصف دقيقة.");
-            wf.Show(owner);
+            WaitForm wf = new WaitForm("جاري البحث عن السيرفر الرئيسي في الشبكة", "يرجى الانتظار… المدة المتوقعة أقل من نصف دقيقة.", null);
+            wf.ShowOver(owner);
             wf.Step("البحث في الشبكة…", 20, 5);
             try
             {

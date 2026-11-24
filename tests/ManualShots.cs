@@ -40,6 +40,7 @@ namespace Stores
         const string FakePc = "PC-STORE-1";
         const string Admin = "المدير";
         static readonly Size Win = new Size(1280, 720);
+        static readonly Size DocWin = new Size(1366, 740);   // documents: all buttons of the action bar fit (common 1366×768 screens)
         static readonly Color Red = Color.FromArgb(220, 30, 40);
 
         static string outDir, dataPath;
@@ -348,14 +349,43 @@ namespace Stores
 
         static Control Current() { return (Control)Field(main, "current"); }
 
-        static MainForm NewMain(bool advanced)
+        static MainForm NewMain(bool advanced) { return NewMain(advanced, Win); }
+
+        static MainForm NewMain(bool advanced, Size size)
         {
             Session.SetMode(advanced);
             MainForm m = new MainForm();
             m.WindowState = FormWindowState.Normal;
-            Show(m, Win);
+            Show(m, size);
             Pump(800);
             return m;
+        }
+
+        /// <summary>A menu drawn the way it looks (pop-ups cannot be captured off-screen). Returns the area of each line.</summary>
+        static Rectangle[] DrawMenu(Bitmap b, Point at, int width, params string[] items)
+        {
+            Rectangle[] lines = new Rectangle[items.Length];
+            using (Graphics g = Graphics.FromImage(b))
+            {
+                Rectangle m = new Rectangle(at.X, at.Y, width, items.Length * 30 + 8);
+                using (SolidBrush sh = new SolidBrush(Color.FromArgb(40, 0, 0, 0))) g.FillRectangle(sh, new Rectangle(m.X + 3, m.Y + 3, m.Width, m.Height));
+                g.FillRectangle(Brushes.White, m); g.DrawRectangle(Pens.Silver, m);
+                TextFormatFlags tf = TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.RightToLeft;
+                for (int i = 0; i < items.Length; i++)
+                {
+                    TextRenderer.DrawText(g, items[i], Theme.Font, new Rectangle(m.X + 8, m.Y + 4 + i * 30, m.Width - 22, 30), Color.Black, Color.White, tf);
+                    lines[i] = new Rectangle(m.X + 4, m.Y + 5 + i * 30, m.Width - 8, 28);
+                }
+            }
+            return lines;
+        }
+
+        /// <summary>A whole grid column (header and the first rows) inside the captured window image.</summary>
+        static Rectangle ColRect(Form f, DataGridView g, string col, int rows)
+        {
+            Rectangle r = g.GetColumnDisplayRectangle(g.Columns[col].Index, false); r.Offset(R(f, g).Location);
+            r.Height = g.ColumnHeadersHeight + g.Rows[0].Height * rows;
+            return r;
         }
 
         static void Close(Form f) { if (f == null) return; f.Hide(); f.Dispose(); Pump(100); }
@@ -477,6 +507,10 @@ namespace Stores
             }
             Cache.LoadAll();
 
+            // the home tiles in the order the program means them (the user's own saved order)
+            Db.SetSetting("tiles_user1", "إخراج مخزني|إدخال مخزني|مردود إخراج مخزني|حجز مواد|مردود مشتريات");
+            Db.SetSetting("tiles_user1_adv", "إخراج مخزني|إدخال مخزني|مردود إخراج مخزني|مردود مشتريات|حجز مواد|نقل مخزني");
+
             // the monthly period lock: closed up to the end of the month before last
             DateTime lk = DateTime.Today.AddMonths(-2);
             PeriodLock.LockThrough(lk.Year, lk.Month);
@@ -578,7 +612,8 @@ namespace Stores
                 ComboBox user = Find<ComboBox>(f, null); user.Text = Admin;
                 TextBox pass = Find<TextBox>(f, null); pass.Text = "1234";
                 Bitmap b = Grab(f);
-                Save(b, "login", Rectangle.Empty, M(f, user, 1, 0), M(f, pass, 2, 0), M(f, Btn(f, "دخول"), 3, 0), M(f, Btn(f, "إعدادات الاتصال والسيرفر"), 4, 0));
+                Save(b, "login", Rectangle.Empty, M(f, user, 1, 0), M(f, pass, 2, 0), M(f, Btn(f, "دخول"), 3, 0), M(f, Btn(f, "إعدادات الاتصال والسيرفر"), 4, 0),
+                    M(f, Btn(f, "تحديث البرنامج"), 5, 1));
                 Close(f);
             }
         }
@@ -601,26 +636,16 @@ namespace Stores
                 Control status = (Control)Field(main, "lblOnline");
                 Rectangle sr = R(main, side); sr = new Rectangle(sr.X, R(main, toggle).Bottom + 2, sr.Width, sr.Height - (R(main, toggle).Bottom + 2 - sr.Y));
                 Save(b, "home", Rectangle.Empty,
-                    M(sr, 1, 4), M(main, Find<SearchBox>(dash, null), 2, 0), M(tr, 3, 0), M(ar, 4, 0), M(R(main, grid.Parent), 5, 0),
+                    M(sr, 1, 2), M(main, Find<SearchBox>(dash, null), 2, 0), M(tr, 3, 0), M(ar, 4, 0), M(R(main, grid.Parent), 5, 0),
                     M(main, user, 6, 3), M(main, mode, 7, 3), M(main, toggle, 8, 1), M(main, status, 9, 0));
             }
             if (Want("user-menu"))
             {
-                // the user menu is a pop-up (it cannot be captured off-screen): drawn here the way it looks
                 Bitmap b = Grab(main);
-                Control user = Starts(main, Admin);
-                Rectangle u = R(main, user);
-                using (Graphics g = Graphics.FromImage(b))
-                {
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-                    Rectangle m = new Rectangle(Math.Max(12, u.Right - 190), u.Bottom + 4, 190, 68);   // a window at the screen's left edge: the menu opens to the right
-                    using (SolidBrush sh = new SolidBrush(Color.FromArgb(40, 0, 0, 0))) g.FillRectangle(sh, new Rectangle(m.X + 3, m.Y + 3, m.Width, m.Height));
-                    g.FillRectangle(Brushes.White, m); g.DrawRectangle(Pens.Silver, m);
-                    TextFormatFlags tf = TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.RightToLeft;
-                    TextRenderer.DrawText(g, "تغيير كلمة المرور", Theme.Font, new Rectangle(m.X + 8, m.Y + 4, m.Width - 22, 30), Color.Black, tf);
-                    TextRenderer.DrawText(g, "تسجيل الخروج", Theme.Font, new Rectangle(m.X + 8, m.Y + 34, m.Width - 22, 30), Color.Black, tf);
-                    Draw(b, new Mark[] { M(new Rectangle(m.X + 4, m.Y + 4, m.Width - 8, 28), 1, 5), M(new Rectangle(m.X + 4, m.Y + 36, m.Width - 8, 28), 2, 5) });
-                }
+                Rectangle u = R(main, Starts(main, Admin));
+                // a window at the screen's left edge: the menu opens to the right
+                Rectangle[] l = DrawMenu(b, new Point(Math.Max(12, u.Right - 190), u.Bottom + 4), 190, "تغيير كلمة المرور", "تسجيل الخروج");
+                Draw(b, new Mark[] { M(l[0], 1, 5), M(l[1], 2, 5) });
                 Save(b, "user-menu", new Rectangle(0, 30, 420, 150));
             }
             if (Want("tiles-drag"))
@@ -632,6 +657,34 @@ namespace Stores
                 Draw(b, new Mark[] { M(a, 1, 0), Num(z, 2, 1) });
                 Arrow(b, new Point(a.Left + 40, a.Bottom - 9), new Point(z.Left + z.Width / 2, z.Bottom - 9));
                 Save(b, "tiles-drag", Rectangle.Inflate(all, 14, 40));
+            }
+            if (Want("search-choose"))
+            {
+                Bitmap b = Grab(main);
+                SearchBox sb = Find<SearchBox>(dash, null);
+                Rectangle ch = R(main, (Control)Field(sb, "chooser")), bx = R(main, sb.Box);
+                DrawMenu(b, new Point(ch.Left, ch.Bottom + 1), ch.Width + 12, "مادة", "مستند", "مركز كلفة", "مجهز / جهة");
+                Rectangle sr = R(main, sb);
+                Save(b, "search-choose", new Rectangle(sr.Left - 30, sr.Top - 34, sr.Width + 50, 224), M(ch, 1, 1), M(bx, 2, 0));
+            }
+            if (Want("doc-find"))
+            {
+                DocFindDialog d = new DocFindDialog("مدرسة"); Show(d, new Size(960, 470)); Pump(500);
+                Bitmap b = Grab(d);
+                TextBox t = Find<TextBox>(d, null);
+                Save(b, "doc-find", Rectangle.Empty, M(d, t, 1, 0), M(d, Btn(d, "فتح المستند"), 2, 0), M(d, Btn(d, "معاينة"), 3, 1));
+                Close(d);
+            }
+            if (Want("item-statement"))
+            {
+                // what choosing an item in the home search opens
+                ReportsWindow w = NewReports("card", new Size(1280, 860), ItemByCode("MCB-1P16"));
+                Control rv = (Control)Field(w, "view");
+                Bitmap b = Grab(w);
+                Rectangle wr = R(w, (Control)Field(rv, "wb"));
+                Rectangle row = DataRow(rv, wr, 2);
+                Save(b, "item-statement", Rectangle.Empty, M(w, (Control)Field(rv, "pars"), 1, 0), M(row, 2, 1), M(w, Btn(rv, "معاينة وطباعة"), 3, 1));
+                Close(w);
             }
             if (Want("quick-search"))
             {
@@ -664,6 +717,14 @@ namespace Stores
                 Save(b, "home-advanced", Rectangle.Empty, M(main, mode, 1, 3), M(U(R(main, tr), R(main, us)), 2, 4), M(R(main, chart.Parent), 3, 0));
                 Close(main);
             }
+        }
+
+        /// <summary>The n-th shown row (from 0) of the table of a report in the reports screen, inside the captured window.</summary>
+        static Rectangle DataRow(Control reportsView, Rectangle browser, int n)
+        {
+            foreach (HtmlElement tr in ((WebBrowser)Field(reportsView, "wb")).Document.GetElementById("tb").GetElementsByTagName("tr"))
+                if (tr.OffsetRectangle.Height > 0 && n-- == 0) return Rectangle.Intersect(Dom(tr, browser), browser);
+            throw new Exception("report row not found");
         }
 
         // ================================================================== 3. items
@@ -752,20 +813,47 @@ namespace Stores
 
         static void Documents()
         {
-            main = NewMain(false);
-            // ---- receipt
-            if (Want("receipt"))
+            main = NewMain(false, DocWin);
+            // ---- receipt: lines into two stores
+            if (Want("receipt") || Want("receipt-stores"))
             {
                 DocView v = OpenNew(DocKind.Receipt);
                 PersonPicker person = (PersonPicker)Field(v, "person");
                 person.Value = Db.I(Db.Scalar("SELECT MIN(p_no) FROM person WHERE p_type = 2"));
                 ItemEntryBar bar = (ItemEntryBar)Field(v, "entry");
-                bar.AddLine(ItemByCode("MCB-1P16"), 50, 3800); bar.AddLine(ItemByCode("CU-1X2.5"), 500, 900); bar.AddLine(ItemByCode("SK-13A"), 40, 3000);
+                ComboBox st = (ComboBox)Field(v, "cmbStore");
+                bar.AddLine(ItemByCode("MCB-1P16"), 50, 3800); bar.AddLine(ItemByCode("SK-13A"), 40, 3000);
                 Pump(200);
+                if (Want("receipt"))
+                {
+                    Bitmap b = Grab(main);
+                    Save(b, "receipt", ContentArea(),
+                        M(main, person, 1, 0), M(main, st, 2, 0), M(main, (Control)Field(v, "cmbRType"), 3, 0),
+                        M(main, bar.Search.Parent, 4, 0), M(main, Btn(v, "مادة جديدة"), 5, 1), M(main, Btn(v, "حفظ"), 6, 2));
+                }
+                if (Want("receipt-stores"))
+                {
+                    st.SelectedValue = store3; Pump(200);
+                    bar.AddLine(ItemByCode("CU-1X2.5"), 500, 900); bar.AddLine(ItemByCode("CU-4X16"), 200, 9000);
+                    Pump(1800);                           // the last line is no longer highlighted
+                    DataGridView g = (DataGridView)Field(v, "grid"); g.ClearSelection();
+                    Bitmap b = Grab(main);
+                    Save(b, "receipt-stores", ContentArea(),
+                        M(main, st, 1, 0), M(ColRect(main, g, "store", 4), 2, 1), M(main, (Control)Field(v, "btnAllStore"), 3, 1), M(main, (Control)Field(v, "lblTotals"), 4, 0));
+                }
+            }
+            if (Want("receipt-new-item"))
+            {
+                DocView v = OpenNew(DocKind.Receipt);
+                ((PersonPicker)Field(v, "person")).Value = Db.I(Db.Scalar("SELECT MIN(p_no) FROM person WHERE p_type = 2"));
+                ItemEntryBar bar = (ItemEntryBar)Field(v, "entry");
+                bar.AddLine(ItemByCode("MCB-1P16"), 50, 0); bar.Reset();
+                bar.Search.Text = "مؤقت زمني للإنارة"; Pump(300);
+                Call(bar, "OnSearchEnter"); bar.Qty.Text = "6"; Pump(1500);
                 Bitmap b = Grab(main);
-                Save(b, "receipt", ContentArea(),
-                    M(main, person, 1, 0), M(main, (Control)Field(v, "cmbStore"), 2, 0), M(main, (Control)Field(v, "cmbRType"), 3, 0),
-                    M(main, bar.Search.Parent, 4, 0), M(main, Btn(v, "حفظ"), 5, 1));
+                Rectangle top = R(main, bar.Search.Parent), gr = R(main, (Control)Field(v, "grid"));
+                Save(b, "receipt-new-item", new Rectangle(0, top.Top - 24, R(main, v).Right + 6, gr.Top + 130 - top.Top + 24),
+                    M(main, bar.Search.Parent, 1, 0), M(Rectangle.Inflate(R(main, bar.DropDown), -8, -4), 2, 3), M(main, Btn(v, "+ إضافة"), 3, 0), M(main, Btn(v, "مادة جديدة"), 4, 1));
             }
             // ---- issue, step by step
             DocView iv = null;
@@ -799,29 +887,32 @@ namespace Stores
                 Rectangle av = g.GetCellDisplayRectangle(g.Columns["avail"].Index, 0, false); av.Offset(gr.Location); av.Height *= 4;
                 b = Grab(main);
                 Save(b, "issue-4", ContentArea(), M(qty, 1, 0), M(av, 2, 0), M(del, 3, 1), M(main, (Control)Field(iv, "lblTotals"), 4, 0), M(main, Btn(iv, "حفظ"), 5, 1),
-                    M(main, Btn(iv, "طباعة"), 6, 1));
+                    M(main, Btn(iv, "طباعة"), 6, 1), M(main, Btn(iv, "حفظ كملف"), 7, 1));
             }
             Close(main);
             // ---- action bar in advanced mode (shortcuts on the buttons)
-            main = NewMain(true);
+            main = NewMain(true, DocWin);
             int lastIssue = Db.I(Db.Scalar("SELECT MAX(shop_no) FROM sale WHERE " + Db.IssueOnly("")));
             if (Want("issue-actions"))
             {
                 main.OpenDoc(DocKind.Issue, lastIssue); Pump(700);
                 DocView v = (DocView)Current();
                 Bitmap b = Grab(main);
-                Control save = Starts(v, "حفظ"), nw = Starts(v, "جديد"), pr = Starts(v, "طباعة"), del = Btn(v, "حذف السند");
+                Control save = Starts(v, "حفظ"), nw = Starts(v, "جديد"), pr = Starts(v, "طباعة"), file = Btn(v, "حفظ كملف"), del = Btn(v, "حذف السند");
                 Control prev = Starts(v, "► السابق"), next = Starts(v, "التالي"), find = Btn(v, "فتح سند برقم…");
-                Rectangle bar = U(R(main, save), R(main, next)); bar = U(bar, R(main, Find<DataGridView>(v, null)));
-                Save(b, "issue-actions", new Rectangle(0, 30, main.Width, R(main, (Control)Field(v, "lblTitle")).Bottom + 20 - 30),
-                    M(main, save, 1, 0), M(main, nw, 2, 0), M(main, pr, 3, 0), M(main, del, 4, 0), M(main, find, 5, 1), M(U(R(main, prev), R(main, next)), 6, 1));
+                Rectangle fr = R(main, file);
+                DrawMenu(b, new Point(fr.Right - 180, fr.Bottom + 1), 180, "حفظ كملف PDF", "حفظ كملف Excel");
+                Save(b, "issue-actions", new Rectangle(0, 30, main.Width, fr.Bottom + 100 - 30),
+                    M(main, save, 1, 0), M(main, nw, 2, 0), M(main, pr, 3, 0), M(fr, 4, 0), M(main, del, 5, 1), M(main, find, 6, 2), M(U(R(main, prev), R(main, next)), 7, 1));
             }
             if (Want("voucher"))
             {
-                ReportViewerForm f = new ReportViewerForm(Reports.Voucher(Posting.Load(DocKind.Issue, lastIssue)));
-                Show(f, new Size(1000, 720)); Pump(1500);
+                PrintPreviewForm f = new PrintPreviewForm(Reports.Voucher(Posting.Load(DocKind.Issue, lastIssue)), false);
+                Show(f, new Size(1120, 760)); Pump(900);
                 Bitmap b = Grab(f);
-                Save(b, "voucher", Rectangle.Empty, M(f, Starts(f, "طباعة"), 1, 0), M(f, Btn(f, "معاينة"), 2, 0), M(f, Btn(f, "إعداد الصفحة"), 3, 0), M(U(R(f, Starts(f, "تكبير")), R(f, Starts(f, "تصغير"))), 4, 0));
+                Save(b, "voucher", Rectangle.Empty, M(f, Starts(f, "طباعة"), 1, 0), M(f, Btn(f, "حفظ PDF"), 2, 2), M(f, Btn(f, "حفظ Excel"), 3, 2),
+                    M(U(R(f, Btn(f, "الصفحة السابقة")), R(f, Btn(f, "الصفحة التالية"))), 4, 2), M(U(R(f, Starts(f, "تكبير")), R(f, Btn(f, "ملء العرض"))), 5, 2),
+                    M(f, Btn(f, "عرضي"), 6, 2), M(f, (Control)Field(f, "cmbPaper"), 7, 2));
                 Close(f);
             }
             if (Want("return"))
@@ -905,7 +996,9 @@ namespace Stores
         }
 
         // ================================================================== 7. purchase requests
-        static ReportsWindow NewReports(string key, Size size)
+        static ReportsWindow NewReports(string key, Size size) { return NewReports(key, size, 0); }
+
+        static ReportsWindow NewReports(string key, Size size, int item)
         {
             ConstructorInfo ci = typeof(ReportsWindow).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Form) }, null);
             ReportsWindow w = (ReportsWindow)ci.Invoke(new object[] { main });
@@ -914,8 +1007,9 @@ namespace Stores
             Show(w, size);
             Pump(1000);
             // off-screen the first page (set while the window is created) can stay empty: the report is shown again
-            Call(rv, "Run");
+            if (item > 0) Call(rv, "Preset", item, 0, 0); else Call(rv, "Run");
             Pump(2000);
+            if (item > 0) { Call(rv, "Run"); Pump(2000); }
             return w;
         }
 
@@ -993,9 +1087,9 @@ namespace Stores
                 Control list = Btn(rv, "جرد أرصدة المواد").Parent;
                 if (Want("reports"))
                     Save(b, "reports", Rectangle.Empty,
-                        M(w, list, 1, 4), M(w, (Control)Field(rv, "pars"), 2, 0), M(w, Btn(rv, "عرض التقرير"), 3, 1), M(w, Btn(rv, "طباعة"), 4, 1),
-                        M(w, Btn(rv, "معاينة"), 5, 1), M(w, Btn(rv, "تصدير Excel"), 6, 1), M(w, Btn(rv, "ملء الشاشة"), 7, 1), M(w, Btn(rv, "إعداد الصفحة"), 8, 1),
-                        M(U(R(w, Btn(rv, "+")), R(w, Btn(rv, "−"))), 9, 1));
+                        M(w, list, 1, 4), M(w, (Control)Field(rv, "pars"), 2, 0), M(w, Btn(rv, "عرض التقرير"), 3, 1), M(w, Btn(rv, "معاينة وطباعة"), 4, 1),
+                        M(w, Btn(rv, "حفظ PDF"), 5, 1), M(w, Btn(rv, "تصدير Excel"), 6, 1), M(w, Btn(rv, "ملء الشاشة"), 7, 1),
+                        M(U(R(w, Btn(rv, "+")), R(w, Btn(rv, "−"))), 8, 1));
                 if (Want("report-search"))
                 {
                     WebBrowser wb = (WebBrowser)Field(rv, "wb");
@@ -1008,9 +1102,20 @@ namespace Stores
                     if (q != null) marks.Add(M(Dom(q, wr), 1, 0));
                     HtmlElementCollection th = wb.Document.GetElementsByTagName("th");
                     if (th.Count > 0 && th[0].Parent != null) marks.Add(M(Dom(th[0].Parent, wr), 2, 1));
+                    marks.Add(M(DataRow(rv, wr, 1), 3, 1));
                     Save(b, "report-search", new Rectangle(wr.Left, wr.Top, wr.Width, wr.Height), marks.ToArray());
                 }
                 Close(w);
+            }
+            if (Want("row-document"))
+            {
+                // what a double click on a row of a report opens: the document with «فتح المستند للتعديل»
+                int no = Db.I(Db.Scalar("SELECT MAX(shop_no) FROM shop WHERE shop_type <> 3"));
+                PrintPreviewForm f = new PrintPreviewForm(Reports.Voucher(Posting.Load(DocKind.Receipt, no)), true);
+                Show(f, new Size(1120, 600)); Pump(900);
+                Bitmap b = Grab(f);
+                Save(b, "row-document", Rectangle.Empty, M(f, Btn(f, "فتح المستند للتعديل"), 1, 2));
+                Close(f);
             }
             Close(main);
         }
@@ -1020,6 +1125,9 @@ namespace Stores
         {
             Rectangle r = e.OffsetRectangle;
             for (HtmlElement p = e.OffsetParent; p != null; p = p.OffsetParent) r.Offset(p.OffsetRectangle.Location);
+            // right-to-left pages have their scroll bar at the left, outside these coordinates
+            HtmlElement body = e.Document.Body;
+            if (body.ScrollRectangle.Height > browser.Height) r.Offset(SystemInformation.VerticalScrollBarWidth, 0);
             r.Offset(browser.Location);
             return r;
         }
@@ -1110,13 +1218,20 @@ namespace Stores
                 Save(b, "language", Rectangle.Empty, M(f, Btn(f, "العربية"), 1, 0), M(f, Btn(f, "English"), 2, 1));
                 Close(f); Lang.English = en;
             }
+            if (Want("sql-package"))
+            {
+                SqlPackageDialog f = new SqlPackageDialog(null, 0, SqlPackage.OfficialSize); Show(f, Size.Empty);
+                Bitmap b = Grab(f);
+                Save(b, "sql-package", Rectangle.Empty, M(f, Starts(f, "اختيار الملف"), 1, 0), M(f, Starts(f, "تنزيل من الإنترنت"), 2, 0), M(f, Btn(f, "إلغاء"), 3, 0));
+                Close(f);
+            }
             if (Want("first-password"))
             {
                 // new data: user 1 / password 1 must choose a new password at the first sign-in (the current one is filled in)
                 ChangePasswordForm f = new ChangePasswordForm("1"); Show(f, Size.Empty);
                 TableLayoutPanel t = Find<TableLayoutPanel>(f, null);
                 Control cur = t.GetControlFromPosition(1, 0), n1 = t.GetControlFromPosition(1, 1), n2 = t.GetControlFromPosition(1, 2);
-                n1.Text = "demo-2026"; n2.Text = "demo-2026";
+                n1.Text = "demo-2026"; n2.Text = "demo-2026"; f.Refresh(); Pump(600);   // painted completely before the capture
                 Bitmap b = Grab(f);
                 Save(b, "first-password", Rectangle.Empty, M(f, cur, 1, 1), M(f, n1, 2, 1), M(f, n2, 3, 1), M(f, Btn(f, "حفظ"), 4, 1));
                 Close(f);
@@ -1256,6 +1371,7 @@ namespace Stores
             if (Want("dark-home")) Save(Grab(main), "dark-home", Rectangle.Empty);
             if (Want("dark-issue"))
             {
+                Close(main); main = NewMain(false, DocWin);
                 DocView v = OpenNew(DocKind.Issue);
                 ((ProjectPicker)Field(v, "project")).Value = projD;
                 Add(v, "CT-25", 2); Add(v, "CU-4X16", 40); Add(v, "OL-0913", 2);

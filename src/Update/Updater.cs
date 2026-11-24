@@ -184,8 +184,7 @@ namespace Stores
                 Process.Start(si);
             }
             finally { UI.WaitCursor(false); }
-            Db.Log(null, "تحديث البرنامج", Program.Version + " ← " + r.Ver);
-            Db.SignOff();
+            try { Db.Log(null, "تحديث البرنامج", Program.Version + " ← " + r.Ver); Db.SignOff(); } catch { }   // may run before signing in
             Environment.Exit(0);
         }
 

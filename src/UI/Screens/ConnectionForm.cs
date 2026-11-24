@@ -73,7 +73,7 @@ namespace Stores
                     if (err != null) { UI.Warn("تعذر إنشاء البيانات:\n" + err); return; }
                     txtPath.Text = d.FileName; rAccess.Checked = true;
                     Settings.Mode = "access"; Settings.DataPath = d.FileName; Settings.Save();
-                    UI.Info("✓ تم إنشاء بيانات جديدة فارغة:\n" + d.FileName + "\n\nادخل باسم المستخدم 1 وكلمة المرور 1، ثم غيّر كلمة المرور.\nابدأ بإضافة المواد من شاشة «المواد».");
+                    UI.Info("✓ تم إنشاء بيانات جديدة فارغة:\n" + d.FileName + "\n\nادخل باسم المستخدم 1 وكلمة المرور 1، ثم غيّر كلمة المرور.\nابدأ بإضافة المواد من شاشة «بطاقة مادة».");
                     DialogResult = DialogResult.OK; Close();
                 }
             };
@@ -87,7 +87,7 @@ namespace Stores
             bMain.Click += delegate
             {
                 if (!UI.Confirm("«السيرفر الرئيسي» يُستعمل على حاسوب واحد فقط: الحاسوب الذي سيحفظ بيانات الشركة ويبقى شغالا.\n" +
-                                "سيُنصّب عليه SQL Server Express (قد يستغرق 10–20 دقيقة في المرة الأولى).\n\n" +
+                                "سيُنصّب عليه SQL Server Express (عادة 4–10 دقائق في المرة الأولى، بدون إنترنت).\n\n" +
                                 "على الحواسيب الأخرى استعمل «سيرفر ثانوي».\n\nهل هذا الحاسوب هو السيرفر الرئيسي؟")) return;
                 if (ServerSetup.RunMain(this)) { DialogResult = DialogResult.OK; Close(); }
             };

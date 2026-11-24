@@ -318,6 +318,21 @@ namespace Stores
             Db.InTx(delegate(DbTransaction tx) { foreach (int id in ids) Recalc(tx, id); });
         }
 
+        /// <summary>The receipts made from one entry screen (one per store): the request chosen for the first is linked to all.</summary>
+        public static void AfterReceiptSave(IWin32Window owner, List<Doc> docs)
+        {
+            AfterReceiptSave(owner, docs[0]);
+            if (!Db.HasPreq || docs.Count < 2) return;
+            try
+            {
+                int preq = Db.I(Db.Scalar("SELECT preq_no FROM shop WHERE shop_no = ?", docs[0].Id));
+                for (int i = 1; i < docs.Count; i++)
+                    if (preq > 0) Link(docs[i].Id, preq); else AfterReceiptSave(owner, docs[i]);
+            }
+            catch (UserError ue) { UI.Warn(ue.Message); }
+            catch (Exception ex) { UI.Error(ex); }
+        }
+
         /// <summary>One-line hook for the receipt screen, called after a successful save. A receipt already linked is simply
         /// re-applied. Otherwise (advanced mode only, never in beginner mode) a small question is shown when open requests
         /// wait for items of this receipt.</summary>

@@ -2,7 +2,8 @@
 #   1. the tag must equal Program.Version in src/App/Program.cs
 #   2. build + tests on demo data
 #   3. EngStores-<version>.zip (program .exe + the two guide files + docs/manual) and EngStores-<version>.zip.sha256
-#   4. GitHub release with both files; the program's updater (src/Update/Updater.cs) downloads it from there.
+#   4. Inventory-Management-Setup-<version>.exe (installer/, the same files inside) and its .sha256
+#   5. GitHub release with the four files; the program's updater (src/Update/Updater.cs) takes only the zip and its .sha256.
 # Release steps for the maintainer: bump Program.Version, commit, then: git tag v1.2.0 && git push origin v1.2.0
 name: Release
 
@@ -45,10 +46,22 @@ jobs:
         shell: powershell
         run: .\scripts\package.ps1 -Tag "$env:GITHUB_REF_NAME"
 
+      - name: Build the setup program
+        id: setup
+        shell: powershell
+        run: |
+          & .\installer\build-setup.ps1 -Release -Tag "$env:GITHUB_REF_NAME"
+          exit $LASTEXITCODE
+
+      - name: Setup program tests
+        shell: cmd
+        run: tests\bin\InstallerTests.exe
+
       - name: Create the GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$env:GITHUB_REF_NAME" "${{ steps.pkg.outputs.zip }}" "${{ steps.pkg.outputs.sha }}" `
+          gh release create "$env:GITHUB_REF_NAME" "${{ steps.setup.outputs.setup }}" "${{ steps.setup.outputs.setupsha }}" `
+            "${{ steps.pkg.outputs.zip }}" "${{ steps.pkg.outputs.sha }}" `
             --title "$env:GITHUB_REF_NAME" --generate-notes

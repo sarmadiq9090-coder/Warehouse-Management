@@ -453,7 +453,10 @@ namespace Stores
                 double[] v; if (!g.TryGetValue(rs, out v)) { v = new double[4]; g[rs] = v; docs[rs] = new HashSet<int>(); }
                 docs[rs].Add(Db.I(x["wo_no"])); v[1]++; v[2] += q; v[3] += c;
                 if (p.Flag)
+                {
                     r.Row(null, ++n, Db.Dt(x["wo_date"]), Db.S(x["menu_no"]), Cache.Store(Db.I(x["stor"])), ReasonName(rs), Cache.ItemCode(it), Cache.ItemName(it), Cache.ItemUnit(it), q, c, Db.S(x["approved_by"]));
+                    r.Link(RowLinks.Make("wo", Db.I(x["wo_no"])));
+                }
             }
             r.Chart = new List<KeyValuePair<string, double[]>>(); r.ChartSeries = new string[] { "الكلفة" };
             foreach (int rs in AllReasons)

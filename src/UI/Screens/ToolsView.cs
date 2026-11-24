@@ -26,7 +26,7 @@ namespace Stores
                 admin ? "تغيير الاتصال…" : null, delegate
                 {
                     using (ConnectionForm f = new ConnectionForm())
-                        if (f.ShowDialog(FindForm()) == DialogResult.OK) { UI.Info("سيتم إعادة تشغيل البرنامج."); Db.SignOff(); Application.Restart(); }
+                        if (f.ShowDialog(FindForm()) == DialogResult.OK) { UI.Info("سيتم إعادة تشغيل البرنامج."); Db.SignOff(); SingleInstance.Release(); Application.Restart(); }
                 }));
             { Panel ap = Tile("المظهر", "", null, null); ap.Controls[0].Dispose(); ThemePicker tp = new ThemePicker(); tp.Dock = DockStyle.Fill; ap.Controls.Add(tp); tp.BringToFront(); flow.Controls.Add(ap); }
             if (Db.IsSql && admin)

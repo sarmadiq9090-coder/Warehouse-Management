@@ -100,6 +100,7 @@ namespace Stores
                 r.Row(cls, ++n, Cache.ItemCode(l.ItemNo), Cache.ItemName(l.ItemNo), TypeName(l.ItemNo), l.Book,
                     l.Counted.HasValue ? (object)l.Counted.Value : null, l.Counted.HasValue ? (object)d : null,
                     d < -0.0000001 ? (object)(-d) : null, d > 0.0000001 ? (object)d : null, state);
+                r.Link(RowLinks.Item(l.ItemNo));
             }
             r.Sum("عدد المواد", c.Lines.Count.ToString("#,##0", Inv));
             r.Sum("المعدودة", counted.ToString("#,##0", Inv));

@@ -82,13 +82,13 @@ namespace Stores
             pars.Controls.AddRange(new Control[] { UI.Field(lPreset, cmbPreset), UI.Field(lFrom, d1), UI.Field(lTo, d2), UI.Field(lStore, cmbStore), UI.Field(lItem, item), UI.Field(lProj, proj), UI.Field(lPerson, person), UI.Field(lType, cmbType), UI.Field(lRType, cmbRType), UI.Field(lTop, top), UI.Field(lText, txt), UI.Field(UI.Lbl("متوسط الاستهلاك من"), cmbMonths), flag });
 
             FlowLayoutPanel bar = UI.Flow(); bar.Dock = DockStyle.Top;
-            Button run = UI.Btn("عرض التقرير", Theme.Accent, 130), print = UI.Btn("طباعة", Theme.Primary, 86), prev = UI.BtnLight("معاينة", 80),
-                   xl = UI.BtnLight("تصدير Excel", 110), full = UI.BtnLight("ملء الشاشة", 104), setup = UI.BtnLight("إعداد الصفحة", 110),
+            Button run = UI.Btn("عرض التقرير", Theme.Accent, 130), print = UI.Btn("معاينة وطباعة", Theme.Primary, 130), pdf = UI.BtnLight("حفظ PDF", 96),
+                   xl = UI.BtnLight("تصدير Excel", 110), full = UI.BtnLight("ملء الشاشة", 104),
                    zin = UI.BtnLight("+", 38), zout = UI.BtnLight("−", 38);
             new ToolTip().SetToolTip(zin, "تكبير الخط"); new ToolTip().SetToolTip(zout, "تصغير الخط");
             preq = UI.Btn("إنشاء طلب شراء", Theme.Primary, 140); preq.Visible = false;
             new ToolTip().SetToolTip(preq, "طلب شراء (مسودة) بالكميات المقترحة للمواد المعروضة");
-            bar.Controls.AddRange(new Control[] { run, print, prev, xl, full, setup, zin, zout, preq });
+            bar.Controls.AddRange(new Control[] { run, print, pdf, xl, full, zin, zout, preq });
             head.Controls.Add(bar); head.Controls.Add(pars); head.Controls.Add(lblDesc); head.Controls.Add(lblTitle); UI.FitHeight(head);
 
             Panel wbCard = UI.Card(); wbCard.Dock = DockStyle.Fill; wbCard.Padding = new Padding(1);
@@ -106,10 +106,10 @@ namespace Stores
             d2.ValueChanged += delegate { if (!presetting) cmbPreset.SelectedIndex = 7; };
             run.Click += delegate { Run(); };
             Func<bool> ready = delegate { if (last == null) UI.Warn("اعرض التقرير أولا بالضغط على «عرض التقرير»."); return last != null; };
-            print.Click += delegate { if (ready()) PrintSetup.Print(wb); };
-            prev.Click += delegate { if (ready()) PrintSetup.Preview(wb); };
-            setup.Click += delegate { PrintSetup.PageSetup(wb); };
-            xl.Click += delegate { if (ready()) Excel.Export(FindForm(), last); };
+            print.Click += delegate { if (ready()) PrintPreviewForm.Show(FindForm(), RowLinks.Shown(wb, last)); };
+            pdf.Click += delegate { if (ready()) Pdf.Export(FindForm(), RowLinks.Shown(wb, last), null); };
+            RowLinks.Attach(wb, null);
+            xl.Click += delegate { if (ready()) Excel.Export(FindForm(), RowLinks.Shown(wb, last)); };
             full.Click += delegate { if (ready()) ReportViewerForm.ShowFull(FindForm(), last); };
             preq.Click += delegate { if (ready()) CreatePurchaseRequest(); };
             zin.Click += delegate { PrintSetup.ZoomBy(wb, 10); };
@@ -181,6 +181,8 @@ namespace Stores
             if (itemNo > 0) item.Value = itemNo;
             if (personNo > 0) person.Value = personNo;
             if (projNo > 0) proj.Value = projNo;
+            if (current.Key == "card" && itemNo > 0) cmbPreset.SelectedIndex = 6;   // the item's whole account statement
+            if ((current.Key == "person" && personNo > 0) || (current.Key == "project" && projNo > 0)) { cmbPreset.SelectedIndex = 6; if (current.Key == "project") flag.Checked = true; }
             if ((itemNo > 0 && (current.P & RP.Item) != 0) || (personNo > 0 && (current.P & RP.Person) != 0) || (projNo > 0 && (current.P & RP.Project) != 0)) Run();
         }
 

@@ -394,7 +394,7 @@ namespace Stores
         void PrintSheet()
         {
             if (doc == null) return;
-            using (ReportViewerForm f = new ReportViewerForm(CountReports.Sheet(doc, UI.Sel(cmbSort) == 1))) f.ShowDialog(FindForm());
+            PrintPreviewForm.Show(FindForm(), CountReports.Sheet(doc, UI.Sel(cmbSort) == 1));
         }
 
         void ShowVariance()

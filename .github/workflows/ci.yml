@@ -41,6 +41,14 @@ jobs:
         shell: powershell
         run: .\tests\RunAll.ps1 -Work "$env:RUNNER_TEMP\tests"
 
+      - name: Build the setup program
+        shell: cmd
+        run: call installer\build-setup.bat -Release
+
+      - name: Setup program tests
+        shell: cmd
+        run: tests\bin\InstallerTests.exe
+
       - name: Keep the test logs
         if: always()
         uses: actions/upload-artifact@v4

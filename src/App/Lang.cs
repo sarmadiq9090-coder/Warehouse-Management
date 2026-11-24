@@ -435,7 +435,7 @@ namespace Stores
                 for (int i = 0; i < x.Length; i++) { string s = x[i] as string; if (s != null) x[i] = TCell(s); }
                 t.Rows.Add(x);
             }
-            t.RowClass.AddRange(r.RowClass);
+            t.RowClass.AddRange(r.RowClass); t.RowLink.AddRange(r.RowLink);
             foreach (KeyValuePair<string, string> kv in r.Summary) t.Summary.Add(new KeyValuePair<string, string>(kv.Key, TCell(kv.Value)));
             if (r.Chart != null)
             {

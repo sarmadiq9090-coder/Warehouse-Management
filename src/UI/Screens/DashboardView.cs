@@ -2,6 +2,7 @@
 using System.Data;
 using System.Drawing.Drawing2D;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using System;
 
@@ -30,14 +31,30 @@ namespace Stores
             today.Font = Theme.Font; today.ForeColor = Theme.Muted; today.Dock = DockStyle.Top; today.Height = 22; today.TextAlign = ContentAlignment.MiddleLeft;
             head.Controls.Add(today); head.Controls.Add(hello);
 
-            // ---- one big item search (same behaviour as Ctrl+F)
+            // ---- one big search box; the user chooses what to look for (remembered per user)
             Panel sp = new Panel(); sp.Dock = DockStyle.Top; sp.Height = 64; sp.Padding = new Padding(side, 8, side, 10);
-            SearchBox search = new SearchBox("ابحث عن مادة بالرمز أو الاسم…   (Ctrl+F)"); search.Dock = DockStyle.Right;
+            SearchBox search = new SearchBox(""); search.Dock = DockStyle.Right;
+            string pick = "home_search_user" + Session.UserNo;
+            int choice; int.TryParse(Db.GetSetting(pick, "0"), out choice);
+            search.SetChoices(new[] { Lang.English ? "Item" : "مادة", "مستند", "مركز كلفة", "مجهز / جهة" },
+                new[] { "كشف حساب مادة: اكتب الرمز أو الاسم…   (Ctrl+F)", "بحث عن مستند: الرقم أو مركز الكلفة أو المجهز أو الملاحظات…",
+                        "كشف مركز كلفة: اكتب الاسم أو الرمز…", "كشف مجهز أو جهة: اكتب الاسم…" },
+                choice, delegate(int i) { Db.SetSetting(pick, i.ToString()); });
             sp.Controls.Add(search);
-            sp.Resize += delegate { search.Width = Math.Min(720, sp.ClientSize.Width - sp.Padding.Horizontal); };
+            sp.Resize += delegate { search.Width = Math.Min(760, sp.ClientSize.Width - sp.Padding.Horizontal); };
             TextBox box = search.Box;
-            box.KeyDown += delegate(object s, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; main.QuickFind(box.Text.Trim()); } };
-            box.TextChanged += delegate { if (box.Text.Length >= 2) { string t = box.Text; box.Text = ""; main.QuickFind(t); } };
+            Action<string> go = delegate(string t)
+            {
+                switch (search.Choice)
+                {
+                    case 1: main.FindDoc(t); break;
+                    case 2: main.FindProject(t); break;
+                    case 3: main.FindPerson(t); break;
+                    default: main.QuickFind(t); break;
+                }
+            };
+            box.KeyDown += delegate(object s, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; string t = box.Text.Trim(); box.Text = ""; go(t); } };
+            box.TextChanged += delegate { if (box.Text.Length >= 2) { string t = box.Text; box.Text = ""; go(t); } };
 
             // ---- what to do: one row of large tiles (beginner: 4 explained tiles; advanced: up to 6 compact ones)
             Label ask = new Label(); ask.Text = "ماذا تريد أن تفعل؟"; ask.Font = Theme.FontSubtitle; ask.ForeColor = Theme.Text;
@@ -53,12 +70,8 @@ namespace Stores
             // the user's own order (drag a tile onto another to swap them; saved per user)
             string orderKey = "tiles_user" + Session.UserNo + (adv ? "_adv" : "");
             List<string> order = new List<string>(Db.GetSetting(orderKey, "").Split('|'));
-            tiles.Sort(delegate(ActionTile a, ActionTile b)
-            {
-                int ia = order.IndexOf(a.Title), ib = order.IndexOf(b.Title);
-                if (ia < 0) ia = 1000; if (ib < 0) ib = 1000;
-                return ia.CompareTo(ib);
-            });
+            // stable: without a saved order the tiles stay as listed above (List.Sort may reorder equal ones and drop a main tile)
+            tiles = tiles.OrderBy(a => { int i = order.IndexOf(a.Title); return i < 0 ? 1000 : i; }).ToList();
             int max = adv ? 6 : 4;
             if (tiles.Count > max) tiles.RemoveRange(max, tiles.Count - max);
             ask.Text = "ماذا تريد أن تفعل؟   (اسحب أي بطاقة لتغيير ترتيبها)";

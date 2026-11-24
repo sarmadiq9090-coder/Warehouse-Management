@@ -6,7 +6,7 @@
 
   Run build.bat first. The zip holds only: the program .exe, the two guide files and the illustrated user manual
   (docs\manual: index.html + img\*.png, opened by the program with F1 / «الإعدادات ← دليل الاستخدام»).
-  Never: the «مكونات» folder, logo.png, settings.ini, data files, backups.
+  Never: the «مكونات» folder (Microsoft's SQL Server package, see make-offline.ps1), logo.png, settings.ini, data files, backups.
   The updater (src\Update\Updater.cs) takes only EngStores-<tag version>.zip and its .zip.sha256 from this repository's release downloads,
   checks the SHA-256 and looks for «Inventory Management.exe» inside the zip.
 #>

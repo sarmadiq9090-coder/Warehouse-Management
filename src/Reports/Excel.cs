@@ -239,19 +239,21 @@ namespace Stores
             }
         }
 
-        static string AskPath(IWin32Window owner, string title)
+        public static string AskPath(IWin32Window owner, string title) { return AskPath(owner, title, "xlsx"); }
+
+        public static string AskPath(IWin32Window owner, string title, string ext)
         {
             using (SaveFileDialog d = new SaveFileDialog())
             {
-                d.Filter = "Excel (*.xlsx)|*.xlsx";
+                d.Filter = ext == "pdf" ? "PDF (*.pdf)|*.pdf" : "Excel (*.xlsx)|*.xlsx";
                 string safe = new string(title.Where(ch => Array.IndexOf(Path.GetInvalidFileNameChars(), ch) < 0).ToArray());
-                d.FileName = safe + " " + DateTime.Today.ToString("yyyy-MM-dd", Inv) + ".xlsx";
+                d.FileName = safe + " " + DateTime.Today.ToString("yyyy-MM-dd", Inv) + "." + ext;
                 d.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 return d.ShowDialog(owner) == DialogResult.OK ? d.FileName : null;
             }
         }
 
-        static void Done(string path)
+        public static void Done(string path)
         {
             if (UI.Confirm("تم التصدير:\n" + path + "\n\nهل تريد فتح الملف الآن؟"))
             {

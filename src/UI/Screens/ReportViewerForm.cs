@@ -30,28 +30,33 @@ namespace Stores
             ShowInTaskbar = false;
             KeyPreview = true;
             FlowLayoutPanel bar = UI.Flow(); bar.BackColor = Theme.Card; bar.Padding = new Padding(6);
-            Button print = UI.Btn("طباعة  (Ctrl+P)", Theme.Primary, 140), prev = UI.BtnLight("معاينة", 90), xl = UI.BtnLight("تصدير Excel", 120),
-                   setup = UI.BtnLight("إعداد الصفحة", 120), zin = UI.BtnLight("تكبير +", 80), zout = UI.BtnLight("تصغير −", 80), close = UI.BtnLight("إغلاق", 90);
-            bar.Controls.AddRange(new Control[] { print, prev, xl, setup, zin, zout, close });
+            Button print = UI.Btn("معاينة وطباعة  (Ctrl+P)", Theme.Primary, 180), pdf = UI.BtnLight("حفظ PDF", 100), xl = UI.BtnLight("تصدير Excel", 120),
+                   zin = UI.BtnLight("تكبير +", 80), zout = UI.BtnLight("تصغير −", 80), close = UI.BtnLight("إغلاق", 90);
+            bar.Controls.AddRange(new Control[] { print, pdf, xl, zin, zout, close });
             wb = new WebBrowser(); wb.Dock = DockStyle.Fill; wb.IsWebBrowserContextMenuEnabled = false; wb.AllowWebBrowserDrop = false; wb.ScriptErrorsSuppressed = true;
             wb.DocumentCompleted += delegate { PrintSetup.ApplyZoom(wb); };
             Controls.Add(wb); Controls.Add(bar);
             Lang.Apply(this);   // English first: it may recreate handles the theme then paints
             ThemePainter.Attach(this);
+            RowLinks.Attach(wb, delegate { EditOpened = true; Close(); });
             wb.DocumentText = Html.Render(r);
-            print.Click += delegate { PrintSetup.Print(wb); };
-            prev.Click += delegate { PrintSetup.Preview(wb); };
-            setup.Click += delegate { PrintSetup.PageSetup(wb); };
-            xl.Click += delegate { Excel.Export(this, data); };
+            print.Click += delegate { Preview(); };
+            pdf.Click += delegate { Pdf.Export(this, RowLinks.Shown(wb, data), null); };
+            xl.Click += delegate { Excel.Export(this, RowLinks.Shown(wb, data)); };
             zin.Click += delegate { PrintSetup.ZoomBy(wb, 10); };
             zout.Click += delegate { PrintSetup.ZoomBy(wb, -10); };
             close.Click += delegate { Close(); };
         }
 
+        /// <summary>A document opened from a row (double click) was sent to the main window for editing.</summary>
+        public bool EditOpened;
+
+        void Preview() { PrintPreviewForm.Show(this, RowLinks.Shown(wb, data)); }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Escape) { Close(); return true; }
-            if (keyData == (Keys.Control | Keys.P)) { PrintSetup.Print(wb); return true; }
+            if (keyData == (Keys.Control | Keys.P)) { Preview(); return true; }
             if (keyData == (Keys.Control | Keys.Add) || keyData == (Keys.Control | Keys.Oemplus)) { PrintSetup.ZoomBy(wb, 10); return true; }
             if (keyData == (Keys.Control | Keys.Subtract) || keyData == (Keys.Control | Keys.OemMinus)) { PrintSetup.ZoomBy(wb, -10); return true; }
             return base.ProcessCmdKey(ref msg, keyData);
@@ -64,10 +69,6 @@ namespace Stores
             using (ReportViewerForm f = new ReportViewerForm(r)) { f.WindowState = FormWindowState.Maximized; f.ShowDialog(owner); }
         }
 
-        public static void ShowVoucher(IWin32Window owner, Doc d)
-        {
-            using (ReportViewerForm f = new ReportViewerForm(Reports.Voucher(d))) f.ShowDialog(owner);
-        }
 
         public static void ShowItemCard(IWin32Window owner, int item)
         {

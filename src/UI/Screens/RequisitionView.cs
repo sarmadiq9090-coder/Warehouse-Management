@@ -105,7 +105,7 @@ namespace Stores
             DataGridViewTextBoxColumn hid = new DataGridViewTextBoxColumn(); hid.Name = "itemNo"; hid.Visible = false; grid.Columns.Add(hid);
             gc.Controls.Add(grid);
             Label hint = new Label(); hint.Dock = DockStyle.Bottom; hint.Height = 22; hint.ForeColor = Theme.Muted; hint.Font = Theme.FontSmall; hint.TextAlign = ContentAlignment.MiddleLeft;
-            hint.Text = "① اختر مركز الكلفة والمخزن   ② ابحث عن المادة واكتب الكمية ثم Enter   ③ «إرسال للموافقة»   •   «المتوفر» = رصيد المخزن ناقص المحجوز لمراكز كلفة أخرى";
+            hint.Text = UI.Steps("① اختر مركز الكلفة والمخزن   ② ابحث عن المادة واكتب الكمية ثم Enter   ③ «إرسال للموافقة»   •   «المتوفر» = رصيد المخزن ناقص المحجوز لمراكز كلفة أخرى");
 
             Controls.Add(gc); Controls.Add(hint); Controls.Add(entryCard); Controls.Add(head); Controls.Add(bar); Controls.Add(band);
 
@@ -397,7 +397,7 @@ namespace Stores
         {
             if (doc == null || doc.No == 0) return;
             if (dirty) { if (!UI.Confirm("يجب حفظ الطلب قبل الطباعة. حفظ الآن؟") || !Save()) return; }
-            using (ReportViewerForm f = new ReportViewerForm(Requisitions.Print(doc))) f.ShowDialog(FindForm());
+            PrintPreviewForm.Show(FindForm(), Requisitions.Print(doc));
         }
 
         public bool CanLeave()

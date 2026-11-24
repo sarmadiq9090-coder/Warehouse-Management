@@ -171,7 +171,7 @@ namespace Stores
                 vals.Add(tot);
                 if (hasValue) { Valuation.ItemValue iv; double x = val.TryGetValue(it, out iv) ? Math.Round(iv.StoreValue(p.Store), 2) : 0; vals.Add(x); tval += x; }
                 total += tot; if (tot < -0.0001) neg++;
-                r.Row(tot < -0.0001 ? "neg" : null, vals.ToArray());
+                r.Row(tot < -0.0001 ? "neg" : null, vals.ToArray()); r.Link(RowLinks.Item(it));
             }
             r.Sum("عدد المواد", n.ToString("#,##0", Inv));
             r.Sum("مجموع الكميات", UI.Num(total));
@@ -208,6 +208,7 @@ namespace Stores
                 string party = k == 4 || k == 5 ? (k == 4 ? "من " : "إلى ") + Cache.Store(Db.I(x["p"])) : k == 7 || k == 8 ? "الجرد الفعلي" : k == 9 ? "سند إتلاف" : Cache.Person(Db.I(x["p"]));
                 r.Row(run < -0.0001 ? "neg" : null, Db.Dt(x["d"]), KindText(k), Db.S(x["dno"]), party, Cache.Store(Db.I(x["st"])),
                     q >= 0 ? (object)q : null, q < 0 ? (object)(-q) : null, run);
+                r.Link(RowLinks.Move(k, Db.I(x["id"])));
             }
             r.Sum("الرصيد السابق", UI.Num(open)); r.Sum("مجموع الوارد", UI.Num(tin)); r.Sum("مجموع الصادر", UI.Num(tout)); r.Sum("الرصيد النهائي", UI.Num(run));
             r.Footer = "الرصيد الحالي المسجل في كل المخازن: " + UI.Num(Cache.StockAll(it));
@@ -230,7 +231,7 @@ namespace Stores
                 int it = Db.I(x[0]); double ret = Db.D(x[1]), b = Db.D(x[2]);
                 DataRow ir = Cache.Item(it);
                 if (b > ret || !ItemMatches(ir, p) || (ir != null && Db.B(ir["freez"]))) continue;
-                r.Row(b <= 0 ? "neg" : null, ++n, Cache.ItemCode(it), Cache.ItemName(it), ir == null ? "" : Db.S(ir["type_name"]), ret, b, ret - b);
+                r.Row(b <= 0 ? "neg" : null, ++n, Cache.ItemCode(it), Cache.ItemName(it), ir == null ? "" : Db.S(ir["type_name"]), ret, b, ret - b); r.Link(RowLinks.Item(it));
             }
             r.Sum("عدد المواد", n.ToString());
             if (Db.I(Db.Scalar("SELECT COUNT(*) FROM item WHERE item_bal_ret > 0")) < 5)
@@ -253,7 +254,7 @@ namespace Stores
                                         : Db.Query("SELECT item_no, SUM(item_bal) FROM item_stor GROUP BY item_no");
             r.Col("ت", ColKind.Int); r.Col("الرمز", ColKind.Text); r.Col("اسم المادة", ColKind.Text); r.Col("النوع", ColKind.Text); r.Col("الوحدة", ColKind.Text);
             r.ColT("الرصيد"); r.Col("آخر إخراج", ColKind.Date); r.Col("آخر إدخال", ColKind.Date); r.Col("أيام بلا إخراج", ColKind.Int);
-            List<object[]> rows = new List<object[]>();
+            List<object[]> rows = new List<object[]>(); Dictionary<object[], string> links = new Dictionary<object[], string>();
             foreach (DataRow x in bal.Rows)
             {
                 int it = Db.I(x[0]); double b = Db.D(x[1]);
@@ -264,9 +265,10 @@ namespace Stores
                 DateTime lr; bool hasR = lastRec.TryGetValue(it, out lr);
                 int days = has ? (int)(DateTime.Today - li).TotalDays : -1;
                 rows.Add(new object[] { 0, Cache.ItemCode(it), Cache.ItemName(it), ir == null ? "" : Db.S(ir["type_name"]), Unit(it), b, has ? (object)li : null, hasR ? (object)lr : null, days < 0 ? null : (object)days });
+                links[rows[rows.Count - 1]] = RowLinks.Item(it);
             }
             int n = 0;
-            foreach (object[] o in rows.OrderBy(o => o[6] == null ? DateTime.MinValue : (DateTime)o[6])) { o[0] = ++n; r.Row(null, o); }
+            foreach (object[] o in rows.OrderBy(o => o[6] == null ? DateTime.MinValue : (DateTime)o[6])) { o[0] = ++n; r.Row(null, o); r.Link(links[o]); }
             r.Sum("عدد المواد الراكدة", n.ToString("#,##0", Inv));
             return r;
         }
@@ -278,7 +280,10 @@ namespace Stores
             r.Col("ت", ColKind.Int); r.Col("المخزن", ColKind.Text); r.Col("الرمز", ColKind.Text); r.Col("اسم المادة", ColKind.Text); r.Col("الوحدة", ColKind.Text); r.ColT("الرصيد");
             int n = 0;
             foreach (DataRow x in Db.Query("SELECT stor, item_no, item_bal FROM item_stor WHERE item_bal < -0.0001 ORDER BY stor, item_no").Rows)
+            {
                 r.Row("neg", ++n, Cache.Store(Db.I(x[0])), Cache.ItemCode(Db.I(x[1])), Cache.ItemName(Db.I(x[1])), Unit(Db.I(x[1])), Db.D(x[2]));
+                r.Link(RowLinks.Item(Db.I(x[1])));
+            }
             r.Sum("العدد", n.ToString());
             return r;
         }
@@ -300,7 +305,10 @@ namespace Stores
             r.Col("المخزن", ColKind.Text); r.ColT("عدد المواد"); r.ColT("مجموع الكميات"); r.Col("ملاحظات", ColKind.Text);
             int n = 0;
             foreach (DataRow x in Db.Query(sql, a.ToArray()).Rows)
+            {
                 r.Row(null, ++n, Db.S(x["menu_no"]), Db.Dt(x["menu_date"]), Cache.Project(Db.I(x["proj_no"])), Cache.Person(Db.I(x["custom_no"])), Cache.Store(Db.I(x["stor"])), Db.D(x["n"]), Db.D(x["q"]), Db.S(x["note"]));
+                r.Link(RowLinks.Doc(DocKind.Issue, Db.I(x["shop_no"])));
+            }
             r.Sum("عدد السندات", n.ToString("#,##0", Inv));
             return r;
         }
@@ -319,7 +327,7 @@ namespace Stores
                          (p.PersonNo > 0 ? "   —   " + Cache.Person(p.PersonNo) : "") + (p.ProjNo > 0 ? "   —   " + Cache.Project(p.ProjNo) : "") + (p.ItemNo > 0 ? "   —   " + Cache.ItemName(p.ItemNo) : "");
             string t = sale ? "sale" : "shop", l = sale ? "sale_menu" : "shop_menu";
             string proj = Db.HasProj && mode != 2 ? ", h.proj_no" : ", 0 AS proj_no";
-            string sql = "SELECT h.menu_no, h.menu_date, h.custom_no, h.stor, l.item_no, l.qty, l.price_dl" + (sale ? ", 0 AS shop_type" : ", h.shop_type") + proj +
+            string sql = "SELECT h.shop_no, h.menu_no, h.menu_date, h.custom_no, h.stor, l.item_no, l.qty, l.price_dl" + (sale ? ", 0 AS shop_type" : ", h.shop_type") + proj +
                          " FROM " + t + " AS h INNER JOIN " + l + " AS l ON h.shop_no = l.seq WHERE h.menu_date >= ? AND h.menu_date < ?";
             if (mode == 0) sql += " AND " + Db.IssueOnly("h");
             if (mode == 1) sql += " AND " + Db.NotCountAdj("h");
@@ -346,6 +354,7 @@ namespace Stores
                 if (mode != 2) v.Add(Cache.Project(Db.I(x["proj_no"])));
                 v.Add(Cache.Person(Db.I(x["custom_no"]))); v.Add(Cache.ItemCode(it)); v.Add(Cache.ItemName(it)); v.Add(Unit(it)); v.Add(q);
                 r.Row(mode == 1 && Db.I(x["shop_type"]) == 3 ? "in" : null, v.ToArray());
+                r.Link(RowLinks.Doc(mode == 0 ? DocKind.Issue : mode == 2 ? DocKind.PurchaseReturn : Db.I(x["shop_type"]) == 3 ? DocKind.Return : DocKind.Receipt, Db.I(x["shop_no"])));
             }
             r.Sum("عدد الأسطر", n.ToString("#,##0", Inv)); r.Sum("عدد المواد المختلفة", items.Count.ToString("#,##0", Inv)); r.Sum("مجموع الكميات", UI.Num(tq));
             return r;
@@ -381,9 +390,9 @@ namespace Stores
             }
             string w = "h.proj_no = ? AND " + Db.IssueOnly("h") + " AND h.menu_date >= ? AND h.menu_date < ?";
             Dictionary<int, double> cost = LineCosts(w, new object[] { p.ProjNo, p.From, p.ToEx });
-            DataTable iss = Db.Query("SELECT h.menu_date AS d, h.menu_no AS dno, h.custom_no AS pe, l.auto_seq AS ln, l.item_no AS it, l.qty AS q FROM sale AS h INNER JOIN sale_menu AS l ON h.shop_no = l.seq WHERE " + w + " ORDER BY h.menu_date, h.shop_no",
+            DataTable iss = Db.Query("SELECT h.menu_date AS d, h.menu_no AS dno, h.custom_no AS pe, l.auto_seq AS ln, l.item_no AS it, l.qty AS q, h.shop_no AS id FROM sale AS h INNER JOIN sale_menu AS l ON h.shop_no = l.seq WHERE " + w + " ORDER BY h.menu_date, h.shop_no",
                 p.ProjNo, p.From, p.ToEx);
-            DataTable ret = Db.Query("SELECT h.menu_date AS d, h.menu_no AS dno, h.custom_no AS pe, l.item_no AS it, l.qty AS q, l.cost AS pr FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq " +
+            DataTable ret = Db.Query("SELECT h.menu_date AS d, h.menu_no AS dno, h.custom_no AS pe, l.item_no AS it, l.qty AS q, l.cost AS pr, h.shop_no AS id FROM shop AS h INNER JOIN shop_menu AS l ON h.shop_no = l.seq " +
                 "WHERE h.proj_no = ? AND h.shop_type = 3 AND h.menu_date >= ? AND h.menu_date < ? ORDER BY h.menu_date, h.shop_no", p.ProjNo, p.From, p.ToEx);
             double tOut = 0, tIn = 0, tCost = 0;
             if (!p.Flag)
@@ -406,6 +415,7 @@ namespace Stores
                 {
                     DataRow ir = Cache.Item(kv.Key);
                     r.Row(null, ++n, Cache.ItemCode(kv.Key), Cache.ItemName(kv.Key), ir == null ? "" : Db.S(ir["type_name"]), Unit(kv.Key), kv.Value[0], kv.Value[1], kv.Value[0] - kv.Value[1], kv.Value[2]);
+                    r.Link(RowLinks.Item(kv.Key));
                     tOut += kv.Value[0]; tIn += kv.Value[1]; tCost += kv.Value[2];
                 }
                 r.Sum("عدد المواد", n.ToString("#,##0", Inv));
@@ -414,21 +424,23 @@ namespace Stores
             {
                 r.Col("ت", ColKind.Int); r.Col("التاريخ", ColKind.Date); r.Col("الحركة", ColKind.Text); r.Col("رقم السند", ColKind.Text); r.Col("المستلم / المُعيد", ColKind.Text);
                 r.Col("الرمز", ColKind.Text); r.Col("اسم المادة", ColKind.Text); r.Col("الوحدة", ColKind.Text); r.ColT("مُخرج"); r.ColT("مُعاد"); r.ColT("الكلفة");
-                List<object[]> rows = new List<object[]>();
+                List<object[]> rows = new List<object[]>(); Dictionary<object[], string> links = new Dictionary<object[], string>();
                 foreach (DataRow x in iss.Rows)
                 {
                     double c; cost.TryGetValue(Db.I(x["ln"]), out c); int it = Db.I(x["it"]);
                     rows.Add(new object[] { 0, Db.Dt(x["d"]), "إخراج مخزني", Db.S(x["dno"]), Cache.Person(Db.I(x["pe"])), Cache.ItemCode(it), Cache.ItemName(it), Unit(it), Db.D(x["q"]), null, c });
+                    links[rows[rows.Count - 1]] = RowLinks.Doc(DocKind.Issue, Db.I(x["id"]));
                     tOut += Db.D(x["q"]); tCost += c;
                 }
                 foreach (DataRow x in ret.Rows)
                 {
                     int it = Db.I(x["it"]); double c = -Db.D(x["q"]) * Db.D(x["pr"]);
                     rows.Add(new object[] { 0, Db.Dt(x["d"]), "مردود إخراج", Db.S(x["dno"]), Cache.Person(Db.I(x["pe"])), Cache.ItemCode(it), Cache.ItemName(it), Unit(it), null, Db.D(x["q"]), c });
+                    links[rows[rows.Count - 1]] = RowLinks.Doc(DocKind.Return, Db.I(x["id"]));
                     tIn += Db.D(x["q"]); tCost += c;
                 }
                 int n = 0;
-                foreach (object[] o in rows.OrderBy(o => (DateTime)o[1])) { o[0] = ++n; r.Row(o[2].ToString() == "مردود إخراج" ? "in" : null, o); }
+                foreach (object[] o in rows.OrderBy(o => (DateTime)o[1])) { o[0] = ++n; r.Row(o[2].ToString() == "مردود إخراج" ? "in" : null, o); r.Link(links[o]); }
             }
             r.Sum("مجموع المُخرج", UI.Num(tOut)); r.Sum("مجموع المُعاد", UI.Num(tIn)); r.Sum("صافي المستهلك", UI.Num(tOut - tIn));
             if (Math.Abs(tCost) > 0.0001) r.Sum("الكلفة", UI.Num(tCost));
@@ -455,6 +467,7 @@ namespace Stores
                 DataRow pr = CostCentres.Row(kv.Key);
                 int ty = CostCentres.TypeOf(kv.Key);
                 r.Row(null, ++n, Cache.Project(kv.Key), CostCentres.TypeName(ty), pr == null ? "" : Db.S(pr["status_name"]), kv.Value[0], kv.Value[1], kv.Value[2], kv.Value[1] - kv.Value[2], kv.Value[3]);
+                r.Link(RowLinks.Project(kv.Key, p.From, p.To));
                 double[] s; if (!byType.TryGetValue(ty, out s)) { s = new double[3]; byType[ty] = s; }
                 s[0] += 1; s[1] += kv.Value[1] - kv.Value[2]; s[2] += kv.Value[3];
             }
@@ -481,6 +494,7 @@ namespace Stores
                 double stock = Cache.Stock(x.Item, x.Stor);
                 r.Row(x.Outstanding <= 0 ? "muted" : (stock < x.Outstanding ? "neg" : null), ++n, Cache.Project(x.Proj), Cache.Store(x.Stor), Cache.ItemCode(x.Item), Cache.ItemName(x.Item), Unit(x.Item),
                       x.Since, x.Reserved, Math.Max(0, x.Used), x.Outstanding, stock);
+                r.Link(RowLinks.Reservation(x.Proj, x.Item, x.Stor));
                 tot += x.Outstanding;
             }
             r.Sum("عدد الأسطر", n.ToString()); r.Sum("مجموع المتبقي محجوزا", UI.Num(tot));
@@ -617,6 +631,7 @@ namespace Stores
                     c.Used == 0 ? null : (object)c.Used, Math.Round(c.Monthly, 2),
                     c.Monthly > 0 ? (object)Math.Round(c.Days) : null, c.Lead > 0 ? (object)c.Lead : null, c.MaxQty > 0 ? (object)c.MaxQty : null,
                     c.Suggest, c.Basis, c.Reason);
+                r.Link(RowLinks.Item(c.Item));
             }
             r.Tag = rows;
             r.Sum("فترة المتوسط", per);
@@ -651,6 +666,7 @@ namespace Stores
                 if (p.TypeNo > 0 && (ir == null || Db.I(ir["type"]) != p.TypeNo)) continue;
                 n++;
                 r.Row(null, n, Cache.ItemCode(it), Cache.ItemName(it), ir == null ? "" : Db.S(ir["type_name"]), Unit(it), Db.D(x["c"]), Db.D(x["q"]), ir == null ? 0 : Db.D(ir["bal"]));
+                r.Link(RowLinks.Item(it));
                 if (n <= 15) r.Chart.Add(new KeyValuePair<string, double[]>(Cache.ItemName(it), new double[] { Db.D(x["q"]) }));
                 if (n >= p.Top) break;
             }
@@ -674,7 +690,10 @@ namespace Stores
             r.Col("ت", ColKind.Int); r.Col("الجهة", ColKind.Text); r.ColT("عدد السندات"); r.ColT("عدد البنود"); r.ColT("مجموع الكميات");
             int n = 0;
             foreach (KeyValuePair<int, double[]> kv in d.OrderByDescending(k => k.Value[0]))
+            {
                 r.Row(null, ++n, Cache.Person(kv.Key), kv.Value[0], kv.Value[1], kv.Value[2]);
+                r.Link(RowLinks.Person(kv.Key, p.From, p.To));
+            }
             r.Sum("عدد الجهات", n.ToString("#,##0", Inv));
             return r;
         }
@@ -701,6 +720,7 @@ namespace Stores
                 foreach (KeyValuePair<int, double[]> kv in g.OrderBy(k => Cache.ItemName(k.Key)))
                 {
                     r.Row(null, ++n, Cache.ItemCode(kv.Key), Cache.ItemName(kv.Key), Unit(kv.Key), kv.Value[0], kv.Value[1], kv.Value[2], kv.Value[0] - kv.Value[1]);
+                    r.Link(RowLinks.Item(kv.Key));
                     ti += kv.Value[0]; tr += kv.Value[1]; ts += kv.Value[2];
                 }
             }
@@ -714,6 +734,7 @@ namespace Stores
                     int k = Db.I(x["k"]); double q = Db.D(x["q"]); int it = Db.I(x["it"]);
                     if (k == 2) ti += q; else if (k == 3) tr += q; else ts += q;
                     r.Row(k == 2 ? null : "in", ++n, Db.Dt(x["d"]), KindText(k), Db.S(x["dno"]), Cache.ItemCode(it), Cache.ItemName(it), Unit(it), k == 2 ? (object)q : null, k != 2 ? (object)q : null);
+                    r.Link(RowLinks.Move(k, Db.I(x["id"])));
                 }
             }
             r.Sum("مجموع المصروف", UI.Num(ti)); r.Sum("مجموع المُعاد", UI.Num(tr)); if (ts > 0) r.Sum("مجموع المُجهّز", UI.Num(ts)); r.Sum("صافي المصروف", UI.Num(ti - tr));
@@ -736,8 +757,11 @@ namespace Stores
             r.Col("المخزن", ColKind.Text); r.ColT("عدد المواد"); r.ColT("مجموع الكميات"); r.Col("ملاحظات", ColKind.Text);
             int n = 0;
             foreach (DataRow x in Db.Query(sql, a.ToArray()).Rows)
+            {
                 r.Row(Db.I(x["shop_type"]) == 3 ? "in" : null, ++n, Db.S(x["menu_no"]), Db.Dt(x["menu_date"]), Cache.ReceiptTypes[Math.Max(0, Math.Min(3, Db.I(x["shop_type"])))],
                     Cache.Person(Db.I(x["custom_no"])), Cache.Store(Db.I(x["stor"])), Db.D(x["n"]), Db.D(x["q"]), Db.S(x["note"]));
+                r.Link(RowLinks.Doc(Db.I(x["shop_type"]) == 3 ? DocKind.Return : DocKind.Receipt, Db.I(x["shop_no"])));
+            }
             r.Sum("عدد السندات", n.ToString("#,##0", Inv));
             return r;
         }
@@ -746,7 +770,7 @@ namespace Stores
         {
             ReportData r = new ReportData();
             r.Title = "النقل المخزني"; r.Subtitle = Period(p);
-            string sql = "SELECT h.menu_no, h.menu_date, h.stor_out, h.stor_in, l.item_no, l.qty FROM trans AS h INNER JOIN trans_menu AS l ON h.shop_no = l.seq WHERE h.menu_date >= ? AND h.menu_date < ?";
+            string sql = "SELECT h.shop_no, h.menu_no, h.menu_date, h.stor_out, h.stor_in, l.item_no, l.qty FROM trans AS h INNER JOIN trans_menu AS l ON h.shop_no = l.seq WHERE h.menu_date >= ? AND h.menu_date < ?";
             List<object> a = new List<object> { p.From, p.ToEx };
             if (p.ItemNo > 0) { sql += " AND l.item_no = ?"; a.Add(p.ItemNo); }
             sql += " ORDER BY h.menu_date, h.shop_no";
@@ -754,8 +778,11 @@ namespace Stores
             r.Col("الرمز", ColKind.Text); r.Col("اسم المادة", ColKind.Text); r.Col("الوحدة", ColKind.Text); r.ColT("الكمية");
             int n = 0;
             foreach (DataRow x in Db.Query(sql, a.ToArray()).Rows)
+            {
                 r.Row(null, ++n, Db.Dt(x["menu_date"]), Db.S(x["menu_no"]), Cache.Store(Db.I(x["stor_out"])), Cache.Store(Db.I(x["stor_in"])),
                     Cache.ItemCode(Db.I(x["item_no"])), Cache.ItemName(Db.I(x["item_no"])), Unit(Db.I(x["item_no"])), Db.D(x["qty"]));
+                r.Link(RowLinks.Doc(DocKind.Transfer, Db.I(x["shop_no"])));
+            }
             r.Sum("عدد الأسطر", n.ToString());
             return r;
         }
@@ -807,6 +834,7 @@ namespace Stores
                 if (!ItemMatches(ir, p)) continue;
                 r.Row(Db.B(ir["freez"]) ? "muted" : null, ++n, Db.S(ir["item_code"]), Db.S(ir["item_name"]), Db.S(ir["type_name"]), Db.S(ir["group_name"]), Db.S(ir["unit"]),
                     Db.D(ir["item_bal_ret"]) == 0 ? null : (object)Db.D(ir["item_bal_ret"]), Db.B(ir["freez"]) ? "مجمدة" : "");
+                r.Link(RowLinks.Item(Db.I(ir["item_no"])));
             }
             r.Sum("عدد المواد", n.ToString("#,##0", Inv));
             return r;
@@ -826,6 +854,7 @@ namespace Stores
                 if (norm.Length > 0 && Db.S(pr["_s"]).IndexOf(norm, StringComparison.Ordinal) < 0) continue;
                 DateTime d; bool has = last.TryGetValue(Db.I(pr["p_no"]), out d);
                 r.Row(null, ++n, Db.S(pr["p_name"]), Db.S(pr["type_name"]), Db.S(pr["p_tel"]), Db.S(pr["p_addrs"]), has ? (object)d : null);
+                r.Link(RowLinks.Person(Db.I(pr["p_no"]), new DateTime(2000, 1, 1), DateTime.Today));
             }
             r.Sum("العدد", n.ToString("#,##0", Inv));
             return r;
@@ -848,12 +877,13 @@ namespace Stores
                 {
                     mism++;
                     r.Row("neg", ++n, "رصيد غير مطابق للحركات", Cache.ItemName(it) + " — " + Cache.Store(st), Db.D(x[2]), c);
+                    r.Link(RowLinks.Item(it));
                 }
             }
             // 2. negative balances
             int neg = 0;
             foreach (DataRow x in Db.Query("SELECT item_no, stor, item_bal FROM item_stor WHERE item_bal < -0.0001").Rows)
-            { neg++; r.Row(null, ++n, "رصيد سالب", Cache.ItemName(Db.I(x[0])) + " — " + Cache.Store(Db.I(x[1])), Db.D(x[2]), null); }
+            { neg++; r.Row(null, ++n, "رصيد سالب", Cache.ItemName(Db.I(x[0])) + " — " + Cache.Store(Db.I(x[1])), Db.D(x[2]), null); r.Link(RowLinks.Item(Db.I(x[0]))); }
             // 3. future dates
             DateTime tomorrow = DateTime.Today.AddDays(1);
             foreach (DataRow x in Db.Query("SELECT menu_no, menu_date FROM sale WHERE menu_date >= ?", tomorrow).Rows)
@@ -886,7 +916,8 @@ namespace Stores
         public static ReportData Voucher(Doc d)
         {
             ReportData r = new ReportData();
-            string kind = Posting.KindName(d.Kind);
+            string adj = StockCount.AdjustmentText(d);            // count adjustment / posted write-off: no recipient
+            string kind = adj ?? Posting.KindName(d.Kind);
             r.Title = kind + " رقم " + d.No;
             List<string> sub = new List<string>();
             sub.Add("التاريخ: " + UI.Date(d.Date));
@@ -897,7 +928,7 @@ namespace Stores
                 bool ccIsRecipient = Posting.CcIsRecipient(d.Kind) && d.Project > 0;
                 if (ccIsRecipient) sub.Add((d.Kind == DocKind.Return ? "مركز الكلفة (المُعاد منه): " : "مركز الكلفة (المستلم): ") + Cache.Project(d.Project));
                 else if (d.Project > 0) sub.Add("مركز الكلفة: " + Cache.Project(d.Project));
-                if (d.Kind != DocKind.Reserve && !ccIsRecipient)
+                if (d.Kind != DocKind.Reserve && !ccIsRecipient && adj == null)
                     sub.Add((d.Kind == DocKind.Issue ? "المستلم: " : d.Kind == DocKind.Return ? "الجهة المُعيدة: " : "المجهز: ") + Cache.Person(d.Person));
                 sub.Add((Posting.IsOut(d.Kind) ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store));
                 if (d.Kind == DocKind.Receipt) sub.Add("النوع: " + Cache.ReceiptTypes[d.RType == 1 ? 1 : 2]);

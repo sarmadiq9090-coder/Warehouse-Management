@@ -18,11 +18,12 @@ namespace Stores
         public static string Company { get { return Branding.Company; } }
         /// <summary>Set by «تسجيل الخروج»: after the main window closes, the login screen shows again.</summary>
         public static bool LogoutRequested;
-        public const string Version = "1.2.0";
+        public const string Version = "1.2.1";
 
         [STAThread]
         static void Main(string[] args)
         {
+            SingleInstance.Mark();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.ThreadException += delegate(object s, System.Threading.ThreadExceptionEventArgs e) { UI.Error(e.Exception); };
@@ -33,9 +34,14 @@ namespace Stores
             };
 
             Settings.Load(args);
+            Lang.English = Settings.Get("Language", "") == "en";   // messages before Lang.Init
+            if (InstallOffer.AtStart(args)) return;   // a fresh download replaced the older installed copy and started it
+            if (!SingleInstance.Acquire()) return;   // already open: its window is shown
+            ExitListener.Start();        // the setup of a newer version can ask this program to exit
             Lang.Init();                 // first start: asks for the language (before any data exists)
             if (!Connect()) return;
             PrepareData();
+            InstallOffer.Register(args); // the setup finds this folder
 
             // «تسجيل الخروج» returns to the login screen
             do
@@ -52,6 +58,7 @@ namespace Stores
                 Db.SignOff();
             } while (LogoutRequested);
             Db.Close();
+            SingleInstance.Release();
         }
 
         /// <summary>Everything a freshly connected data file needs before sign-in (start-up, and after «تغيير البيانات»

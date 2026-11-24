@@ -120,6 +120,7 @@ namespace Stores
             string t = (text ?? "").Trim();
             if (t.Length == 0 || t == "…" || t == "+" || t == "−" || t.StartsWith("►") || t.EndsWith("◄")) return null;
             string[][] map = {
+                new[] { "PDF", "\uEA90" }, new[] { "Excel", "\uEDE1" }, new[] { "كملف", "\uE792" },
                 new[] { "حفظ", "\uE74E" }, new[] { "طباعة", "\uE749" }, new[] { "معاينة", "\uE8FF" }, new[] { "تصدير", "\uEDE1" },
                 new[] { "حذف", "\uE74D" }, new[] { "إلغاء الحجز", "\uE74D" }, new[] { "تعديل", "\uE70F" }, new[] { "سند جديد", "\uE8A5" },
                 new[] { "جديد", "\uE710" }, new[] { "إضافة", "\uE710" }, new[] { "+ ", "\uE710" }, new[] { "عرض التقرير", "\uE9F9" },

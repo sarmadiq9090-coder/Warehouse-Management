@@ -81,6 +81,7 @@ table.t th .ar { font-size: 10px; color: #7d93bd; }
 .info td { border: 1px solid #dde2ea; padding: 9px 12px; width: 33%; }
 .info td b { color: #1f3f7a; margin-left: 6px; }
 .docno { float: left; border: 2px solid #2F56A3; color: #2F56A3; font-size: 16px; font-weight: bold; padding: 4px 14px; margin-top: 6px; }
+tr[data-l] { cursor: pointer; }
 tr.neg td { background: #fff6f5; }
 body.wide { font-size: 12.5px; }
 body.wide table.t td, body.wide table.t th { padding: 6px 5px; }
@@ -119,7 +120,7 @@ function fmt(v){var r=Math.round(v*1000)/1000;var p=r.toFixed(3).replace(/\.?0+$
 var R=null,TH=null;
 function init(){if(R)return;R=[];TH=document.getElementById('hd').cells;var tb=document.getElementById('tb'),i,j;
   for(i=0;i<tb.rows.length;i++){var r=tb.rows[i],c=[];for(j=0;j<r.cells.length;j++)c.push(r.cells[j].textContent);
-    R.push({r:r,c:c,t:null,o:r.className.indexOf('open')>=0,h:false,b:r.className.replace(/\balt\b/,'').replace(/^\s+|\s+$/g,'')});}}
+    R.push({r:r,n:i,c:c,t:null,o:r.className.indexOf('open')>=0,h:false,b:r.className.replace(/\balt\b/,'').replace(/^\s+|\s+$/g,'')});}}
 function refresh(){init();var vis=0,a=0,i,c,sums=[];for(c=0;c<TH.length;c++)sums.push(0);
   for(i=0;i<R.length;i++){var x=R[i];if(x.h||x.o)continue;vis++;var cls=x.b+(a++%2==1?(x.b?' ':'')+'alt':'');if(x.r.className!=cls)x.r.className=cls;
     for(c=0;c<TH.length;c++)if(TH[c].getAttribute('data-t')=='1'){var v=num(x.c[c]);if(v!==null)sums[c]+=v;}}
@@ -130,6 +131,7 @@ function filt(){init();var q=nrm(document.getElementById('q').value).split(' '),
     for(j=0;j<q.length;j++)if(q[j]&&x.t.indexOf(q[j])<0){ok=false;break;}
     if(x.h==ok){x.h=!ok;x.r.style.display=ok?'':'none';}}
   refresh();}
+function vis(){if(!R)return '';var a=[],ch=false,i;for(i=0;i<R.length;i++){if(R[i].h){ch=true;continue;}if(R[i].n!=i)ch=true;a.push(R[i].n);}return ch?(a.length?a.join(','):'-'):'';}
 var sc=-1,sd=1;
 function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute('data-k'),a=[],pin=[],i;
   sd=(sc==c)?-sd:1;sc=c;
@@ -138,6 +140,11 @@ function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute
   R=pin.concat(a);var f=document.createDocumentFragment();for(i=0;i<R.length;i++)f.appendChild(R[i].r);tb.appendChild(f);
   for(i=0;i<TH.length;i++){var s=TH[i].getElementsByTagName('span');if(s.length)s[0].innerText=(i==c?(sd>0?' ▲':' ▼'):' ⇅');}
   refresh();}
+";
+        // Double click on a row: the program opens what the row is about (RowLinks, caught in WebBrowser.Navigating).
+        const string JsLink = @"
+function dbl(ev){ev=ev||window.event;var e=ev.target||ev.srcElement;while(e&&e.tagName!='TR')e=e.parentNode;var l=e?e.getAttribute('data-l'):null;
+  if(l){try{document.selection?document.selection.empty():window.getSelection().removeAllRanges();}catch(x){}location.href='app:'+l;}}
 ";
         /// <summary>Rows above which search / sort are not offered (the old browser engine gets slow).</summary>
         const int InteractiveMax = 15000;
@@ -160,7 +167,9 @@ function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute
             sb.Append("<!DOCTYPE html><html dir='" + Lang.Dir + "' lang='" + Lang.Code + "'><head><meta charset='utf-8'><meta http-equiv='X-UA-Compatible' content='IE=edge'>");
             bool interactive = r.Info == null && r.Rows.Count > 1 && r.Rows.Count <= InteractiveMax;
             sb.Append("<title>").Append(E(r.Title)).Append("</title><style>").Append(Css).Append(Lang.English ? CssLtr : "").Append("</style>");
+            bool links = r.RowLink.Any(l => l != null);
             if (interactive) sb.Append("<script>").Append(Lang.English ? JsEn() : Js).Append("</script>");
+            if (links) sb.Append("<script>").Append(JsLink).Append("</script>");
             sb.Append("</head><body").Append(r.Cols.Count >= 9 ? " class='wide'" : "").Append(">");
 
             // header
@@ -206,7 +215,7 @@ function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute
             if (interactive)
                 sb.Append("<div class='tools noprint'>" + Lang.T("بحث داخل التقرير: ") + "<input id='q' onkeyup='filt()' placeholder='" + Lang.T("اكتب رمزا أو اسما أو رقما…") + "'>")
                   .Append("<span id='cnt'>" + Lang.T("المعروض: ")).Append(r.Rows.Count.ToString("#,##0", Inv)).Append(Lang.English ? " of " : " من ").Append(r.Rows.Count.ToString("#,##0", Inv))
-                  .Append("</span><span>" + Lang.T("— اضغط على عنوان أي عمود للترتيب") + "</span></div>");
+                  .Append("</span><span>" + Lang.T("— اضغط على عنوان أي عمود للترتيب") + "</span>" + (links ? "<span>" + Lang.T("— انقر مرتين على أي سطر لعرض المستند") + "</span>" : "") + "</div>");
 
             sb.Append("<table class='t'><thead><tr id='hd'>");
             for (int c = 0; c < r.Cols.Count; c++)
@@ -219,7 +228,7 @@ function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute
                 if (interactive) sb.Append("<span class='ar'> ⇅</span>");
                 sb.Append("</th>");
             }
-            sb.Append("</tr></thead><tbody id='tb'>");
+            sb.Append("</tr></thead><tbody id='tb'").Append(links ? " ondblclick='dbl(event)'" : "").Append(">");
             // long text columns (names, descriptions) may wrap; all other columns stay on one line
             bool[] wrap = new bool[r.Cols.Count];
             for (int c = 0; c < r.Cols.Count; c++)
@@ -235,7 +244,8 @@ function srt(c){init();var tb=document.getElementById('tb'),k=TH[c].getAttribute
                 object[] row = r.Rows[i];
                 string cls = r.RowClass[i];
                 if (i % 2 == 1) cls = (cls == null ? "" : cls + " ") + "alt";
-                sb.Append(cls == null ? "<tr>" : "<tr class='" + cls + "'>");
+                string link = i < r.RowLink.Count ? r.RowLink[i] : null;
+                sb.Append(cls == null ? "<tr" : "<tr class='" + cls + "'").Append(link == null ? ">" : " data-l='" + E(link) + "'>");
                 for (int c = 0; c < r.Cols.Count; c++)
                 {
                     object v = c < row.Length ? row[c] : null;

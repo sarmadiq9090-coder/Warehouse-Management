@@ -37,6 +37,7 @@ namespace Stores
                 if (q < -0.0001) neg++;
                 r.Row(q < -0.0001 ? "neg" : (v.LastCost <= 0 ? "muted" : null), n, Db.S(ir["item_code"]), Db.S(ir["item_name"]), Db.S(ir["unit"]),
                       q, v.LastCost <= 0 ? null : (object)Math.Round(v.UnitCost, 4), value);
+                r.Link(RowLinks.Item(it));
             }
             r.Sum("عدد المواد", n.ToString("#,##0", Inv));
             r.Sum("قيمة المخزون", UI.Num(Math.Round(total, 2)));

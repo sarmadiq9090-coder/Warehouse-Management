@@ -77,6 +77,7 @@ namespace Stores
                 r.Row(late ? "neg" : Db.I(x["status"]) == PurchaseRequests.Draft ? "muted" : null, ++n, Db.S(x["menu_no"]), Db.Dt(x["preq_date"]), age,
                     PurchaseRequests.StatusName(Db.I(x["status"])), Cache.Person(Db.I(x["p_no"])), Db.I(x["stor"]) > 0 ? Cache.Store(Db.I(x["stor"])) : "",
                     Cache.ItemCode(it), Cache.ItemName(it), Cache.ItemUnit(it), q, rc == 0 ? null : (object)rc, rem);
+                r.Link(RowLinks.Make("preq", Db.I(x["preq_no"])));
             }
             r.Sum("عدد الطلبات", reqs.Count.ToString("#,##0", Inv));
             r.Sum("عدد الأسطر", n.ToString("#,##0", Inv));

@@ -107,6 +107,9 @@ namespace Stores
         }
 
         public void SetName(string n) { txtName.Text = n; }
+        public void SetCode(string c) { txtCode.Text = c; }
+        /// <summary>The item (after «حفظ» of a new item: its new number).</summary>
+        public int ItemNo { get { return id; } }
 
         static readonly string[] CommonUnits = { "قطعة", "متر", "لفة", "علبة", "كغم", "طن", "لتر", "م²", "م³", "كيس", "صندوق", "طقم", "زوج", "لوح", "برميل", "رزمة" };
 
@@ -161,6 +164,8 @@ namespace Stores
             object typeV = type == 0 ? (object)DBNull.Value : type, grpV = grp == 0 ? (object)DBNull.Value : grp;
             object codeV = code.Length == 0 ? (object)DBNull.Value : code;
             DateTime lockedTo = PeriodLock.Limit();   // year closing / month lock, read before the transaction starts
+            int oldId = id;                           // a refused save rolls the new row back: its number must not stay
+            bool saved = false;
             try
             {
                 Db.InTx(delegate(DbTransaction tx)
@@ -175,8 +180,9 @@ namespace Stores
                     }
                     else
                     {
-                        Db.X(tx, "UPDATE item SET item_name = ?, item_code = ?, [group] = ?, [type] = ?, item_bal_ret = ?, tslsl = ?, freez = ? WHERE item_no = ?",
-                            name, codeV, grpV, typeV, ret, (double)ord, chkFreeze.Checked, id);
+                        if (Db.X(tx, "UPDATE item SET item_name = ?, item_code = ?, [group] = ?, [type] = ?, item_bal_ret = ?, tslsl = ?, freez = ? WHERE item_no = ?",
+                            name, codeV, grpV, typeV, ret, (double)ord, chkFreeze.Checked, id) == 0)
+                            throw new UserError("هذه المادة غير موجودة (ربما حُذفت من حاسوب آخر).");
                         logId = AuditTrail.Log(tx, "تعديل مادة", name);
                     }
                     if (Db.HasUnit) Db.X(tx, "UPDATE item SET unit = ? WHERE item_no = ?", Db.Null(unit), id);
@@ -198,8 +204,10 @@ namespace Stores
                     }
                     SavePlan(tx, name);
                 });
+                saved = true;
             }
             catch (UserError ue) { UI.Warn(ue.Message); return false; }
+            finally { if (!saved) id = oldId; }
             Cache.LoadItems();
             return true;
         }

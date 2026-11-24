@@ -28,7 +28,10 @@ namespace Stores
         List<int> recent, recentAdded = new List<int>();
         int flashItem;
         Timer flashTimer;
-        Button btnSave, btnNew, btnDelete, btnPrint, btnPrev, btnNext, btnFind;
+        Button btnSave, btnNew, btnDelete, btnPrint, btnFile, btnPrev, btnNext, btnFind, btnAllStore;
+
+        /// <summary>Receipts: every line can go into its own store (owner's request); saved as one receipt per store.</summary>
+        bool LineStores { get { return kind == DocKind.Receipt && Cache.Stores.Rows.Count > 1; } }
 
         bool Adv { get { return Session.Advanced; } }
         int PermAdd { get { return kind == DocKind.Issue || kind == DocKind.Reserve ? Session.IssAdd : kind == DocKind.Transfer ? Session.Transfer : Session.RecAdd; } }
@@ -106,7 +109,7 @@ namespace Stores
             nav.Controls.Add(btnNext); nav.Controls.Add(btnPrev); nav.Controls.Add(btnFind);
             band.Controls.Add(lblState); band.Controls.Add(lblTitle);
 
-            lblGuide = new Label(); lblGuide.Dock = DockStyle.Top; lblGuide.Height = 30; lblGuide.Text = "   " + Guide;
+            lblGuide = new Label(); lblGuide.Dock = DockStyle.Top; lblGuide.Height = 30; lblGuide.Text = "   " + UI.Steps(Guide);
             lblGuide.BackColor = Theme.GuideBack; lblGuide.ForeColor = Theme.AccentDark; lblGuide.Font = Theme.FontBold;
             lblGuide.TextAlign = ContentAlignment.MiddleLeft; lblGuide.Visible = !Adv;
 
@@ -126,7 +129,11 @@ namespace Stores
             if (UsesProject) f1.Controls.Add(UI.Field(kind == DocKind.Return ? "مركز الكلفة (المُعاد منه)" : kind == DocKind.Issue && CcRecipient ? "مركز الكلفة (المستلم)" : "مركز الكلفة", project));
             if (UsesPerson)
                 f1.Controls.Add(UI.Field(kind == DocKind.Issue ? "المستلم" : kind == DocKind.Return ? "الجهة المُعيدة" : kind == DocKind.PurchaseReturn ? "المجهز (يُرجع إليه)" : "المجهز / الجهة", person));
-            f1.Controls.Add(UI.Field(OutDoc ? "من مخزن" : "إلى مخزن", cmbStore));
+            FlowLayoutPanel storeField = UI.Field(OutDoc ? "من مخزن" : "إلى مخزن", cmbStore);
+            f1.Controls.Add(storeField);
+            btnAllStore = UI.BtnLight("لكل المواد", 100); btnAllStore.Height = 30; btnAllStore.Visible = LineStores;
+            new ToolTip().SetToolTip(btnAllStore, Lang.T("إدخال كل المواد المضافة في المخزن المختار (ويمكن تغيير مخزن كل مادة من عمود «المخزن»)"));
+            if (LineStores) storeField.Controls.Add(btnAllStore);      // stays beside its list when the line wraps
             if (kind == DocKind.Transfer) f1.Controls.Add(UI.Field("إلى مخزن", cmbStore2));
             if (kind == DocKind.Receipt) f1.Controls.Add(UI.Field("النوع", cmbRType));
 
@@ -151,6 +158,13 @@ namespace Stores
             AddCol("name", "اسم المادة", 0, false, false);
             AddCol("unit", "الوحدة", 80, true, false);
             AddCol("qty", kind == DocKind.Reserve ? "الكمية المحجوزة" : "الكمية", 120, false, true);
+            // the store this line goes into
+            DataGridViewComboBoxColumn sc = new DataGridViewComboBoxColumn(); sc.Name = "store"; sc.HeaderText = "إلى مخزن"; sc.Width = 150;
+            List<ComboItem> sts = new List<ComboItem>();
+            foreach (DataRow s in Cache.Stores.Rows) sts.Add(new ComboItem(Db.I(s["stor_no"]), Db.S(s["stor_name"])));
+            sc.DataSource = sts; sc.ValueMember = "Id"; sc.DisplayMember = "Name"; sc.ValueType = typeof(int);
+            sc.FlatStyle = FlatStyle.Flat; sc.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton; sc.Visible = LineStores;
+            grid.Columns.Add(sc);
             AddCol("avail", OutDoc ? "المتوفر (غير محجوز)" : "الرصيد الحالي", 150, true, true);
             AddCol("resv", "محجوز له", 150, true, true);
             AddCol("price", "سعر الوحدة", 120, false, true);
@@ -206,6 +220,7 @@ namespace Stores
             entry.Recent = RecentItems;
             entry.RecentTitle = "آخر المواد المستعملة في " + Posting.KindName(kind);
             entry.AddLine = AddFromBar;
+            if (kind == DocKind.Receipt && Session.Can(Session.Items)) entry.EnableNewItem(AddNewItem);
             Panel sep = new Panel(); sep.Dock = DockStyle.Top; sep.Height = 1; sep.BackColor = Theme.Border;
             gridCard.Controls.Add(sep); gridCard.Controls.Add(entry);
             flashTimer = new Timer(); flashTimer.Interval = 1400;
@@ -218,26 +233,37 @@ namespace Stores
             lblTotals = new Label(); lblTotals.Dock = DockStyle.Top; lblTotals.Height = 26; lblTotals.Font = Theme.FontBold; lblTotals.ForeColor = Theme.Primary;
             lblTotals.TextAlign = ContentAlignment.MiddleLeft;
             FlowLayoutPanel bar = new FlowLayoutPanel(); bar.Dock = DockStyle.Fill; bar.FlowDirection = FlowDirection.LeftToRight; bar.WrapContents = false;
-            btnSave = UI.Btn(Adv ? "حفظ  (Ctrl+S)" : "حفظ", Theme.Accent, 140);
-            btnNew = UI.Btn(Adv ? "جديد  (Ctrl+N)" : "سند جديد", Theme.Primary, 140);
-            btnPrint = UI.Btn(Adv ? "طباعة  (Ctrl+P)" : "طباعة", Theme.Teal, 140);
+            // narrow buttons (shortcuts in the tool tips), so the whole bar fits at 1280 px beside «فتح سند برقم»
+            btnSave = UI.Btn("حفظ", Theme.Accent, 96);
+            btnNew = UI.Btn("سند جديد", Theme.Primary, 112);
+            btnPrint = UI.Btn("طباعة", Theme.Teal, 100);
+            ToolTip keys = new ToolTip(); keys.SetToolTip(btnSave, "Ctrl+S"); keys.SetToolTip(btnNew, "Ctrl+N"); keys.SetToolTip(btnPrint, "Ctrl+P");
+            btnFile = UI.Btn("حفظ كملف", Theme.PrimaryDark, 124);
             btnDelete = UI.Btn(kind == DocKind.Reserve ? "إلغاء الحجز" : "حذف السند", Theme.Danger, 120);
-            lblMsg = new Label(); lblMsg.AutoSize = true; lblMsg.Margin = new Padding(16, 12, 4, 0); lblMsg.Font = Theme.FontBold;
-            bar.Controls.AddRange(new Control[] { btnSave, btnNew, btnPrint, btnDelete, lblMsg });
+            lblMsg = new Label(); lblMsg.AutoSize = true; lblMsg.Dock = DockStyle.Left; lblMsg.Padding = new Padding(4, 10, 4, 0); lblMsg.Font = Theme.FontBold;
+            band.Controls.Add(lblMsg); lblMsg.SendToBack();          // the end of the title row
+            bar.Controls.AddRange(new Control[] { btnSave, btnNew, btnPrint, btnFile, btnDelete });
             Label hint = new Label(); hint.Dock = DockStyle.Bottom; hint.Height = 18; hint.ForeColor = Theme.Muted; hint.Font = Theme.FontSmall;
             hint.Text = Adv ? "F2 مربع البحث عن مادة   •   Enter للانتقال   •   Delete حذف السطر   •   PageUp/PageDown السند السابق/التالي   •   اكتب الرمز مباشرة في العمود"
                             : "لإضافة مادة اكتب جزءا من اسمها أو رمزها في مربع البحث ثم Enter واكتب الكمية ثم Enter. لتغيير الكمية انقر عليها في الجدول. لحذف مادة اضغط «✕ حذف» في سطرها.";
             hint.TextAlign = ContentAlignment.MiddleLeft;
             actions.Controls.Add(bar); actions.Controls.Add(nav);
             bottom.Controls.Add(lblTotals); bottom.Controls.Add(hint);
-            btnFind.Visible = Adv;
 
             Controls.Add(gridCard); Controls.Add(head); Controls.Add(actions); Controls.Add(bottom);
 
             // events
             grid.EnterPressed += delegate { OnEnter(); };
             grid.CellEndEdit += Grid_CellEndEdit;
-            grid.CellValueChanged += delegate(object s, DataGridViewCellEventArgs e) { if (!loading && e.RowIndex >= 0) { MarkDirty(); if (grid.Columns[e.ColumnIndex].Name == "qty") UpdateTotals(); } };
+            grid.CurrentCellDirtyStateChanged += delegate { if (grid.CurrentCell != null && grid.CurrentCell.OwningColumn.Name == "store" && grid.IsCurrentCellDirty) grid.CommitEdit(DataGridViewDataErrorContexts.Commit); };
+            grid.CellClick += delegate(object s, DataGridViewCellEventArgs e)
+            {
+                // one click opens the list of stores
+                if (e.RowIndex < 0 || e.ColumnIndex < 0 || grid.Columns[e.ColumnIndex].Name != "store" || grid.ReadOnly || grid.Rows[e.RowIndex].IsNewRow) return;
+                grid.BeginEdit(true);
+                ComboBox cb = grid.EditingControl as ComboBox; if (cb != null) cb.DroppedDown = true;
+            };
+            grid.CellValueChanged += delegate(object s, DataGridViewCellEventArgs e) { if (!loading && e.RowIndex >= 0) { MarkDirty(); string cn = grid.Columns[e.ColumnIndex].Name; if (cn == "qty" || cn == "store") UpdateTotals(); if (cn == "store") RefreshAvail(); } };
             grid.RowsAdded += delegate { Renumber(); };
             grid.RowsRemoved += delegate { Renumber(); UpdateTotals(); };
             grid.CellFormatting += Grid_CellFormatting;
@@ -256,13 +282,24 @@ namespace Stores
             project.Changed += delegate { MarkDirty(); RefreshAvail(); };
             txtNote.TextChanged += delegate { MarkDirty(); };
             cmbRType.SelectedIndexChanged += delegate { MarkDirty(); };
-            cmbStore.SelectedIndexChanged += delegate { MarkDirty(); snap = null; RefreshAvail(); };
+            cmbStore.SelectedIndexChanged += delegate
+            {
+                MarkDirty(); snap = null; RefreshAvail();
+                if (!loading && LineStores && grid.Rows.Count > (grid.AllowUserToAddRows ? 1 : 0))
+                    entry.Status("المخزن المختار للمواد التالية • لنقل كل المواد إليه اضغط «لكل المواد»، ولتغيير مادة واحدة انقر على مخزنها في الجدول", Theme.Primary);
+            };
+            btnAllStore.Click += delegate { SetAllStores(); };
             cmbStore2.SelectedIndexChanged += delegate { MarkDirty(); };
 
             btnSave.Click += delegate { Save(); };
             btnNew.Click += delegate { if (CanLeave()) NewDoc(); };
             btnDelete.Click += delegate { DeleteDoc(); };
             btnPrint.Click += delegate { Print(); };
+            ContextMenuStrip fm = new ContextMenuStrip(); fm.RightToLeft = RightToLeft.Yes; fm.Font = Theme.Font;
+            fm.Items.Add("حفظ كملف PDF", null, delegate { SaveFile(true); });
+            fm.Items.Add("حفظ كملف Excel", null, delegate { SaveFile(false); });
+            Lang.Apply(fm);
+            btnFile.Click += delegate { fm.Show(btnFile, new Point(0, btnFile.Height)); };
             btnPrev.Click += delegate { Navigate(-1); };
             btnNext.Click += delegate { Navigate(1); };
             btnFind.Click += delegate { FindByNo(); };
@@ -343,6 +380,7 @@ namespace Stores
                 r.Cells["code"].Value = Cache.ItemCode(l.ItemNo);
                 r.Cells["name"].Value = Cache.ItemName(l.ItemNo);
                 r.Cells["qty"].Value = l.Qty;
+                if (LineStores) r.Cells["store"].Value = d.Store;
                 r.Cells["price"].Value = l.Price == 0 ? null : (object)l.Price;
                 r.Cells["used"].Value = l.Used == 0 ? null : (object)l.Used;
                 if (l.Used > 0) anyUsed = true;
@@ -369,8 +407,8 @@ namespace Stores
             snap = null;                                  // balances may have changed (saved, other users): read again once
             if (canEdit && IsHandleCreated) BeginInvoke((Action)delegate { try { EnsureSnap(); } catch { } });
             btnDelete.Enabled = d.Id > 0 && !cancelled && !closedYear && adj == null && Session.Can(PermDelete);
-            btnPrint.Enabled = d.Id > 0;
-            dtp.Enabled = person.Enabled = project.Enabled = cmbStore.Enabled = cmbStore2.Enabled = cmbRType.Enabled = txtNote.Enabled = canEdit;
+            btnPrint.Enabled = btnFile.Enabled = d.Id > 0 || canEdit;      // a new document is saved first
+            dtp.Enabled = person.Enabled = project.Enabled = btnAllStore.Enabled = cmbStore.Enabled = cmbStore2.Enabled = cmbRType.Enabled = txtNote.Enabled = canEdit;
             loading = false;
             SetClean(cancelled ? "هذا الحجز ملغى" : closedYear ? PeriodLock.ShortText(d.Date) + " • هذا السند للعرض والطباعة فقط" :
                      adj != null ? adj + " • هذا السند للعرض والطباعة فقط" : d.Id == 0 ? "" : (canEdit ? "" : "عرض فقط • لا توجد صلاحية تعديل"),
@@ -386,10 +424,35 @@ namespace Stores
 
         int ItemOf(DataGridViewRow r) { return r == null ? 0 : Db.I(r.Cells["itemNo"].Value); }
 
-        /// <summary>Quantity that can be used for this document: stock in the store minus what is reserved for other projects.</summary>
-        double Available(int item)
+        /// <summary>The store of a line: its own (receipts), otherwise the document's.</summary>
+        int StoreOf(DataGridViewRow r)
         {
-            int st = UI.Sel(cmbStore);
+            int s = LineStores && r != null ? Db.I(r.Cells["store"].Value) : 0;
+            return s > 0 ? s : UI.Sel(cmbStore);
+        }
+
+        /// <summary>«مخزن 2»: some stores are named by a number only.</summary>
+        static string StoreName(int id)
+        {
+            string n = Cache.Store(id);
+            return n.Contains("مخزن") || n.Contains("المخزن") ? n : "مخزن " + n;
+        }
+
+        /// <summary>«لكل المواد»: every line goes into the store chosen above.</summary>
+        void SetAllStores()
+        {
+            int st = UI.Sel(cmbStore); if (st == 0 || grid.ReadOnly) return;
+            if (grid.IsCurrentCellInEditMode) grid.EndEdit();
+            foreach (DataGridViewRow r in grid.Rows) if (!r.IsNewRow && ItemOf(r) != 0) r.Cells["store"].Value = st;
+            RefreshAvail(); UpdateTotals();
+            Msg("✓ كل المواد إلى مخزن: " + Cache.Store(st), Theme.Success);
+        }
+
+        /// <summary>Quantity that can be used for this document: stock in the store minus what is reserved for other projects.</summary>
+        double Available(int item) { return Available(item, UI.Sel(cmbStore)); }
+
+        double Available(int item, int st)
+        {
             if (item == 0 || st == 0) return 0;
             double s = Cache.Stock(item, st);
             if (doc != null && doc.Id > 0 && st == origStore && kind != DocKind.Reserve)
@@ -405,15 +468,15 @@ namespace Stores
         {
             if (grid == null) return;
             bool was = loading; loading = true;
-            Dictionary<int, double> cache = new Dictionary<int, double>();
+            Dictionary<string, double> cache = new Dictionary<string, double>();
             bool showResv = grid.Columns["resv"].Visible;
             int st = UI.Sel(cmbStore);
             foreach (DataGridViewRow r in grid.Rows)
             {
                 int it = ItemOf(r);
                 if (it == 0) { if (!r.IsNewRow) { r.Cells["avail"].Value = null; r.Cells["resv"].Value = null; } continue; }
-                double a;
-                if (!cache.TryGetValue(it, out a)) { a = Available(it); cache[it] = a; }
+                double a; int rs = StoreOf(r); string key = it + ":" + rs;
+                if (!cache.TryGetValue(key, out a)) { a = Available(it, rs); cache[key] = a; }
                 r.Cells["avail"].Value = a;
                 if (showResv) { double rv = Reservations.ForProject(it, st, project.Value); r.Cells["resv"].Value = rv == 0 ? null : (object)rv; }
             }
@@ -424,13 +487,22 @@ namespace Stores
         void UpdateTotals()
         {
             int n = 0; double q = 0;
+            SortedDictionary<int, int> per = new SortedDictionary<int, int>();
             foreach (DataGridViewRow r in grid.Rows)
             {
                 if (r.IsNewRow || ItemOf(r) == 0) continue;
                 n++;
                 double v; if (UI.TryNum(Db.S(r.Cells["qty"].Value), out v)) q += v;
+                int st = StoreOf(r), c; per.TryGetValue(st, out c); per[st] = c + 1;
             }
-            lblTotals.Text = "عدد المواد: " + n + "     مجموع الكميات: " + UI.Num(q);
+            string stores = "";
+            if (LineStores && per.Count > 1)
+            {
+                List<string> l = new List<string>();
+                foreach (KeyValuePair<int, int> kv in per) l.Add(StoreName(kv.Key) + " (" + kv.Value + ")");
+                stores = "     " + string.Join(" • ", l.ToArray()) + "  •  يُحفظ سند لكل مخزن";
+            }
+            lblTotals.Text = "عدد المواد: " + n + "     مجموع الكميات: " + UI.Num(q) + stores;
         }
 
         int SetItem(int rowIndex, int item)
@@ -447,13 +519,14 @@ namespace Stores
             r.Cells["itemNo"].Value = item;
             r.Cells["code"].Value = Cache.ItemCode(item);
             r.Cells["name"].Value = Cache.ItemName(item);
-            r.Cells["avail"].Value = Available(item);
+            if (LineStores && Db.I(r.Cells["store"].Value) == 0) r.Cells["store"].Value = UI.Sel(cmbStore);
+            r.Cells["avail"].Value = Available(item, StoreOf(r));
             if (grid.Columns["resv"].Visible) { double rv = Reservations.ForProject(item, UI.Sel(cmbStore), project.Value); r.Cells["resv"].Value = rv == 0 ? null : (object)rv; }
             DataRow ir = Cache.Item(item);
             if (ir != null && Db.B(ir["freez"])) Msg("تنبيه: هذه المادة مجمدة", Theme.Warning);
             foreach (DataGridViewRow o in grid.Rows)
             {
-                if (o.Index != rowIndex && !o.IsNewRow && ItemOf(o) == item)
+                if (o.Index != rowIndex && !o.IsNewRow && ItemOf(o) == item && StoreOf(o) == StoreOf(r))
                 {
                     Msg("تنبيه: المادة مكررة في السطر " + o.Cells["no"].Value, Theme.Warning);
                     break;
@@ -503,6 +576,7 @@ namespace Stores
             foreach (DataGridViewRow r in grid.Rows)
             {
                 if (r.IsNewRow || ItemOf(r) != item) continue;
+                if (LineStores && StoreOf(r) != UI.Sel(cmbStore)) continue;      // another store = another line
                 double v; if (UI.TryNum(Db.S(r.Cells["qty"].Value), out v)) s += v;
             }
             return s;
@@ -510,8 +584,22 @@ namespace Stores
 
         int RowOf(int item)
         {
-            foreach (DataGridViewRow r in grid.Rows) if (!r.IsNewRow && ItemOf(r) == item) return r.Index;
+            int st = UI.Sel(cmbStore);
+            foreach (DataGridViewRow r in grid.Rows) if (!r.IsNewRow && ItemOf(r) == item && (!LineStores || StoreOf(r) == st)) return r.Index;
             return -1;
+        }
+
+        /// <summary>A new item from the entry bar (receipts): only the items window opens, the lines stay as they are.</summary>
+        int AddNewItem(string text)
+        {
+            using (ItemDialog d = new ItemDialog(0))
+            {
+                d.SetName(text);
+                if (text.Length > 0 && text.IndexOf(' ') < 0 && text.IndexOfAny("0123456789".ToCharArray()) >= 0 && text.Length <= 20) d.SetCode(text);   // a typed / scanned code
+                if (d.ShowDialog(FindForm()) != DialogResult.OK) return 0;
+                recent = null;
+                return d.ItemNo;
+            }
         }
 
         /// <summary>Last used items of this document kind (one query per screen), items added here first.</summary>
@@ -605,6 +693,13 @@ namespace Stores
         // ------------------------------------------------------------ grid events
         void Grid_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
         {
+            ComboBox cb = e.Control as ComboBox;
+            if (cb != null)        // the list of stores (one control, used again for every line)
+            {
+                cb.DropDownClosed -= StoreListClosed; cb.DropDownClosed += StoreListClosed;
+                cb.MouseWheel -= StoreListWheel; cb.MouseWheel += StoreListWheel;
+                return;
+            }
             TextBox tb = e.Control as TextBox;
             if (tb == null) return;
             string col = grid.CurrentCell.OwningColumn.Name;
@@ -616,6 +711,18 @@ namespace Stores
             }
             else tb.AutoCompleteMode = AutoCompleteMode.None;
             tb.RightToLeft = (col == "code" || col == "qty" || col == "price") ? RightToLeft.No : RightToLeft.Yes;
+        }
+
+        /// <summary>The cell leaves edit mode once a store was chosen, so keys and the wheel cannot change it unnoticed.</summary>
+        void StoreListClosed(object sender, EventArgs e)
+        {
+            BeginInvoke((Action)delegate { if (!grid.IsDisposed && grid.IsCurrentCellInEditMode && grid.EditingControl is ComboBox) grid.EndEdit(); });
+        }
+
+        void StoreListWheel(object sender, MouseEventArgs e)
+        {
+            HandledMouseEventArgs h = e as HandledMouseEventArgs;
+            if (h != null && !((ComboBox)sender).DroppedDown) h.Handled = true;
         }
 
         void Grid_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -693,6 +800,7 @@ namespace Stores
             DataGridViewRow r = grid.Rows[row];
             if (col == "code") { GoTo(row, ItemOf(r) != 0 ? "qty" : "name"); return; }
             if (col == "name") { if (ItemOf(r) != 0) GoTo(row, "qty"); return; }
+            if (col == "store") { if (!Adv) { entry.FocusSearch(null); return; } GoTo(row + 1 < grid.Rows.Count ? row + 1 : row, "code"); return; }
             if (col == "qty" && HasPrice) { GoTo(row, "price"); return; }
             if (col == "qty" || col == "price")
             {
@@ -756,7 +864,15 @@ namespace Stores
                 l.ItemNo = it; l.Qty = qty; l.LineId = Db.I(r.Cells["lineId"].Value);
                 double p; l.Price = UI.TryNum(Db.S(r.Cells["price"].Value), out p) ? p : 0;
                 l.Used = Db.D(r.Cells["used"].Value);
+                if (LineStores) l.Store = StoreOf(r);
                 d.Lines.Add(l);
+            }
+            if (LineStores && d.Lines.Count > 0)
+            {
+                // the document itself keeps its store while any line stays there; otherwise the store chosen above, or the first line's
+                bool inOrig = false, inHead = false;
+                foreach (DocLine l in d.Lines) { if (d.Id > 0 && l.Store == origStore) inOrig = true; if (l.Store == d.Store) inHead = true; }
+                d.Store = inOrig ? origStore : inHead ? d.Store : d.Lines[0].Store;
             }
             return d;
         }
@@ -769,6 +885,24 @@ namespace Stores
             Doc d;
             try { d = Collect(); }
             catch (UserError ue) { UI.Warn(ue.Message); return false; }
+            int head = UI.Sel(cmbStore);
+            if (LineStores && head > 0 && d.Lines.Count > 0 && d.Lines.TrueForAll(l => l.Store != head))
+            {
+                // the store chosen above was changed after the lines were added: nothing would go into it
+                List<string> into = new List<string>();
+                foreach (DocLine l in d.Lines) if (!into.Contains(StoreName(l.Store))) into.Add(StoreName(l.Store));
+                DialogResult a = UI.YesNoCancel("المخزن المختار أعلى السند هو " + StoreName(head) + "، لكن كل المواد في الجدول تدخل إلى: " + string.Join("، ", into.ToArray()) +
+                    ".\n\nنعم: إدخال كل المواد إلى " + StoreName(head) + "   •   لا: الحفظ كما في الجدول");
+                if (a == DialogResult.Cancel) return false;
+                if (a == DialogResult.Yes)
+                {
+                    SetAllStores();
+                    try { d = Collect(); }
+                    catch (UserError ue) { UI.Warn(ue.Message); return false; }
+                }
+            }
+            // a line of a saved receipt that goes into another store makes a new receipt there
+            if (LineStores && d.Id > 0 && d.Lines.Exists(l => l.Store != d.Store) && !Session.Demand(PermAdd)) return false;
 
             if (OutDoc)
             {
@@ -796,7 +930,10 @@ namespace Stores
                 s.Add("نوع السند: " + Posting.KindName(kind));
                 if (d.Project > 0) s.Add((CcRecipient ? (kind == DocKind.Return ? "مركز الكلفة (المُعاد منه): " : "مركز الكلفة (المستلم): ") : "مركز الكلفة: ") + Cache.Project(d.Project));
                 if (d.Person > 0) s.Add((kind == DocKind.Issue ? "المستلم: " : "الجهة: ") + Cache.Person(d.Person));
-                s.Add((OutDoc ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store) + (d.Store2 > 0 ? "  ←  إلى مخزن: " + Cache.Store(d.Store2) : ""));
+                List<string> into = new List<string>();
+                foreach (DocLine l in d.Lines) if (l.Store > 0 && !into.Contains(Cache.Store(l.Store))) into.Add(Cache.Store(l.Store));
+                if (into.Count > 1) s.Add("إلى المخازن: " + string.Join("، ", into.ToArray()) + "  (سند لكل مخزن)");
+                else s.Add((OutDoc ? "من مخزن: " : "إلى مخزن: ") + Cache.Store(d.Store) + (d.Store2 > 0 ? "  ←  إلى مخزن: " + Cache.Store(d.Store2) : ""));
                 s.Add("عدد المواد: " + d.Lines.Count + "   •   مجموع الكميات: " + UI.Num(tq));
                 if (!UI.Confirm("تأكيد قبل الحفظ:\n\n" + string.Join("\n", s.ToArray()) + "\n\nهل المعلومات صحيحة؟")) return false;
             }
@@ -804,16 +941,24 @@ namespace Stores
             try
             {
                 UI.WaitCursor(true);
-                Posting.Save(d);
+                List<Doc> docs = Posting.SaveByStore(d);
                 if (mreqNo > 0) mreqIssue = Requisitions.IssueSaved(mreqNo, mreqIssue, doc.Id, d);   // «صرف الطلب»: update the request
-                foreach (DocLine l in d.Lines)
-                {
-                    DataRow ir = Cache.Item(l.ItemNo);
-                    if (ir != null) ir["bal"] = Cache.StockAll(l.ItemNo);
-                }
+                foreach (Doc sd in docs)
+                    foreach (DocLine l in sd.Lines)
+                    {
+                        DataRow ir = Cache.Item(l.ItemNo);
+                        if (ir != null) ir["bal"] = Cache.StockAll(l.ItemNo);
+                    }
                 Show(d);
                 SetClean("✓ تم الحفظ • رقم السند " + d.No, Theme.Success);
-                if (kind == DocKind.Receipt) PurchaseRequests.AfterReceiptSave(FindForm(), d);   // optional link to a purchase request
+                if (docs.Count > 1)
+                {
+                    UI.WaitCursor(false);
+                    List<string> sl = new List<string>();
+                    foreach (Doc sd in docs) sl.Add("• سند رقم " + sd.No + "  •  " + StoreName(sd.Store) + "  •  عدد المواد: " + sd.Lines.Count);
+                    UI.Info("✓ تم الحفظ. المواد موزعة على أكثر من مخزن، لذلك حُفظ سند إدخال لكل مخزن:\n\n" + string.Join("\n", sl.ToArray()));
+                }
+                if (kind == DocKind.Receipt) PurchaseRequests.AfterReceiptSave(FindForm(), docs);   // optional link to a purchase request
                 return true;
             }
             catch (UserError ue) { UI.Warn(ue.Message); return false; }
@@ -842,11 +987,25 @@ namespace Stores
             finally { UI.WaitCursor(false); }
         }
 
+        /// <summary>Printing and files are made from the saved document.</summary>
+        bool SavedFirst(string question)
+        {
+            if (doc.Id > 0 && !dirty) return true;
+            if (doc.Id == 0 && !dirty) { UI.Warn("لا توجد مواد في السند."); return false; }
+            return UI.Confirm(question) && Save();
+        }
+
         void Print()
         {
-            if (doc.Id == 0) return;
-            if (dirty) { if (!UI.Confirm("يجب حفظ السند قبل الطباعة. حفظ الآن؟") || !Save()) return; }
-            ReportViewerForm.ShowVoucher(FindForm(), doc);
+            if (!SavedFirst("يجب حفظ السند قبل الطباعة. حفظ الآن؟")) return;
+            PrintPreviewForm.ShowVoucher(FindForm(), doc);
+        }
+
+        void SaveFile(bool pdf)
+        {
+            if (!SavedFirst("يجب حفظ السند أولا. حفظ الآن؟")) return;
+            ReportData r = Reports.Voucher(doc);
+            if (pdf) Pdf.Export(FindForm(), r, null); else Excel.Export(FindForm(), r);
         }
 
         void Navigate(int dir)
@@ -914,7 +1073,7 @@ namespace Stores
                     {
                         // F2 = the search box of the entry bar (text being typed in a grid cell moves there)
                         string text = "";
-                        if (grid.IsCurrentCellInEditMode && grid.EditingControl != null) { text = grid.EditingControl.Text; grid.CancelEdit(); grid.EndEdit(); }
+                        if (grid.IsCurrentCellInEditMode && grid.EditingControl != null) { if (grid.EditingControl is TextBox) text = grid.EditingControl.Text; grid.CancelEdit(); grid.EndEdit(); }
                         entry.FocusSearch(text);
                         return true;
                     }
