@@ -1,0 +1,54 @@
+# Publishes a release when a tag vX.Y.Z is pushed:
+#   1. the tag must equal Program.Version in src/App/Program.cs
+#   2. build + tests on demo data
+#   3. EngStores-<version>.zip (program .exe + the two guide files + docs/manual) and EngStores-<version>.zip.sha256
+#   4. GitHub release with both files; the program's updater (src/Update/Updater.cs) downloads it from there.
+# Release steps for the maintainer: bump Program.Version, commit, then: git tag v1.2.0 && git push origin v1.2.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # create the release with the built-in GITHUB_TOKEN
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag matches Program.Version
+        shell: powershell
+        run: |
+          $m = [regex]::Match((Get-Content src\App\Program.cs -Raw), 'const\s+string\s+Version\s*=\s*"([^"]+)"')
+          $tag = "$env:GITHUB_REF_NAME".TrimStart('v', 'V')
+          Write-Host "tag $env:GITHUB_REF_NAME, Program.Version $($m.Groups[1].Value)"
+          if (-not $m.Success -or $m.Groups[1].Value -ne $tag) { Write-Host "::error::Tag $env:GITHUB_REF_NAME does not match Program.Version in src/App/Program.cs"; exit 1 }
+
+      - name: Build the program
+        shell: cmd
+        run: call build.bat
+
+      - name: Build the test programs
+        shell: cmd
+        run: call tests\build-tests.bat
+
+      - name: Tests on demo data
+        shell: powershell
+        run: .\tests\RunAll.ps1 -Work "$env:RUNNER_TEMP\tests"
+
+      - name: Package
+        id: pkg
+        shell: powershell
+        run: .\scripts\package.ps1 -Tag "$env:GITHUB_REF_NAME"
+
+      - name: Create the GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:GITHUB_REF_NAME" "${{ steps.pkg.outputs.zip }}" "${{ steps.pkg.outputs.sha }}" `
+            --title "$env:GITHUB_REF_NAME" --generate-notes

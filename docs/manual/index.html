@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دليل الاستخدام • نظام إدارة المخازن</title>
+<!--
+  User manual of «نظام إدارة المخازن / Inventory Management Software», shipped next to the program (docs\manual) and
+  opened with F1 or «الإعدادات ← دليل الاستخدام». One self-contained file: no external CSS / JS / fonts.
+  Images: img\*.png, made by tests\ManualShots.cs from FAKE demo data (see AGENTS.md «User manual»). The red numbers
+  drawn on an image are explained in the list under it: when a screen changes, regenerate the images and check both.
+-->
+<style>
+  :root {
+    --text: #1f2937; --muted: #6b7280; --line: #e5e7eb; --bg: #f3f4f6; --card: #ffffff;
+    --blue: #2f56a3; --blue-soft: #eef3fc; --green: #0f8a4b; --green-soft: #eaf7f0;
+    --amber: #9a5b00; --amber-soft: #fff6e5; --red: #dc1e28; --red-soft: #fdecec;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+         font-size: 17px; line-height: 1.85; }
+  .book { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+  section.chapter, .cover, .toc { background: var(--card); border-radius: 14px; padding: 28px 36px; margin: 0 0 26px;
+                                  box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  h1, h2, h3 { line-height: 1.4; }
+  h2.ch { font-size: 30px; margin: 0 0 6px; color: var(--blue); display: flex; align-items: center; gap: 14px; }
+  h2.ch .no { background: var(--blue); color: #fff; border-radius: 10px; min-width: 46px; height: 46px; display: inline-flex;
+              align-items: center; justify-content: center; font-size: 24px; }
+  .lead { color: var(--muted); margin: 0 0 18px; font-size: 18px; }
+  h3 { font-size: 22px; margin: 30px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
+  h4 { font-size: 18px; margin: 20px 0 6px; color: var(--blue); }
+  p { margin: 8px 0; }
+  a { color: var(--blue); }
+  b, strong { color: #111827; }
+  q { quotes: "«" "»"; font-weight: 600; }
+  kbd { font-family: "Segoe UI", Tahoma, sans-serif; font-size: 14px; background: #f9fafb; border: 1px solid #c9ced6;
+        border-bottom-width: 3px; border-radius: 6px; padding: 0 7px; margin: 0 2px; white-space: nowrap; direction: ltr;
+        display: inline-block; line-height: 1.6; }
+
+  /* cover */
+  .cover { text-align: center; padding: 60px 36px; background: linear-gradient(160deg, #2f56a3 0%, #23427f 100%); color: #fff; }
+  .cover h1 { font-size: 44px; margin: 10px 0 4px; }
+  .cover .en { font-size: 22px; opacity: .9; direction: ltr; }
+  .cover .sub { font-size: 20px; margin-top: 26px; opacity: .95; }
+  .cover .meta { margin-top: 40px; font-size: 15px; opacity: .8; }
+  .cover .logo { width: 96px; height: 96px; border-radius: 22px; background: #fff; margin: 0 auto 18px; display: flex;
+                 align-items: center; justify-content: center; }
+  .cover .logo span { display: grid; grid-template-columns: repeat(3, 16px); gap: 5px; }
+  .cover .logo i { width: 16px; height: 22px; background: #2f56a3; border-radius: 3px; display: block; }
+  .cover .logo i:nth-child(3n+2) { background: #01a552; }
+
+  /* contents */
+  .toc h2 { margin-top: 0; color: var(--blue); }
+  .toc ol { columns: 2; column-gap: 40px; padding-right: 22px; margin: 0; }
+  .toc li { break-inside: avoid; margin: 2px 0; }
+  .toc li ul { list-style: none; padding-right: 8px; margin: 0 0 6px; font-size: 15px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* figures and callouts */
+  figure { margin: 16px 0 22px; break-inside: avoid; page-break-inside: avoid; }
+  figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid #d1d5db; border-radius: 8px;
+               box-shadow: 0 2px 8px rgba(0,0,0,.08); background: #fff; }
+  figure.small img { max-width: 70%; }
+  figure.tiny img { max-width: 48%; }
+  figcaption { text-align: center; color: var(--muted); font-size: 14px; margin-top: 6px; }
+  ul.callouts { list-style: none; padding: 0; margin: 6px 0 18px; }
+  ul.callouts li { position: relative; padding-right: 40px; margin: 7px 0; }
+  .n { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; border-radius: 50%;
+       background: var(--red); color: #fff; font-weight: 700; font-size: 15px; line-height: 1; vertical-align: middle;
+       box-shadow: 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,.35); }
+  ul.callouts li > .n:first-child { position: absolute; right: 0; top: 2px; }
+
+  /* numbered steps */
+  ol.steps { counter-reset: st; list-style: none; padding: 0; margin: 10px 0 18px; }
+  ol.steps > li { counter-increment: st; position: relative; padding: 10px 56px 10px 12px; margin: 10px 0;
+                  background: var(--blue-soft); border-radius: 10px; }
+  ol.steps > li::before { content: counter(st); position: absolute; right: 12px; top: 10px; width: 32px; height: 32px;
+                  border-radius: 50%; background: var(--blue); color: #fff; font-weight: 700; display: flex;
+                  align-items: center; justify-content: center; }
+
+  /* boxes */
+  .tip, .warn, .note { border-radius: 10px; padding: 12px 18px 12px 18px; margin: 14px 0; border-right: 6px solid; break-inside: avoid; }
+  .tip::before, .warn::before, .note::before { font-weight: 700; display: block; margin-bottom: 2px; }
+  .tip { background: var(--green-soft); border-color: var(--green); }
+  .tip::before { content: "💡 نصيحة"; color: var(--green); }
+  .warn { background: var(--amber-soft); border-color: #e59a00; }
+  .warn::before { content: "⚠ انتبه"; color: var(--amber); }
+  .note { background: var(--blue-soft); border-color: var(--blue); }
+  .note::before { content: "ℹ معلومة"; color: var(--blue); }
+  .adv { display: inline-block; font-size: 13px; background: #ede9fe; color: #5b21b6; border-radius: 6px; padding: 0 8px;
+         margin-right: 6px; vertical-align: middle; font-weight: 600; }
+
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 18px; font-size: 16px; break-inside: auto; }
+  th, td { border: 1px solid #d1d5db; padding: 7px 10px; text-align: right; vertical-align: top; }
+  th { background: #eef2f7; }
+  tr { break-inside: avoid; }
+  td.k { white-space: nowrap; width: 1%; }
+  .faq dt { font-weight: 700; margin-top: 14px; color: #111827; }
+  .faq dt::before { content: "س: "; color: var(--blue); }
+  .faq dd { margin: 4px 0 10px; padding-right: 22px; }
+  .faq dd::before { content: "ج: "; color: var(--green); font-weight: 700; margin-right: -22px; }
+  .top { display: block; text-align: left; font-size: 14px; margin-top: 18px; }
+  #toTop { position: fixed; left: 18px; bottom: 18px; background: var(--blue); color: #fff; text-decoration: none;
+           border-radius: 50%; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+           font-size: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+
+  @media (max-width: 720px) {
+    section.chapter, .cover, .toc { padding: 20px 16px; }
+    .toc ol { columns: 1; }
+    figure.small img, figure.tiny img { max-width: 100%; }
+  }
+  @page { size: A4; margin: 14mm 12mm; }
+  @media print {
+    body { background: #fff; font-size: 12.5pt; line-height: 1.65; }
+    .book { max-width: none; padding: 0; }
+    section.chapter, .cover, .toc { box-shadow: none; border-radius: 0; padding: 0; margin: 0; }
+    section.chapter { break-before: page; page-break-before: always; }
+    .toc { break-before: page; page-break-before: always; }
+    .cover { min-height: 250mm; display: flex; flex-direction: column; justify-content: center;
+             -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .n, ol.steps > li::before, h2.ch .no, .tip, .warn, .note, ol.steps > li, th, .adv { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    figure img { box-shadow: none; max-height: 165mm; width: auto; }
+    a { color: inherit; text-decoration: none; }
+    .noprint, #toTop, .top { display: none !important; }
+    h3, h4 { break-after: avoid; page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="book">
+
+<!-- ================================================================ cover -->
+<header class="cover" id="top">
+  <div class="logo"><span><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+  <h1>دليل الاستخدام</h1>
+  <div class="en">Inventory Management Software</div>
+  <div class="sub">نظام إدارة المخازن<br>شرح مصوّر خطوة بخطوة لأمناء المخازن ومستخدمي البرنامج</div>
+  <div class="meta">يغطي الإصدار 1.2 • الصور من بيانات تجريبية (أسماء ومواد غير حقيقية)</div>
+</header>
+
+<!-- ================================================================ contents -->
+<nav class="toc" id="toc">
+  <h2>المحتويات</h2>
+  <ol>
+    <li><a href="#how">كيف تقرأ هذا الدليل</a></li>
+    <li><a href="#start">التشغيل لأول مرة</a>
+      <ul><li><a href="#language">لغة البرنامج</a></li><li><a href="#connect">الاتصال بالبيانات أو إنشاء بيانات جديدة</a></li><li><a href="#firstpass">تغيير كلمة المرور في أول دخول</a></li><li><a href="#login">تسجيل الدخول</a></li></ul></li>
+    <li><a href="#home">الشاشة الرئيسية</a>
+      <ul><li><a href="#tiles">ترتيب البطاقات</a></li><li><a href="#search">البحث السريع عن مادة</a></li><li><a href="#usermenu">قائمة المستخدم</a></li><li><a href="#tray">الإغلاق بجانب الساعة</a></li><li><a href="#collapse">طي القائمة الجانبية</a></li><li><a href="#modes">وضع المبتدئ والوضع المتقدم</a></li></ul></li>
+    <li><a href="#items">المواد</a></li>
+    <li><a href="#cc">مراكز الكلفة</a></li>
+    <li><a href="#receipt">الإدخال المخزني (استلام مواد)</a></li>
+    <li><a href="#issue">الإخراج المخزني (صرف مواد)</a></li>
+    <li><a href="#returns">المردودات</a></li>
+    <li><a href="#writeoff">سندات الإتلاف (شطب المواد)</a></li>
+    <li><a href="#transfer">النقل المخزني</a></li>
+    <li><a href="#reserve">حجز المواد لمركز كلفة</a></li>
+    <li><a href="#doclist">سجل السندات</a></li>
+    <li><a href="#mreq">طلبات الصرف والموافقة عليها</a></li>
+    <li><a href="#preq">طلبات الشراء</a></li>
+    <li><a href="#count">الجرد الفعلي</a></li>
+    <li><a href="#reports">التقارير</a>
+      <ul><li><a href="#valuation">قيمة المخزون وتقييمه</a></li></ul></li>
+    <li><a href="#theme">المظهر واللغة</a>
+      <ul><li><a href="#language-switch">اللغة الإنجليزية</a></li></ul></li>
+    <li><a href="#settings">الإعدادات</a>
+      <ul><li><a href="#general">اسم الشركة والشعار</a></li><li><a href="#users">المستخدمون والصلاحيات</a></li><li><a href="#backup">النسخ الاحتياطية</a></li><li><a href="#yearclose">إقفال السنة</a></li><li><a href="#periodlock">قفل الفترات الشهرية</a></li><li><a href="#audit">سجل التدقيق</a></li></ul></li>
+    <li><a href="#server">العمل على الشبكة (السيرفر)</a></li>
+    <li><a href="#updates">التحديثات والإبلاغ عن مشكلة</a></li>
+    <li><a href="#keys">اختصارات لوحة المفاتيح</a></li>
+    <li><a href="#faq">أسئلة شائعة وحل المشكلات</a></li>
+  </ol>
+</nav>
+
+<!-- ================================================================ 1 -->
+<section class="chapter" id="how">
+  <h2 class="ch"><span class="no">1</span>كيف تقرأ هذا الدليل</h2>
+  <p class="lead">هذا الدليل مكتوب لمن يستعمل البرنامج لأول مرة. لا تحتاج خبرة سابقة بالحاسوب: اتبع الخطوات بالترتيب.</p>
+  <ul>
+    <li>الأرقام <span class="n">1</span> <span class="n">2</span> <span class="n">3</span> المرسومة باللون الأحمر على الصور تجدها مشروحة تحت كل صورة بنفس الرقم.</li>
+    <li>الخطوات المرقمة باللون الأزرق تُنفَّذ بالترتيب، واحدة بعد الأخرى.</li>
+    <li>كلمات الأزرار والشاشات مكتوبة بين قوسين هكذا: <q>حفظ</q>، كما تظهر في البرنامج.</li>
+    <li>المفاتيح تظهر هكذا: <kbd>Enter</kbd> <kbd>Ctrl</kbd>+<kbd>S</kbd> (اضغط Ctrl واتركه مضغوطا ثم اضغط S).</li>
+    <li>العلامة <span class="adv">الوضع المتقدم</span> تعني أن الشاشة تظهر فقط بعد التحويل إلى الوضع المتقدم (<a href="#modes">شرحه هنا</a>).</li>
+  </ul>
+  <div class="tip">افتح هذا الدليل في أي وقت من داخل البرنامج بالضغط على <kbd>F1</kbd>، أو من <q>الإعدادات</q> ← بطاقة <q>دليل الاستخدام</q> ← <q>فتح الدليل</q>. ولطباعته اضغط <kbd>Ctrl</kbd>+<kbd>P</kbd> في المتصفح: كل فصل يبدأ في صفحة جديدة.</div>
+  <div class="note">الصور في هذا الدليل مأخوذة من <b>بيانات تجريبية</b>: أسماء الأشخاص ومراكز الكلفة والمواد ليست حقيقية، واسم الشركة «شركة المثال للمقاولات» مثال فقط. شاشتك ستُظهر بيانات شركتك.</div>
+</section>
+
+<!-- ================================================================ 2 -->
+<section class="chapter" id="start">
+  <h2 class="ch"><span class="no">2</span>التشغيل لأول مرة</h2>
+  <p class="lead">عند فتح البرنامج أول مرة على حاسوب جديد يسألك عن اللغة، ثم عن مكان البيانات، ثم تسجّل الدخول.</p>
+
+  <h3 id="language">لغة البرنامج</h3>
+  <p>في أول تشغيل على الحاسوب، وقبل أي شيء آخر، تظهر نافذة <q>اختر لغة البرنامج / Choose the program language</q>:</p>
+  <figure class="small"><img src="img/language.png" alt="نافذة اختيار لغة البرنامج"><figcaption>نافذة اختيار اللغة (تظهر مرة واحدة على كل حاسوب)</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>العربية</q>: الواجهة العربية من اليمين إلى اليسار.</li>
+    <li><span class="n">2</span><q>English</q>: الواجهة الإنجليزية من اليسار إلى اليمين.</li>
+  </ul>
+  <p>يصبح اختيارك لغة هذا الحاسوب. بعدها يستطيع كل مستخدم تغيير لغته بالرابط <q>English</q> / <q>عربي</q> في شاشة الدخول أو في الشريط العلوي (<a href="#language-switch">شرحه</a>).</p>
+  <div class="note">هذا الدليل يشرح الواجهة العربية. في الواجهة الإنجليزية الأزرار نفسها مترجمة، والشاشة معكوسة: القائمة الجانبية على اليسار.</div>
+
+  <h3 id="connect">الاتصال بالبيانات أو إنشاء بيانات جديدة</h3>
+  <p>البيانات (المواد والسندات والأرصدة) محفوظة في <b>ملف بيانات</b> (امتداده <b>.AMR</b>) أو على <b>سيرفر</b> في الشبكة. إذا لم يجد البرنامج البيانات تظهر نافذة <q>إعدادات الاتصال والسيرفر</q>:</p>
+  <figure><img src="img/connection.png" alt="نافذة إعدادات الاتصال والسيرفر"><figcaption>نافذة <q>إعدادات الاتصال والسيرفر</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>ملف Access (.AMR)</b>: البيانات في ملف على هذا الحاسوب أو في مجلد مشترك على الشبكة المحلية.</li>
+    <li><span class="n">2</span>مكان الملف. اضغط <q>استعراض…</q> لاختيار ملف بيانات موجود.</li>
+    <li><span class="n">3</span><q>لا توجد لدي بيانات • إنشاء بيانات جديدة</q>: ينشئ ملف بيانات فارغا لشركة جديدة.</li>
+    <li><span class="n">4</span><b>سيرفر SQL Server</b>: للعمل من عدة حواسيب في نفس الوقت (موصى به للشركات). انظر <a href="#server">العمل على الشبكة</a>.</li>
+    <li><span class="n">5</span>تجهيز الشبكة مرة واحدة لكل حاسوب: <q>السيرفر الرئيسي</q> و<q>سيرفر ثانوي</q>.</li>
+    <li><span class="n">6</span><q>حفظ واتصال</q>: يحفظ الاختيار ويفتح شاشة الدخول. زر <q>اختبار الاتصال</q> يتأكد فقط دون حفظ.</li>
+  </ul>
+  <h4>لديك ملف بيانات من قبل</h4>
+  <ol class="steps">
+    <li>اختر <span class="n">1</span> <q>ملف Access (.AMR)</q>.</li>
+    <li>اضغط <q>استعراض…</q> <span class="n">2</span> واختر ملف البيانات (مثلا <b>بيانات المخازن.AMR</b>) ثم <q>Open</q>.</li>
+    <li>اضغط <q>حفظ واتصال</q> <span class="n">6</span>.</li>
+  </ol>
+  <h4>شركة جديدة ليس لديها بيانات</h4>
+  <ol class="steps">
+    <li>اضغط <q>لا توجد لدي بيانات • إنشاء بيانات جديدة</q> <span class="n">3</span>.</li>
+    <li>اختر المجلد الذي تريد حفظ البيانات فيه (يُفضَّل مجلدا تأخذ منه نسخا احتياطية) ثم <q>Save</q>.</li>
+    <li>تظهر رسالة <q>تم إنشاء بيانات جديدة فارغة</q>: ادخل باسم المستخدم <b>1</b> وكلمة المرور <b>1</b>.</li>
+    <li>عند هذا الدخول الأول <b>يجب</b> تغيير كلمة المرور (<a href="#firstpass">شرحه في الأسفل</a>)، ثم ابدأ بإضافة المخازن والمواد.</li>
+  </ol>
+
+  <h4 id="firstpass">تغيير كلمة المرور إجباريا في أول دخول</h4>
+  <p>كلمة المرور <b>1</b> للبيانات الجديدة معروفة للجميع، لذلك لا يسمح البرنامج بالعمل بها. بعد الضغط على <q>دخول</q> أول مرة تظهر رسالة <q>هذه أول مرة تدخل فيها إلى البيانات الجديدة… يجب تغييرها الآن</q>، ثم نافذة <q>تغيير كلمة المرور</q>:</p>
+  <figure class="tiny"><img src="img/first-password.png" alt="تغيير كلمة المرور في أول دخول"><figcaption>نافذة <q>تغيير كلمة المرور</q> في أول دخول</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>كلمة المرور الحالية</b>: مكتوبة لك تلقائيا ولا تتغير.</li>
+    <li><span class="n">2</span><b>كلمة المرور الجديدة</b>: اختر كلمة مختلفة عن <b>1</b> (حتى 20 حرفا) واحفظها في مكان آمن.</li>
+    <li><span class="n">3</span><b>تأكيد كلمة المرور</b>: اكتبها مرة ثانية بالضبط.</li>
+    <li><span class="n">4</span><q>حفظ</q>: يُفتح البرنامج.</li>
+  </ul>
+  <div class="warn">إذا ضغطت <q>إلغاء</q> فلن يتم الدخول، وسيُطلب التغيير مرة أخرى في الدخول التالي.</div>
+  <div class="warn">لا تضع ملف البيانات في مجلد تتم مزامنته (OneDrive أو Google Drive أو Dropbox) إذا كان أكثر من شخص يعمل عليه: قد يتلف الملف. للعمل المشترك استعمل <a href="#server">السيرفر</a>. البرنامج يكتب تنبيها أحمر في أسفل الشاشة إذا اكتشف ذلك.</div>
+
+  <h3 id="login">تسجيل الدخول</h3>
+  <figure class="small"><img src="img/login.png" alt="شاشة تسجيل الدخول"><figcaption>شاشة <q>تسجيل الدخول</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>اسم المستخدم: اختره من القائمة أو اكتبه. يتذكر البرنامج آخر اسم دخل به.</li>
+    <li><span class="n">2</span>كلمة المرور.</li>
+    <li><span class="n">3</span><q>دخول</q> (أو اضغط <kbd>Enter</kbd>).</li>
+    <li><span class="n">4</span><q>إعدادات الاتصال والسيرفر</q>: لتغيير مكان البيانات (نفس النافذة السابقة).</li>
+  </ul>
+  <p>وفي أعلى بطاقة الدخول الرابط <q>English</q> لفتح شاشة الدخول والبرنامج باللغة الإنجليزية.</p>
+  <div class="note">بعد 5 محاولات خاطئة يُغلق البرنامج. إذا نسيت كلمة المرور اطلب من المدير (المستخدم رقم 1) أن يكتب لك كلمة جديدة من شاشة <a href="#users">المستخدمون</a>.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 3 -->
+<section class="chapter" id="home">
+  <h2 class="ch"><span class="no">3</span>الشاشة الرئيسية</h2>
+  <p class="lead">بعد الدخول تظهر الشاشة الرئيسية. منها تصل إلى كل عمل في البرنامج.</p>
+  <figure><img src="img/home.png" alt="الشاشة الرئيسية في وضع المبتدئ"><figcaption>الشاشة الرئيسية (وضع المبتدئ)</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>القائمة الجانبية</b>: كل شاشات البرنامج. الشاشة المفتوحة الآن مُعلَّمة بخط أزرق. <q>الإعدادات</q> و<q>خروج</q> في أسفلها.</li>
+    <li><span class="n">2</span><b>البحث السريع</b> عن مادة بالرمز أو الاسم (<a href="#search">شرحه</a>).</li>
+    <li><span class="n">3</span><b>بطاقات الأعمال اليومية</b>: اضغط بطاقة لفتح سند جديد من نوعها مباشرة. يمكنك <a href="#tiles">تغيير ترتيبها</a>.</li>
+    <li><span class="n">4</span><b>التنبيهات</b>: تظهر فقط عندما يوجد شيء يحتاج انتباهك، مثل <q>أرصدة حرجة تحتاج تعزيز</q> و<q>أرصدة سالبة</q> و<q>حجوزات قائمة</q> و<q>طلبات صرف بانتظار موافقتك</q> و<q>سندات إتلاف بانتظار اعتمادك</q>. اضغط التنبيه لفتح التقرير أو القائمة الخاصة به.</li>
+    <li><span class="n">5</span><b>آخر السندات</b>: انقر مرتين على أي سند لفتحه.</li>
+    <li><span class="n">6</span><b>اسم المستخدم</b>: اضغطه لفتح <a href="#usermenu">قائمة المستخدم</a>.</li>
+    <li><span class="n">7</span><b>الوضع</b>: التحويل بين <a href="#modes">وضع المبتدئ والوضع المتقدم</a>.</li>
+    <li><span class="n">8</span><q>طي القائمة</q>: <a href="#collapse">يصغّر القائمة الجانبية</a> لتبقى الأيقونات فقط.</li>
+    <li><span class="n">9</span><q>المتصلون الآن</q>: عدد من يستعمل البرنامج الآن. اضغطه لمعرفة أسمائهم وحواسيبهم.</li>
+  </ul>
+  <div class="tip">اضغط <kbd>F5</kbd> في الشاشة الرئيسية لتحديث التنبيهات وآخر السندات.</div>
+
+  <h3 id="tiles">ترتيب البطاقات (السحب والإفلات)</h3>
+  <p>ضع البطاقة التي تستعملها أكثر في المكان الذي يناسبك:</p>
+  <figure><img src="img/tiles-drag.png" alt="سحب بطاقة إلى مكان بطاقة أخرى"><figcaption>اسحب البطاقة <span class="n">1</span> وأفلتها فوق البطاقة <span class="n">2</span></figcaption></figure>
+  <ol class="steps">
+    <li>ضع مؤشر الفأرة على البطاقة <span class="n">1</span> واضغط زر الفأرة الأيسر واتركه مضغوطا.</li>
+    <li>حرّك الفأرة إلى البطاقة الأخرى <span class="n">2</span> ثم اترك الزر.</li>
+    <li>تتبادل البطاقتان مكانيهما، ويُحفظ الترتيب لك وحدك (كل مستخدم له ترتيبه).</li>
+  </ol>
+
+  <h3 id="search">البحث السريع عن مادة</h3>
+  <p>اكتب حرفين أو أكثر من اسم المادة أو رمزها في مربع البحث <span class="n">2</span>، أو اضغط <kbd>Ctrl</kbd>+<kbd>F</kbd> (أو <kbd>F3</kbd>) من أي شاشة. تظهر نافذة النتائج:</p>
+  <figure><img src="img/quick-search.png" alt="نافذة البحث عن مادة"><figcaption>نتائج البحث عن «كيبل»</figcaption></figure>
+  <ol class="steps">
+    <li>تحرّك بين النتائج بالأسهم <kbd>↓</kbd> <kbd>↑</kbd> أو بالفأرة.</li>
+    <li>اضغط <kbd>Enter</kbd> أو انقر مرتين على المادة: تُفتح بطاقة المادة للتعديل (ومن ليس لديه صلاحية المواد يرى <q>كارت المادة</q> أي حركاتها).</li>
+  </ol>
+
+  <h3 id="usermenu">قائمة المستخدم: تغيير كلمة المرور وتسجيل الخروج</h3>
+  <figure class="small"><img src="img/user-menu.png" alt="قائمة المستخدم"><figcaption>اضغط اسمك في أعلى الشاشة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>تغيير كلمة المرور</q>: اكتب كلمة المرور الحالية ثم الجديدة مرتين، ثم <q>حفظ</q>.</li>
+    <li><span class="n">2</span><q>تسجيل الخروج</q>: يعود إلى شاشة الدخول ليدخل مستخدم آخر دون إغلاق البرنامج.</li>
+  </ul>
+  <figure class="tiny"><img src="img/change-password.png" alt="نافذة تغيير كلمة المرور"><figcaption>نافذة <q>تغيير كلمة المرور</q></figcaption></figure>
+
+  <h3 id="tray">الإغلاق بجانب الساعة</h3>
+  <p>زر الإغلاق <b>✕</b> في أعلى النافذة <b>لا يُغلق البرنامج</b>، بل يخفيه بجانب ساعة ويندوز (أسفل يمين الشاشة أو يسارها) ليبقى جاهزا:</p>
+  <ul>
+    <li>لفتحه مرة أخرى: انقر مرتين على أيقونة البرنامج بجانب الساعة (قد تكون داخل السهم <b>^</b>).</li>
+    <li>للخروج نهائيا: زر الفأرة الأيمن على الأيقونة ← <q>خروج</q>، أو <q>خروج</q> في أسفل القائمة الجانبية.</li>
+  </ul>
+  <div class="note">في أول مرة تظهر رسالة صغيرة بجانب الساعة تشرح ذلك.</div>
+
+  <h3 id="collapse">طي القائمة الجانبية</h3>
+  <p>اضغط <q>طي القائمة</q> <span class="n">8</span> لتصغير القائمة وإعطاء مساحة أكبر للشاشة. تبقى الأيقونات فقط؛ ضع الفأرة على أيقونة لترى اسمها. يتذكر البرنامج اختيارك.</p>
+  <figure class="tiny"><img src="img/nav-collapsed.png" alt="القائمة الجانبية مطوية"><figcaption>القائمة مطوية: اضغط <span class="n">1</span> <q>توسيع القائمة</q> لإظهار الأسماء</figcaption></figure>
+
+  <h3 id="modes">وضع المبتدئ والوضع المتقدم</h3>
+  <p>اضغط <q>الوضع: مبتدئ ⇄</q> <span class="n">7</span> في أعلى الشاشة للتحويل. يُحفظ الوضع لكل مستخدم.</p>
+  <table>
+    <tr><th>وضع المبتدئ</th><th>الوضع المتقدم</th></tr>
+    <tr><td>شاشات مبسطة وأزرار كبيرة.</td><td>كل الشاشات: <q>نقل مخزني</q>، <q>سجل السندات</q>، <q>طلبات الشراء</q>، <q>الجرد الفعلي</q>، <q>سندات الإتلاف</q>، <q>الجهات والأشخاص</q>، <q>المخازن والأنواع</q>، <q>المستخدمون</q>.</td></tr>
+    <tr><td>سطر أخضر في كل سند يشرح الخطوات ①②③.</td><td>اختصارات لوحة المفاتيح مكتوبة على الأزرار، والتنقل بين السندات بـ <kbd>PageUp</kbd>/<kbd>PageDown</kbd>.</td></tr>
+    <tr><td>رسالة تأكيد تلخّص السند قبل الحفظ.</td><td>الحفظ مباشرة دون رسالة تأكيد، وسعر الوحدة في الإدخال المخزني.</td></tr>
+    <tr><td>4 بطاقات في الشاشة الرئيسية وتقارير أساسية.</td><td>حتى 6 بطاقات، ورسم بياني للسندات خلال آخر 12 شهرا، وكل التقارير.</td></tr>
+  </table>
+  <figure><img src="img/home-advanced.png" alt="الشاشة الرئيسية في الوضع المتقدم"><figcaption>الشاشة الرئيسية في الوضع المتقدم</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>الوضع الحالي: متقدم. اضغطه للعودة إلى وضع المبتدئ.</li>
+    <li><span class="n">2</span>شاشات إضافية في القائمة الجانبية.</li>
+    <li><span class="n">3</span>رسم بياني لعدد سندات الإدخال والإخراج في كل شهر.</li>
+  </ul>
+  <div class="tip">ابدأ بوضع المبتدئ. عندما تتعوّد على البرنامج انتقل إلى الوضع المتقدم لتعمل أسرع بلوحة المفاتيح.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 4 -->
+<section class="chapter" id="items">
+  <h2 class="ch"><span class="no">4</span>المواد</h2>
+  <p class="lead">شاشة <q>المواد</q> فيها كل المواد المخزنية: إضافتها وتعديلها وأرصدتها وأماكنها على الرفوف.</p>
+  <figure><img src="img/items.png" alt="شاشة المواد"><figcaption>شاشة <q>المواد</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>بحث فوري</b>: اكتب جزءا من الاسم أو الرمز فتتصفى القائمة أثناء الكتابة.</li>
+    <li><span class="n">2</span>تصفية حسب <b>النوع</b>. وبجانبها: <q>لها رصيد فقط</q> و<q>إظهار المجمدة</q>.</li>
+    <li><span class="n">3</span><q>+ مادة جديدة</q>.</li>
+    <li><span class="n">4</span><q>تعديل</q> المادة المختارة.</li>
+    <li><span class="n">5</span><q>كارت المادة</q>: كل حركات المادة (إدخال وإخراج) مع الرصيد بعد كل حركة.</li>
+    <li><span class="n">6</span><b>انقر مرتين</b> على أي سطر لفتح المادة للتعديل (أو اختر السطر واضغط <kbd>Enter</kbd>).</li>
+    <li><span class="n">7</span><q>تصدير Excel</q>: القائمة كما تظهر إلى ملف Excel.</li>
+  </ul>
+
+  <h3>إضافة مادة جديدة أو تعديلها</h3>
+  <figure class="small"><img src="img/item-dialog.png" alt="نافذة المادة"><figcaption>نافذة المادة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>اسم المادة</b> (إلزامي). لا يتكرر اسمان.</li>
+    <li><span class="n">2</span><b>الرمز</b>: اكتبه، أو اضغط <q>اقتراح رمز</q> ليقترح البرنامج رمزا. يُستعمل في البحث وقارئ الباركود.</li>
+    <li><span class="n">3</span><b>وحدة القياس</b>: اختر من القائمة (قطعة، متر، لفة، علبة، كغم…) أو اكتب وحدة جديدة. تظهر في السندات والتقارير.</li>
+    <li><span class="n">4</span><b>حد إعادة الطلب</b>: عندما ينزل الرصيد عنه تظهر المادة في تنبيه وتقرير <q>الأرصدة الحرجة</q>.</li>
+    <li><span class="n">5</span><b>مدة التوريد (يوم)</b>: كم يوما يحتاج المجهز ليوصل المادة بعد طلبها. يستعملها البرنامج ليقترح الكمية التي تُطلب قبل أن تنفد المادة.</li>
+    <li><span class="n">6</span><b>الرصيد الافتتاحي</b> في كل مخزن: الكمية الموجودة عند بدء العمل بالبرنامج.</li>
+    <li><span class="n">7</span><b>الموقع</b> (مكان المادة على الرف، مثل <b>A-03-2</b>) و<b>الحد الأدنى</b> (مخزون الأمان) و<b>الحد الأعلى</b> لكل مخزن.</li>
+    <li><span class="n">8</span><q>حفظ</q>.</li>
+  </ul>
+  <ol class="steps">
+    <li>اضغط <q>+ مادة جديدة</q> <span class="n">3</span> في شاشة المواد.</li>
+    <li>اكتب اسم المادة، ثم الرمز أو <q>اقتراح رمز</q>.</li>
+    <li>اختر النوع والمجموعة ووحدة القياس.</li>
+    <li>إذا كانت المادة موجودة في المخزن الآن، اكتب كميتها في عمود <q>الرصيد الافتتاحي</q> في سطر المخزن.</li>
+    <li>(اختياري) اكتب الموقع والحد الأدنى والأعلى ومدة التوريد.</li>
+    <li>اضغط <q>حفظ</q>.</li>
+  </ol>
+  <div class="tip">يمكنك إضافة مادة جديدة أثناء كتابة السند أيضا: إذا لم تجدها، اضغط <kbd>Ctrl</kbd>+<kbd>F</kbd> واستعمل زر <q>+ مادة جديدة</q> في نافذة البحث.</div>
+  <div class="warn">لا تستعمل <q>الرصيد الافتتاحي</q> لإضافة كميات وصلت حديثا: استعمل <a href="#receipt">الإدخال المخزني</a>. بعد <a href="#yearclose">إقفال السنة</a> لا يمكن تغيير الرصيد الافتتاحي.</div>
+  <h4>مادة لم تعد تُستعمل</h4>
+  <p>لا يمكن حذف مادة لها حركات أو رصيد. بدلا من ذلك افتحها وعلّم <q>مادة مجمدة (لا تظهر في السندات الجديدة)</q> ثم <q>حفظ</q>. تبقى حركاتها القديمة في التقارير.</p>
+  <h4>المخازن والأنواع والمجموعات <span class="adv">الوضع المتقدم</span></h4>
+  <p>من <q>المخازن والأنواع</q> في القائمة الجانبية تضيف المخازن وأنواع المواد ومجموعاتها أو تغيّر أسماءها: <q>إضافة</q>، <q>تعديل الاسم</q>، <q>حذف</q> (إذا لم يكن مستعملا).</p>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 5 -->
+<section class="chapter" id="cc">
+  <h2 class="ch"><span class="no">5</span>مراكز الكلفة</h2>
+  <p class="lead">مركز الكلفة هو الجهة التي تُحمَّل عليها المواد المُخرجة: <b>مشروع</b> أو <b>قسم</b> أو <b>صيانة</b> أو <b>إدارة</b> أو <b>أخرى</b>. يُختار في كل سند إخراج مخزني.</p>
+  <figure><img src="img/cost-centres.png" alt="شاشة مراكز الكلفة"><figcaption>شاشة <q>مراكز الكلفة</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>+ مركز كلفة جديد</q>.</li>
+    <li><span class="n">2</span><q>تعديل</q> المركز المختار (أو انقر مرتين على سطره).</li>
+    <li><span class="n">3</span><q>إغلاق</q>: مركز انتهى عمله لا يظهر في السندات الجديدة، وتبقى سنداته وتقاريره. يتحول الزر إلى <q>إعادة فتح</q> للمراكز المغلقة.</li>
+    <li><span class="n">4</span><q>كشف مركز الكلفة</q>: كل ما أُخرج له وما أُعيد منه والصافي والكلفة.</li>
+    <li><span class="n">5</span><q>حجز مواد</q> لهذا المركز (<a href="#reserve">شرحه</a>).</li>
+  </ul>
+  <figure class="small"><img src="img/cost-centre-dialog.png" alt="نافذة مركز كلفة جديد"><figcaption>نافذة <q>مركز كلفة جديد</q></figcaption></figure>
+  <ol class="steps">
+    <li>اضغط <q>+ مركز كلفة جديد</q>.</li>
+    <li>اكتب <b>اسم مركز الكلفة</b> <span class="n">1</span>.</li>
+    <li>اختر <b>النوع</b> <span class="n">2</span>: مشروع، قسم، صيانة، إدارة، أخرى.</li>
+    <li>الرمز يُعطى تلقائيا إذا تركته فارغا. <q>الجهة المستفيدة</q> و<q>تاريخ البدء</q> للمشاريع فقط.</li>
+    <li>اضغط <q>حفظ</q> <span class="n">3</span>.</li>
+  </ol>
+  <div class="tip">تستطيع إضافة مركز كلفة جديد وأنت تكتب سند الإخراج: زر <b>+</b> الأخضر بجانب حقل <q>مركز الكلفة</q>.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 6 -->
+<section class="chapter" id="receipt">
+  <h2 class="ch"><span class="no">6</span>الإدخال المخزني (استلام مواد)</h2>
+  <p class="lead">سند <q>إدخال مخزني</q> يسجّل مواد وصلت إلى المخزن من مجهز، فتزيد أرصدتها.</p>
+  <figure><img src="img/receipt.png" alt="سند إدخال مخزني"><figcaption>سند <q>إدخال مخزني</q> جديد</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>المجهز / الجهة</b>: اكتب جزءا من الاسم واختره، أو اضغط <b>…</b> للبحث.</li>
+    <li><span class="n">2</span><b>إلى مخزن</b>: المخزن الذي دخلت إليه المواد.</li>
+    <li><span class="n">3</span><b>النوع</b>: محلي أو استيراد.</li>
+    <li><span class="n">4</span><b>مربع البحث عن المادة</b>: اكتب رمزها أو اسمها أو امسح الباركود.</li>
+    <li><span class="n">5</span><q>حفظ</q>.</li>
+  </ul>
+  <ol class="steps">
+    <li>من الشاشة الرئيسية اضغط بطاقة <q>إدخال مخزني</q>، أو من القائمة الجانبية <q>إدخال مخزني</q>.</li>
+    <li>اختر المجهز <span class="n">1</span> والمخزن <span class="n">2</span> والنوع <span class="n">3</span>. التاريخ هو اليوم تلقائيا؛ غيّره إذا كان الاستلام في يوم سابق.</li>
+    <li>في مربع البحث <span class="n">4</span> اكتب جزءا من اسم المادة واضغط <kbd>Enter</kbd> لاختيارها، ثم اكتب الكمية واضغط <kbd>Enter</kbd>. تُضاف المادة إلى الجدول (طريقة الإضافة نفسها في كل السندات: <a href="#issue-add">شرحها بالصور</a>).</li>
+    <li>كرر لكل مادة في الفاتورة. اكتب رقم الفاتورة في <q>ملاحظات</q> إذا أردت.</li>
+    <li>اضغط <q>حفظ</q> <span class="n">5</span>. في وضع المبتدئ تظهر رسالة تلخّص السند: راجعها واضغط <q>Yes</q>.</li>
+  </ol>
+  <div class="note">في <span class="adv">الوضع المتقدم</span> يظهر حقل <b>السعر</b> بجانب الكمية وعمود <q>سعر الوحدة</q>، لحساب كلفة المواد. وإذا كان للمواد <a href="#preq">طلب شراء</a> مفتوح يسألك البرنامج بعد الحفظ إن كنت تريد ربط السند به.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 7 -->
+<section class="chapter" id="issue">
+  <h2 class="ch"><span class="no">7</span>الإخراج المخزني (صرف مواد)</h2>
+  <p class="lead">سند <q>إخراج مخزني</q> يسجّل مواد خرجت من المخزن إلى <a href="#cc">مركز كلفة</a>، فتنقص أرصدتها. مركز الكلفة هو المستلم.</p>
+
+  <h3>الخطوة 1: افتح سندا جديدا واختر مركز الكلفة</h3>
+  <p>اضغط بطاقة <q>إخراج مخزني</q> في الشاشة الرئيسية (أو من القائمة الجانبية).</p>
+  <figure><img src="img/issue-1.png" alt="اختيار مركز الكلفة"><figcaption>اختيار مركز الكلفة من القائمة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>مركز الكلفة (المستلم)</b>: اكتب جزءا من اسمه أو رمزه، أو اضغط <b>▼</b> لعرض القائمة، ثم اختره. زر <b>+</b> يضيف مركزا جديدا.</li>
+    <li><span class="n">2</span><b>من مخزن</b>: المخزن الذي تخرج منه المواد.</li>
+  </ul>
+
+  <h3 id="issue-add">الخطوة 2: ابحث عن المادة</h3>
+  <figure><img src="img/issue-2.png" alt="البحث عن مادة في السند"><figcaption>كتابة «قاطع» تُظهر النتائج فورا</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>اكتب رمز المادة أو جزءا من اسمها في مربع البحث (أو امسح الباركود).</li>
+    <li><span class="n">2</span>تظهر النتائج تحت المربع مباشرة مع <b>الوحدة</b> و<b>المتوفر</b> في المخزن. تحرك بالأسهم <kbd>↓</kbd> <kbd>↑</kbd> واضغط <kbd>Enter</kbd>، أو انقر على المادة.</li>
+  </ul>
+  <div class="tip">انقر في مربع البحث وهو فارغ لتظهر <b>آخر المواد المستعملة</b> في هذا النوع من السندات.</div>
+
+  <h3>الخطوة 3: اكتب الكمية واضغط Enter</h3>
+  <figure><img src="img/issue-3.png" alt="كتابة الكمية"><figcaption>المادة مختارة وتنتظر الكمية</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>المادة التي اخترتها.</li>
+    <li><span class="n">2</span><b>الكمية</b>: اكتبها (مثلا 12) ثم اضغط <kbd>Enter</kbd>.</li>
+    <li><span class="n">3</span>أو اضغط <q>+ إضافة</q> بالفأرة.</li>
+    <li><span class="n">4</span>سطر المعلومات: المتوفر من المادة في المخزن، وتنبيه أحمر إذا لم يكفِ الرصيد.</li>
+  </ul>
+  <p>بعد الإضافة يعود المؤشر إلى مربع البحث لتكتب المادة التالية. إذا أضفت مادة موجودة في السند تُزاد كميتها في السطر نفسه.</p>
+
+  <h3>الخطوة 4: راجع الجدول</h3>
+  <figure><img src="img/issue-4.png" alt="سند إخراج فيه أربع مواد"><figcaption>السند وفيه 4 مواد قبل الحفظ</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>لتغيير كمية</b>: انقر عليها في الجدول واكتب الكمية الجديدة ثم <kbd>Enter</kbd>.</li>
+    <li><span class="n">2</span><b>المتوفر (غير محجوز)</b>: رصيد المخزن بعد طرح ما هو محجوز لمراكز كلفة أخرى.</li>
+    <li><span class="n">3</span><b>✕ حذف</b>: يحذف هذا السطر من السند (بعد سؤال تأكيد).</li>
+    <li><span class="n">4</span>عدد المواد ومجموع الكميات.</li>
+    <li><span class="n">5</span><q>حفظ</q>: يُثبَّت رقم السند وتنقص الأرصدة.</li>
+    <li><span class="n">6</span><q>طباعة</q>: تتفعّل بعد الحفظ.</li>
+  </ul>
+  <div class="warn">إذا كانت الكمية أكبر من المتوفر يسألك البرنامج قبل الحفظ. إذا وافقت قد يصبح الرصيد سالبا ويظهر في تنبيه <q>أرصدة سالبة</q>: صحّحه بسند إدخال أو بتعديل السند.</div>
+
+  <h3>الخطوة 5: احفظ واطبع</h3>
+  <p>اضغط <q>حفظ</q>. في وضع المبتدئ تظهر رسالة <q>تأكيد قبل الحفظ</q> فيها مركز الكلفة والمخزن وعدد المواد: إذا كانت صحيحة اضغط <q>Yes</q>. يظهر في أعلى السند <q>✓ تم الحفظ • رقم السند …</q>.</p>
+  <p>أزرار السند (الصورة من الوضع المتقدم حيث تُكتب الاختصارات عليها):</p>
+  <figure><img src="img/issue-actions.png" alt="أزرار السند"><figcaption>شريط أزرار السند</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>حفظ</q> <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+    <li><span class="n">2</span><q>جديد</q> / <q>سند جديد</q> <kbd>Ctrl</kbd>+<kbd>N</kbd>: سند فارغ من النوع نفسه.</li>
+    <li><span class="n">3</span><q>طباعة</q> <kbd>Ctrl</kbd>+<kbd>P</kbd>: تفتح نافذة السند للطباعة (إذا لم يكن محفوظا يطلب الحفظ أولا).</li>
+    <li><span class="n">4</span><q>حذف السند</q>: يحذفه نهائيا بعد التأكيد، وتُصحَّح الأرصدة تلقائيا.</li>
+    <li><span class="n">5</span><q>فتح سند برقم…</q>: اكتب رقم سند قديم لفتحه وتعديله أو طباعته.</li>
+    <li><span class="n">6</span><q>السابق</q> و<q>التالي</q>: التنقل بين السندات المحفوظة (<kbd>PageUp</kbd>/<kbd>PageDown</kbd> في الوضع المتقدم).</li>
+  </ul>
+  <figure><img src="img/voucher.png" alt="نافذة طباعة السند"><figcaption>نافذة الطباعة: السند جاهز مع أماكن التواقيع</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>طباعة</q>: يختار الطابعة ويطبع.</li>
+    <li><span class="n">2</span><q>معاينة</q>: يعرض الصفحة كما ستُطبع.</li>
+    <li><span class="n">3</span><q>إعداد الصفحة</q>: حجم الورق (A4) والهوامش والاتجاه.</li>
+    <li><span class="n">4</span><q>تكبير +</q> و<q>تصغير −</q>: حجم الخط على الشاشة وفي الطباعة.</li>
+  </ul>
+  <div class="tip">لتعديل سند قديم: افتحه (من <q>آخر السندات</q> في الشاشة الرئيسية، أو <q>فتح سند برقم…</q>، أو <a href="#doclist">سجل السندات</a>)، غيّر ما تريد، ثم <q>حفظ</q>. إذا خرجت من السند دون حفظ يسألك البرنامج: <q>يوجد تغييرات غير محفوظة… هل تريد حفظها؟</q></div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 8 -->
+<section class="chapter" id="returns">
+  <h2 class="ch"><span class="no">8</span>المردودات</h2>
+  <h3>مردود إخراج مخزني (مواد رجعت من مركز كلفة)</h3>
+  <p>عندما تزيد مواد عن حاجة مشروع أو قسم وتعود إلى المخزن، سجّلها بسند <q>مردود إخراج مخزني</q>، فتزيد الأرصدة وتنقص من كلفة مركز الكلفة.</p>
+  <figure><img src="img/return.png" alt="سند مردود إخراج مخزني"><figcaption>سند <q>مردود إخراج مخزني</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>مركز الكلفة (المُعاد منه)</b>: الذي أعاد المواد.</li>
+    <li><span class="n">2</span>المخزن الذي رجعت إليه المواد.</li>
+    <li><span class="n">3</span><q>حفظ</q>.</li>
+  </ul>
+  <p>إضافة المواد والكميات بالطريقة نفسها كما في <a href="#issue-add">الإخراج المخزني</a>.</p>
+
+  <h3>مردود مشتريات (إرجاع مواد إلى المجهز)</h3>
+  <p>مواد غير مطابقة تُرجع إلى المجهز: افتح <q>مردود مشتريات</q> (بطاقة في الشاشة الرئيسية أو من القائمة الجانبية)، اختر <b>المجهز (يُرجع إليه)</b> والمخزن، أضف المواد والكميات، ثم <q>حفظ</q>. تنقص الأرصدة.</p>
+
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ write-offs -->
+<section class="chapter" id="writeoff">
+  <h2 class="ch"><span class="no">9</span>سندات الإتلاف (شطب المواد)</h2>
+  <p class="lead">مواد تالفة أو منتهية الصلاحية أو مفقودة أو متقادمة تُشطب من المخزن بـ<b>سند إتلاف</b>. السند يحتاج <b>اعتمادا</b>: لا تخرج المواد من المخزن إلا بعد أن يعتمده من لديه صلاحية <q>اعتماد سندات الإتلاف</q>.</p>
+  <p>مراحل السند: <b>مسودة</b> ← <q>إرسال للاعتماد</q> ← <b>بانتظار الاعتماد</b> ← <q>اعتماد وترحيل</q> (<b>معتمد ومُرحّل</b>) أو <q>رفض</q> (<b>مرفوض</b>: يعدّله صاحبه ويرسله مرة أخرى). ويمكن <q>إلغاء السند</q> قبل اعتماده.</p>
+  <figure><img src="img/wo-list.png" alt="قائمة سندات الإتلاف"><figcaption>شاشة <q>سندات الإتلاف / شطب المواد</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>+ سند إتلاف جديد</q>.</li>
+    <li><span class="n">2</span><q>اعتماد وترحيل</q> للسند المختار (للمعتمد).</li>
+    <li><span class="n">3</span><q>رفض</q> مع كتابة السبب.</li>
+    <li><span class="n">4</span><b>الحالة</b>: <q>بانتظار اعتمادك</q>، <q>السندات غير المُرحّلة</q>، <q>كل السندات</q>.</li>
+    <li><span class="n">5</span><q>تقرير الإتلاف حسب السبب</q>.</li>
+  </ul>
+  <div class="note">تظهر <q>سندات الإتلاف</q> في القائمة الجانبية في <a href="#modes">الوضع المتقدم</a>، ولمن لديه صلاحية الاعتماد في الوضعين. يكتب السند من لديه صلاحية <q>إضافة سند إخراج</q>.</div>
+
+  <h3>كتابة سند إتلاف</h3>
+  <figure><img src="img/wo-new.png" alt="سند إتلاف جديد"><figcaption>سند إتلاف جديد فيه مادتان</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>المخزن</b> الذي فيه المواد.</li>
+    <li><span class="n">2</span><b>سبب الإتلاف</b>: <b>تالف</b>، <b>منتهي الصلاحية</b>، <b>مفقود</b>، <b>تقادم</b>، أو <b>أخرى</b> (مع كتابة التوضيح في <q>ملاحظات / وصف الحالة</q>).</li>
+    <li><span class="n">3</span><b>المادة</b>: ابحث عنها، اكتب الكمية واضغط <kbd>Enter</kbd> أو <q>+ إضافة</q>.</li>
+    <li><span class="n">4</span><b>السبب (إن اختلف)</b>: لمادة سببها غير سبب السند (مثلا سند <q>تالف</q> فيه مادة <q>مفقودة</q>).</li>
+    <li><span class="n">5</span><q>حفظ كمسودة</q> إذا لم يكتمل.</li>
+    <li><span class="n">6</span><q>إرسال للاعتماد</q>.</li>
+  </ul>
+  <ol class="steps">
+    <li>من القائمة الجانبية <q>سندات الإتلاف</q> ← <q>+ سند إتلاف جديد</q>.</li>
+    <li>اختر المخزن وسبب الإتلاف، واكتب وصف الحالة (مثلا: كسر أثناء التفريغ).</li>
+    <li>أضف المواد والكميات. يظهر <b>رصيد المخزن</b> و<b>القيمة التقديرية</b> لكل مادة.</li>
+    <li>اضغط <q>إرسال للاعتماد</q>. يرى المعتمد تنبيه <q>سندات إتلاف بانتظار اعتمادك</q> في الشاشة الرئيسية.</li>
+  </ol>
+  <div class="warn">تاريخ سند الإتلاف لا يكون بعد اليوم، ولا يُرسل سند كمياته أكبر من رصيد المخزن.</div>
+
+  <h3>الاعتماد أو الرفض</h3>
+  <figure><img src="img/wo-approve.png" alt="سند إتلاف بانتظار الاعتماد"><figcaption>سند إتلاف بانتظار الاعتماد</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>اعتماد وترحيل</q>: تخرج المواد من المخزن <b>بكلفتها</b> (الوارد أولا صادر أولا) ويصبح السند <b>معتمد ومُرحّل</b>. بعدها لا يمكن تعديله أو حذفه.</li>
+    <li><span class="n">2</span><q>رفض</q>: يطلب كتابة سبب الرفض، ويعود السند لمن أعدّه ليصحّحه.</li>
+    <li><span class="n">3</span>الحالة ومن أعدّ السند.</li>
+  </ul>
+  <div class="note">لا يستطيع من أعدّ السند أن يعتمده بنفسه (إلا المدير). الإتلاف ليس إخراجا لمركز كلفة: لا يدخل في كشوف مراكز الكلفة، ويظهر في كارت المادة كحركة <q>إتلاف / شطب</q>.</div>
+
+  <h3>تقرير الإتلاف حسب السبب</h3>
+  <figure><img src="img/wo-report.png" alt="تقرير الإتلاف حسب السبب"><figcaption>تقرير <q>الإتلاف حسب السبب</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>الإتلاف حسب السبب</q> في مجموعة <q>المخزون</q> في <a href="#reports">نافذة التقارير</a>: لكل سبب عدد السندات والكميات والكلفة ونسبتها، مع رسم بياني.</li>
+    <li><span class="n">2</span><q>تفصيل حسب المادة</q>: كل مادة أُتلفت مع التاريخ ورقم السند والسبب والكلفة.</li>
+  </ul>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 9 -->
+<section class="chapter" id="transfer">
+  <h2 class="ch"><span class="no">10</span>النقل المخزني <span class="adv">الوضع المتقدم</span></h2>
+  <p class="lead">لنقل مواد من مخزن إلى آخر (مثلا من المخزن الرئيسي إلى مخزن الموقع). الرصيد الكلي لا يتغير: ينقص من الأول ويزيد في الثاني.</p>
+  <figure><img src="img/transfer.png" alt="سند نقل مخزني"><figcaption>سند <q>نقل مخزني</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>من مخزن</b>: المخزن المنقول منه.</li>
+    <li><span class="n">2</span><b>إلى مخزن</b>: المخزن المنقول إليه.</li>
+  </ul>
+  <ol class="steps">
+    <li>من القائمة الجانبية اضغط <q>نقل مخزني</q>.</li>
+    <li>اختر المخزنين <span class="n">1</span> <span class="n">2</span>.</li>
+    <li>أضف المواد والكميات ثم <q>حفظ</q>.</li>
+  </ol>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 10 -->
+<section class="chapter" id="reserve">
+  <h2 class="ch"><span class="no">11</span>حجز المواد لمركز كلفة</h2>
+  <p class="lead">الحجز يثبّت كميات لمركز كلفة معين: المواد تبقى في المخزن، لكن لا يمكن إخراجها لمركز كلفة آخر. مفيد عندما تشتري مواد لمشروع وتريد ضمان بقائها له.</p>
+  <figure><img src="img/reserve.png" alt="سند حجز مواد"><figcaption>سند <q>حجز مواد لمركز كلفة</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>مركز الكلفة الذي تُحجز له المواد.</li>
+    <li><span class="n">2</span><q>إلغاء الحجز</q>: تصبح المواد متاحة للجميع (يبقى السند محفوظا كملغى).</li>
+  </ul>
+  <ol class="steps">
+    <li>اضغط بطاقة <q>حجز مواد</q> أو <q>حجز مواد لمركز كلفة</q> في القائمة (أو زر <q>حجز مواد</q> في شاشة مراكز الكلفة).</li>
+    <li>اختر مركز الكلفة، ثم أضف المواد و<q>الكمية المحجوزة</q>.</li>
+    <li>اضغط <q>حفظ</q>.</li>
+  </ol>
+  <p>عند إخراج مواد لهذا المركز يظهر في السند عمود <q>محجوز له</q>، وتُخصم الكمية من الحجز تلقائيا. لإلغاء جزء من الحجز عدّل الكميات أو احذف السطور ثم احفظ. تقرير <q>الحجوزات القائمة</q> يعرض المحجوز والمُخرج والمتبقي.</p>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 11 -->
+<section class="chapter" id="doclist">
+  <h2 class="ch"><span class="no">12</span>سجل السندات <span class="adv">الوضع المتقدم</span></h2>
+  <p class="lead">كل السندات المحفوظة في مكان واحد، للبحث عن سند قديم وفتحه.</p>
+  <figure><img src="img/doc-list.png" alt="سجل السندات"><figcaption>شاشة <q>سجل السندات</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>نوع السندات: الإخراج، الإدخال، مردود الإخراج، مردود المشتريات، الحجوزات، النقل.</li>
+    <li><span class="n">2</span>اختر الفترة (من / إلى) والجهة أو اكتب رقما أو كلمة من الملاحظات، ثم <q>عرض</q>.</li>
+  </ul>
+  <p>انقر مرتين على السند لفتحه. زر <q>تصدير Excel</q> يحفظ القائمة في ملف Excel.</p>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 12 -->
+<section class="chapter" id="mreq">
+  <h2 class="ch"><span class="no">13</span>طلبات الصرف والموافقة عليها</h2>
+  <p class="lead">طلب الصرف يمرّ بثلاث مراحل: ① طالب المواد يكتب الطلب ويرسله للموافقة ② المعتمد يوافق أو يرفض ③ أمين المخزن يصرفه بزر <q>صرف الطلب</q> (يصبح إخراجا مخزنيا).</p>
+  <figure><img src="img/mreq-list.png" alt="قائمة طلبات الصرف"><figcaption>شاشة <q>طلبات صرف المواد</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>+ طلب جديد</q>.</li>
+    <li><span class="n">2</span><q>موافقة</q> على الطلب المختار (لمن لديه صلاحية <q>اعتماد طلبات الصرف</q>).</li>
+    <li><span class="n">3</span><q>رفض</q> مع كتابة السبب.</li>
+    <li><span class="n">4</span><b>الحالة</b>: <q>بانتظار موافقتك</q>، <q>الطلبات المفتوحة</q>، <q>كل الطلبات</q>.</li>
+  </ul>
+  <p>حالات الطلب: <b>مسودة</b> ← <b>بانتظار الموافقة</b> ← <b>موافق عليه</b> (أو <b>مرفوض</b>) ← <b>صُرف جزئيا</b> ← <b>مكتمل</b>. ويمكن <b>إلغاء</b> الطلب أو <b>إغلاقه</b> دون صرف المتبقي.</p>
+
+  <h3>كتابة طلب جديد</h3>
+  <figure><img src="img/mreq-new.png" alt="طلب صرف جديد"><figcaption>طلب صرف مواد جديد</figcaption></figure>
+  <ol class="steps">
+    <li>اضغط <q>+ طلب جديد</q>.</li>
+    <li>اختر <b>مركز الكلفة</b> <span class="n">1</span> والمخزن، واكتب اسم <b>طالب المواد</b>.</li>
+    <li>في حقل <b>المادة</b> <span class="n">2</span> ابحث عن المادة، اكتب الكمية واضغط <kbd>Enter</kbd>. كرر لكل مادة.</li>
+    <li>اضغط <q>حفظ كمسودة</q> <span class="n">3</span> إذا لم يكتمل، أو <q>إرسال للموافقة</q> <span class="n">4</span>.</li>
+  </ol>
+  <div class="note">يمكن للمدير تحديد <q>حد الاعتماد…</q>: الطلبات التي قيمتها التقديرية أقل منه تُعتمد تلقائيا عند إرسالها.</div>
+
+  <h3>الموافقة أو الرفض</h3>
+  <p>يرى المعتمد تنبيه <q>طلبات صرف بانتظار موافقتك</q> في الشاشة الرئيسية. يفتح الطلب (نقرتان) ويراجع المواد والمتوفر:</p>
+  <figure><img src="img/mreq-approve.png" alt="طلب بانتظار الموافقة"><figcaption>طلب بانتظار الموافقة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>موافقة</q>.</li>
+    <li><span class="n">2</span><q>رفض</q>: يطلب كتابة سبب الرفض، ويعود الطلب لصاحبه ليعدّله ويرسله مرة أخرى.</li>
+    <li><span class="n">3</span>حالة الطلب وقيمته التقديرية.</li>
+  </ul>
+  <div class="note">لا يستطيع المستخدم اعتماد طلب كتبه بنفسه (فصل المهام)، إلا المدير.</div>
+
+  <h3>صرف الطلب</h3>
+  <figure><img src="img/mreq-issue.png" alt="طلب موافق عليه جاهز للصرف"><figcaption>طلب موافق عليه</figcaption></figure>
+  <ol class="steps">
+    <li>افتح الطلب الموافق عليه واضغط <q>صرف الطلب</q> <span class="n">1</span>.</li>
+    <li>يُفتح <a href="#issue">سند إخراج مخزني</a> فيه مركز الكلفة والمواد والكميات المتبقية جاهزة. عدّل الكميات إذا صرفت جزءا فقط.</li>
+    <li>اضغط <q>حفظ</q>. يصبح الطلب <q>مكتمل</q> أو <q>صُرف جزئيا</q>، ويمكن صرف الباقي لاحقا بالطريقة نفسها.</li>
+  </ol>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 13 -->
+<section class="chapter" id="preq">
+  <h2 class="ch"><span class="no">14</span>طلبات الشراء <span class="adv">الوضع المتقدم</span></h2>
+  <p class="lead">طلب الشراء قائمة مواد تحتاج شراءها، تطبعها وترسلها للمجهز أو للمشتريات. <b>لا يغيّر الأرصدة</b>. عند وصول المواد تُسجَّل بإدخال مخزني ويُربط بالطلب.</p>
+  <h3>الطريقة الأسهل: من تقرير الأرصدة الحرجة</h3>
+  <figure><img src="img/preq-critical.png" alt="تقرير الأرصدة الحرجة وزر إنشاء طلب شراء"><figcaption>تقرير <q>الأرصدة الحرجة (تحتاج تعزيز)</q></figcaption></figure>
+  <ol class="steps">
+    <li>افتح <q>التقارير</q> واختر <q>الأرصدة الحرجة (تحتاج تعزيز)</q> <span class="n">1</span> (أو اضغط تنبيه <q>أرصدة حرجة تحتاج تعزيز</q> في الشاشة الرئيسية). اختر المخزن إذا أردت ثم <q>عرض التقرير</q>.</li>
+    <li>يعرض التقرير المواد التي نزل رصيدها الحر عن حد الطلب أو عن استهلاك الفترة، مع <b>الكمية المقترحة</b>.</li>
+    <li>اضغط <q>إنشاء طلب شراء</q> <span class="n">2</span>: يُنشأ طلب شراء (مسودة) بالكميات المقترحة. إذا كان لبعض المواد طلب مفتوح يسألك هل تتخطاها.</li>
+  </ol>
+  <h3>قائمة طلبات الشراء</h3>
+  <figure><img src="img/preq-list.png" alt="قائمة طلبات الشراء"><figcaption>شاشة <q>طلبات الشراء</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>+ طلب شراء جديد</q> تكتب موادّه بنفسك.</li>
+    <li><span class="n">2</span><q>فتح</q> الطلب المختار (أو نقرتان على سطره).</li>
+    <li><span class="n">3</span><q>تقرير الطلبات المفتوحة</q>: المطلوب والمستلم والمتبقي لكل مادة وعمر الطلب بالأيام.</li>
+  </ul>
+  <figure><img src="img/preq-dialog.png" alt="نافذة طلب الشراء"><figcaption>نافذة <q>طلب شراء</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>أضف مادة: اكتب اسمها ثم الكمية و<kbd>Enter</kbd>، أو <q>+ إضافة</q>.</li>
+    <li><span class="n">2</span><q>طباعة</q> الطلب لإرساله.</li>
+    <li><span class="n">3</span><q>تعليم كمُرسل</q> بعد إرساله للمجهز.</li>
+  </ul>
+  <p>عند حفظ <a href="#receipt">إدخال مخزني</a> لهذه المواد يسألك البرنامج عن ربطه بالطلب، فيتحدّث <b>المستلم</b> و<b>المتبقي</b> وتتغير الحالة إلى <q>مستلم جزئيا</q> أو <q>مكتمل</q> تلقائيا.</p>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 14 -->
+<section class="chapter" id="count">
+  <h2 class="ch"><span class="no">15</span>الجرد الفعلي <span class="adv">الوضع المتقدم</span></h2>
+  <p class="lead">الجرد الفعلي يقارن الكمية الموجودة فعلا على الرفوف بالرصيد في البرنامج، ثم يسوّي الفروقات.</p>
+  <figure><img src="img/count-list.png" alt="قائمة عمليات الجرد"><figcaption>شاشة <q>الجرد الفعلي وتسوية الفروقات</q></figcaption></figure>
+  <ol class="steps">
+    <li>اضغط <q>+ جرد جديد</q> <span class="n">1</span>.</li>
+    <li>في النافذة اختر <b>تاريخ الجرد</b> و<b>المخزن</b> و<b>نوع المواد</b> (أو كل الأنواع)، واكتب أسماء لجنة الجرد في الملاحظات، ثم <q>إنشاء الجرد</q>.
+      <figure class="small"><img src="img/count-new.png" alt="نافذة جرد فعلي جديد"><figcaption>نافذة <q>جرد فعلي جديد</q></figcaption></figure></li>
+    <li>يحفظ البرنامج <b>الرصيد الدفتري</b> لكل مادة لحظة إنشاء الجرد، ويفتح ورقة الجرد.</li>
+  </ol>
+  <figure><img src="img/count-sheet.png" alt="ورقة الجرد"><figcaption>ورقة الجرد أثناء إدخال الكميات</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>طباعة ورقة الجرد</q>: ورقة بأسماء المواد ومواقعها <b>دون الأرصدة</b>، تعطيها للجنة لتكتب ما تعدّه.</li>
+    <li><span class="n">2</span><b>الكمية المعدودة</b>: اكتب ما عدّته اللجنة ثم <kbd>Enter</kbd> للانتقال إلى المادة التالية. احفظ من وقت لآخر بـ <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+    <li><span class="n">3</span><q>إظهار الرصيد الدفتري والفرق</q>: الفرق الأحمر نقص، والموجب زيادة.</li>
+    <li><span class="n">4</span><q>تقرير الفروقات</q>: للمراجعة والتوقيع.</li>
+    <li><span class="n">5</span><q>ترحيل التسوية</q>: يُنشئ سند <b>نقص</b> (إخراج) وسند <b>زيادة</b> (إدخال) بالفروقات، فتصبح الأرصدة مطابقة للعدّ، ويُقفل الجرد.</li>
+  </ul>
+  <div class="tip">مادة وجدتها على الرف وليست في القائمة؟ اكتب رمزها أو اسمها في مربع <q>بحث / إضافة مادة</q> واضغط <kbd>Enter</kbd>، أو <q>+ إضافة مادة</q> <kbd>F2</kbd>.</div>
+  <div class="warn">ترحيل التسوية للمدير أو لمن لديه صلاحية الإعدادات، ولا يمكن التراجع عنه من شاشة الجرد. راجع تقرير الفروقات قبله.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 15 -->
+<section class="chapter" id="reports">
+  <h2 class="ch"><span class="no">16</span>التقارير</h2>
+  <p class="lead">التقارير تُفتح في <b>نافذة منفصلة</b>، فيبقى السند الذي تكتبه مفتوحا في النافذة الرئيسية. اضغط <q>التقارير</q> في القائمة الجانبية.</p>
+  <figure><img src="img/reports.png" alt="نافذة التقارير"><figcaption>نافذة <q>التقارير</q> وفيها تقرير <q>جرد أرصدة المواد</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>قائمة التقارير</b> مقسمة إلى مجموعات: المخزون، مراكز الكلفة، الإخراج، الإدخال والمردودات، ملخصات. اضغط اسم التقرير.</li>
+    <li><span class="n">2</span><b>خيارات التقرير</b>: الفترة أو التاريخ، المخزن، النوع، المادة، الجهة، مركز الكلفة… (الحقل المعلَّم بـ * إلزامي).</li>
+    <li><span class="n">3</span><q>عرض التقرير</q>.</li>
+    <li><span class="n">4</span><q>طباعة</q>.</li>
+    <li><span class="n">5</span><q>معاينة</q> قبل الطباعة.</li>
+    <li><span class="n">6</span><q>تصدير Excel</q>: يحفظ التقرير ملف Excel.</li>
+    <li><span class="n">7</span><q>ملء الشاشة</q>: التقرير في نافذة كبيرة.</li>
+    <li><span class="n">8</span><q>إعداد الصفحة</q>: الورق والهوامش والاتجاه.</li>
+    <li><span class="n">9</span><b>+</b> و<b>−</b>: تكبير الخط وتصغيره.</li>
+  </ul>
+  <ol class="steps">
+    <li>اختر التقرير من القائمة <span class="n">1</span>. التقارير التي لا تحتاج اختيارا إلزاميا تظهر مباشرة.</li>
+    <li>غيّر الخيارات <span class="n">2</span> إذا أردت (مثلا الفترة: اليوم، هذا الشهر، هذه السنة…).</li>
+    <li>اضغط <q>عرض التقرير</q> <span class="n">3</span>.</li>
+    <li>اطبع <span class="n">4</span> أو صدّر إلى Excel <span class="n">6</span>.</li>
+  </ol>
+  <h3>البحث والترتيب داخل التقرير</h3>
+  <figure><img src="img/report-search.png" alt="البحث داخل التقرير"><figcaption>البحث عن «كيبل» داخل تقرير الأرصدة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>بحث داخل التقرير</b>: اكتب رمزا أو اسما أو رقما فتبقى السطور المطابقة فقط، وتتبعها المجاميع.</li>
+    <li><span class="n">2</span>اضغط <b>عنوان أي عمود</b> لترتيب التقرير حسبه؛ اضغطه مرة أخرى لعكس الترتيب.</li>
+  </ul>
+  <div class="note">في التقارير الكبيرة جدا لا يظهر البحث والترتيب (لسرعة العرض). صغّر الفترة أو اختر مخزنا أو نوعا.</div>
+  <h3>أهم التقارير</h3>
+  <table>
+    <tr><th>التقرير</th><th>ماذا يعرض</th></tr>
+    <tr><td>جرد أرصدة المواد</td><td>رصيد كل مادة في كل مخزن بتاريخ معين، مع <a href="#valuation">القيمة</a>.</td></tr>
+    <tr><td>تقييم المخزون بتاريخ <span class="adv">متقدم</span></td><td>كمية وقيمة كل مادة بتاريخ معين بطريقة FIFO (<a href="#valuation">شرحه</a>).</td></tr>
+    <tr><td>الإتلاف حسب السبب <span class="adv">متقدم</span></td><td>سندات الإتلاف المعتمدة لكل سبب: الكميات والكلفة (<a href="#writeoff">شرحه</a>).</td></tr>
+    <tr><td>الأرصدة الحرجة (تحتاج تعزيز)</td><td>مواد رصيدها الحر أقل من حد الطلب أو من استهلاك شهر، مع الكمية المقترحة و<a href="#preq">إنشاء طلب شراء</a>.</td></tr>
+    <tr><td>كارت المادة (حركة مادة)</td><td>كل حركات مادة مع الرصيد بعد كل حركة.</td></tr>
+    <tr><td>كشف مركز كلفة</td><td>كل ما أُخرج لمركز الكلفة وما أُعيد منه والصافي والكلفة.</td></tr>
+    <tr><td>الحجوزات القائمة</td><td>المحجوز والمُخرج والمتبقي لكل مركز كلفة.</td></tr>
+    <tr><td>سجل سندات الإخراج / الإدخال</td><td>قائمة السندات خلال فترة.</td></tr>
+    <tr><td>المواد الراكدة <span class="adv">متقدم</span></td><td>مواد لها رصيد ولم يُخرج منها شيء منذ تاريخ معين.</td></tr>
+    <tr><td>الأرصدة السالبة <span class="adv">متقدم</span></td><td>مواد رصيدها أقل من صفر وتحتاج مراجعة.</td></tr>
+    <tr><td>الإخراج حسب مراكز الكلفة <span class="adv">متقدم</span></td><td>ملخص الكميات والكلفة لكل مركز كلفة.</td></tr>
+    <tr><td>الملخص الشهري <span class="adv">متقدم</span></td><td>عدد السندات والكميات لكل شهر مع رسم بياني.</td></tr>
+    <tr><td>تدقيق البيانات <span class="adv">متقدم</span></td><td>يكشف الأرصدة غير المطابقة والسالبة والتواريخ المستقبلية والأرقام المكررة.</td></tr>
+  </table>
+  <h3 id="valuation">قيمة المخزون وتقييمه</h3>
+  <p>يحسب البرنامج قيمة المخزون بطريقة <b>الوارد أولا صادر أولا (FIFO)</b> حسب المعيار المحاسبي IAS 2: الكمية الموجودة الآن تُسعَّر بكلفة أحدث سندات الإدخال، لأن الأقدم خرج أولا. الكلفة تأتي من أسعار <a href="#receipt">الإدخال المخزني</a>.</p>
+  <h4>عمود القيمة في جرد أرصدة المواد</h4>
+  <figure><img src="img/stock-value.png" alt="قيمة المخزون في تقرير جرد الأرصدة"><figcaption>تقرير <q>جرد أرصدة المواد</q> مع القيمة</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>قيمة المخزون (FIFO)</b>: مجموع قيمة كل المواد المعروضة في التاريخ المختار.</li>
+    <li><span class="n">2</span>عمود <b>القيمة</b>: قيمة كل مادة. يظهر فقط عندما تكون للمواد أسعار مسجلة.</li>
+  </ul>
+  <h4>تقرير تقييم المخزون بتاريخ <span class="adv">الوضع المتقدم</span></h4>
+  <figure><img src="img/valuation.png" alt="تقرير تقييم المخزون بتاريخ"><figcaption>تقرير <q>تقييم المخزون بتاريخ</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>تقييم المخزون بتاريخ</q> في مجموعة <q>المخزون</q>.</li>
+    <li><span class="n">2</span>الخيارات: <b>الرصيد بتاريخ</b> (مثلا آخر يوم في الشهر أو السنة)، المخزن، النوع، بحث، و<q>المواد ذات الكلفة المعروفة فقط</q>.</li>
+    <li><span class="n">3</span><q>عرض التقرير</q>: لكل مادة الكمية و<b>متوسط كلفة الوحدة</b> و<b>القيمة</b>، ومجموع قيمة المخزون في الأعلى.</li>
+  </ul>
+  <div class="tip">لتقرير المحاسبة في نهاية الشهر أو السنة: اختر التاريخ، اعرض التقرير، ثم <q>تصدير Excel</q> أو <q>طباعة</q>.</div>
+  <div class="note">الرصيد الافتتاحي الذي ليس له سند إدخال يُقيَّم بأقدم كلفة معروفة للمادة، والرصيد السالب بآخر كلفة. المادة التي لم يُسجَّل لها سعر أبدا قيمتها صفر: أضف أسعار الإدخال (في الوضع المتقدم) ليصبح التقييم كاملا.</div>
+  <div class="note">في وضع المبتدئ تظهر التقارير الأساسية فقط. في الوضع المتقدم تظهر كل التقارير.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 16 -->
+<section class="chapter" id="theme">
+  <h2 class="ch"><span class="no">17</span>المظهر واللغة</h2>
+  <p class="lead">غيّر ألوان البرنامج من <q>الإعدادات</q> ← بطاقة <q>المظهر</q>. التغيير يُطبَّق فورا ويُحفظ لك وحدك.</p>
+  <figure class="small"><img src="img/theme-picker.png" alt="بطاقة المظهر"><figcaption>بطاقة <q>المظهر</q></figcaption></figure>
+  <ul>
+    <li><b>الوضع</b>: <q>فاتح</q>، <q>داكن</q> (مريح للعين في الإضاءة الخافتة)، أو <q>تلقائي (حسب ويندوز)</q>.</li>
+    <li><b>اللون</b>: لون الأزرار والعناوين: أزرق، أخضر، فيروزي، بنفسجي، برتقالي، رمادي.</li>
+  </ul>
+  <figure><img src="img/dark-home.png" alt="الشاشة الرئيسية بالوضع الداكن"><figcaption>الوضع الداكن: الشاشة الرئيسية</figcaption></figure>
+  <figure><img src="img/dark-issue.png" alt="سند إخراج بالوضع الداكن"><figcaption>الوضع الداكن: سند إخراج مخزني</figcaption></figure>
+  <h3 id="language-switch">اللغة الإنجليزية</h3>
+  <figure><img src="img/lang-link.png" alt="رابط English في الشريط العلوي"><figcaption>الرابط <q>English</q> في الشريط العلوي</figcaption></figure>
+  <ol class="steps">
+    <li>اضغط <q>English</q> <span class="n">1</span> في الشريط العلوي بجانب <q>الوضع</q> (أو في أعلى بطاقة <a href="#login">تسجيل الدخول</a>). إذا كان سند مفتوحا بتغييرات غير محفوظة يسألك البرنامج عن حفظها أولا.</li>
+    <li>تُغلق النافذة الرئيسية وتُفتح من جديد بالإنجليزية: القائمة الجانبية على اليسار والكتابة من اليسار إلى اليمين. التقارير المطبوعة وملفات Excel تصبح بالإنجليزية أيضا.</li>
+    <li>للعودة اضغط <q>عربي</q> <span class="n">1</span> في المكان نفسه.</li>
+  </ol>
+  <figure><img src="img/home-english.png" alt="الشاشة الرئيسية بالإنجليزية"><figcaption>الشاشة الرئيسية بالواجهة الإنجليزية</figcaption></figure>
+  <div class="note">اللغة تُحفظ <b>لكل مستخدم</b>: يمكن أن يعمل أمين المخزن بالعربية والمحاسب بالإنجليزية على البيانات نفسها. البيانات (أسماء المواد ومراكز الكلفة) تبقى كما كُتبت.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 17 -->
+<section class="chapter" id="settings">
+  <h2 class="ch"><span class="no">18</span>الإعدادات</h2>
+  <p class="lead">اضغط <q>الإعدادات</q> في أسفل القائمة الجانبية. بعض البطاقات تظهر للمدير فقط.</p>
+  <figure><img src="img/settings.png" alt="شاشة الإعدادات"><figcaption>شاشة <q>الإعدادات</q> (كما يراها المدير)</figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><q>الاتصال بالبيانات</q>: أين البيانات الآن، و<q>تغيير الاتصال…</q> (للمدير).</li>
+    <li><span class="n">2</span><q>المظهر</q> (<a href="#theme">شرحه</a>).</li>
+    <li><span class="n">3</span><q>نسخة احتياطية</q> (<a href="#backup">شرحها</a>).</li>
+    <li><span class="n">4</span><q>الإعدادات العامة</q>: اسم الشركة والشعار (<a href="#general">شرحها</a>).</li>
+    <li><span class="n">5</span><q>التحديثات والدعم</q>: <q>تحديث البرنامج</q> و<q>تبليغ عن مشكلة</q> (<a href="#updates">شرحها</a>).</li>
+    <li><span class="n">6</span><q>إقفال السنة</q> (<a href="#yearclose">شرحه</a>).</li>
+    <li><span class="n">7</span><q>دليل الاستخدام</q>: يفتح هذا الدليل.</li>
+    <li><span class="n">8</span><q>قفل الفترات الشهرية</q> (<a href="#periodlock">شرحه</a>).</li>
+    <li><span class="n">9</span><q>سجل التدقيق</q>: من عدّل أو حذف ماذا ومتى (<a href="#audit">شرحه</a>).</li>
+  </ul>
+  <p>وفي الشاشة نفسها: <q>ضغط وإصلاح ملف البيانات</q> (يقلل حجم الملف؛ يجب أن يخرج الجميع من البرنامج أولا)، <q>إعادة احتساب الأرصدة</q> (يصحح الأرصدة من الحركات)، <q>تدقيق البيانات</q>، و<b>سجل العمليات</b> في الأسفل: آخر 300 عملية مع الوقت والمستخدم والحاسوب.</p>
+
+  <h3 id="general">اسم الشركة والشعار</h3>
+  <figure class="small"><img src="img/general-settings.png" alt="الإعدادات العامة"><figcaption>نافذة <q>الإعدادات العامة</q></figcaption></figure>
+  <ol class="steps">
+    <li>اضغط <q>تعديل…</q> في بطاقة <q>الإعدادات العامة</q>.</li>
+    <li>اكتب <b>اسم الشركة</b> <span class="n">1</span>.</li>
+    <li>(اختياري) <q>اختيار صورة…</q> <span class="n">2</span> لشعار الشركة (PNG أو JPG). بدون شعار يظهر اسم الشركة.</li>
+    <li><q>حفظ</q>. يظهر الاسم والشعار في الشاشات والتقارير المطبوعة وملفات Excel بعد إعادة فتح البرنامج.</li>
+  </ol>
+
+  <h3 id="users">المستخدمون والصلاحيات <span class="adv">الوضع المتقدم • المدير</span></h3>
+  <figure><img src="img/users.png" alt="المستخدمون والصلاحيات"><figcaption>شاشة <q>المستخدمون والصلاحيات</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span>اختر المستخدم. المستخدم رقم 1 هو <b>مدير النظام</b> وله كل الصلاحيات.</li>
+    <li><span class="n">2</span>علّم الصلاحيات المسموحة: عرض/إضافة/تعديل/حذف سندات الإخراج والإدخال، النقل المخزني، الجهات، المواد، المخازن والأنواع، التقارير، اعتماد طلبات الصرف، اعتماد سندات الإتلاف، قفل وفتح الفترات الشهرية.</li>
+    <li><span class="n">3</span><q>حفظ</q>.</li>
+  </ul>
+  <p>لتغيير اسم المستخدم اكتبه في <q>اسم المستخدم</q>. لإعطائه كلمة مرور جديدة اكتبها في <q>كلمة مرور جديدة</q>؛ اتركها فارغة لإبقاء القديمة.</p>
+  <h3 id="periodlock">قفل الفترات الشهرية</h3>
+  <p>بعد مراجعة سندات شهر ومطابقتها مع المحاسبة، اقفل الشهر حتى لا يغيّر أحد سنداته بالخطأ. يحتاج صلاحية <q>قفل وفتح الفترات الشهرية</q> (للمدير، ويعطيها لغيره من <a href="#users">المستخدمون</a>).</p>
+  <figure class="small"><img src="img/period-lock.png" alt="نافذة قفل الفترات الشهرية"><figcaption>نافذة <q>قفل الفترات الشهرية</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>الحالة</b>: حتى أي شهر السندات مقفلة الآن.</li>
+    <li><span class="n">2</span>اختر <b>الشهر</b> و<b>السنة</b>: يُقفل حتى نهاية هذا الشهر، ومعه كل ما قبله. تحتهما عدد السندات في ذلك الشهر.</li>
+    <li><span class="n">3</span><q>قفل حتى نهاية الشهر</q> ثم أكّد.</li>
+    <li><span class="n">4</span><q>فتح قفل …</q>: يفتح القفل للتصحيح فقط؛ أعد القفل بعده.</li>
+  </ul>
+  <ul>
+    <li>بعد القفل لا يمكن إضافة أو تعديل أو حذف أي سند بتاريخ في الشهر المقفل أو قبله. تظهر رسالة <q>شهر … مقفل</q>، ويُفتح السند القديم للعرض والطباعة فقط.</li>
+    <li>الأرصدة والتقارير لا تتغير بالقفل.</li>
+    <li>كل قفل أو فتح يُسجَّل في <a href="#audit">سجل التدقيق</a> وفي جدول <q>آخر عمليات القفل والفتح</q> أسفل النافذة.</li>
+  </ul>
+  <div class="tip">القفل الشهري للعمل اليومي، و<a href="#yearclose">إقفال السنة</a> لنهاية السنة (مع نسخة احتياطية وأرشيف). يمكن استعمالهما معا.</div>
+
+  <h3 id="audit">سجل التدقيق</h3>
+  <p>يحفظ البرنامج كل تعديل أو حذف في السندات والمواد ومراكز الكلفة، مع <b>القيمة قبل التعديل وبعده</b>: من غيّر، ماذا، ومتى. افتحه من <q>الإعدادات</q> ← <q>سجل التدقيق</q> ← <q>عرض السجل…</q> (لمن لديه صلاحية التقارير).</p>
+  <figure><img src="img/audit-trail.png" alt="سجل التدقيق"><figcaption>نافذة <q>سجل التدقيق</q></figcaption></figure>
+  <ul class="callouts">
+    <li><span class="n">1</span><b>البحث</b>: الفترة (من / إلى)، المستخدم، نوع العملية، رقم السند. <q>التعديلات والحذف فقط</q> يخفي الإضافات العادية. ثم <q>عرض</q>.</li>
+    <li><span class="n">2</span><b>القيمة السابقة</b> (بالأحمر) و<b>القيمة الجديدة</b> (بالأخضر) لكل حقل تغيّر، مثل كمية مادة في سند أو ملاحظات السند.</li>
+  </ul>
+  <div class="note">لا يمكن تعديل سجل التدقيق أو حذفه من البرنامج. إذا ظهر فرق في رصيد مادة، ابحث برقم السند لمعرفة من عدّله ومتى.</div>
+
+  <h3 id="backup">النسخ الاحتياطية</h3>
+  <ul>
+    <li>يأخذ البرنامج <b>نسخة تلقائية كل يوم</b> عند أول دخول، في مجلد <b>نسخ احتياطية - مخازن</b> بجانب ملف البيانات.</li>
+    <li><q>نسخة الآن</q>: نسخة فورية (مثلا قبل عمل كبير). <q>فتح المجلد</q>: يفتح مجلد النسخ.</li>
+    <li>انسخ مجلد النسخ إلى فلاشة أو حاسوب آخر من وقت لآخر: إذا تعطل القرص تبقى النسخة.</li>
+  </ul>
+  <div class="note">عند العمل على <a href="#server">السيرفر</a> لا تظهر بطاقة النسخ: النسخ الاحتياطي يتم على حاسوب السيرفر.</div>
+  <div class="warn">لاسترجاع نسخة: أغلق البرنامج على كل الحواسيب، ثم انسخ ملف النسخة مكان ملف البيانات (أو اختره من <q>إعدادات الاتصال</q>). اسأل المسؤول إذا لم تكن متأكدا.</div>
+
+  <h3 id="yearclose">إقفال السنة (يدوي، للمدير)</h3>
+  <figure class="small"><img src="img/year-close.png" alt="نافذة إقفال السنة"><figcaption>نافذة <q>إقفال السنة</q></figcaption></figure>
+  <p>بعد انتهاء السنة ومراجعة سنداتها:</p>
+  <ol class="steps">
+    <li>من <q>الإعدادات</q> اضغط <q>إقفال السنة…</q>.</li>
+    <li>اختر <b>السنة المراد إقفالها</b> <span class="n">1</span>. أبقِ <q>أخذ نسخة احتياطية قبل الإقفال</q> و<q>حفظ جرد نهاية السنة (Excel)</q> معلَّمين.</li>
+    <li>اضغط <q>إقفال السنة</q> <span class="n">2</span> ثم أكّد.</li>
+  </ol>
+  <ul>
+    <li>لا يمكن بعدها إضافة أو تعديل أو حذف أي سند بتاريخ في تلك السنة أو قبلها.</li>
+    <li>الأرصدة لا تتغير ولا تُنقل: رصيد نهاية السنة هو نفسه رصيد بداية السنة الجديدة تلقائيا.</li>
+    <li>يستطيع المدير <q>إعادة فتح</q> آخر سنة مقفلة إذا احتاج تصحيحا، ثم يقفلها من جديد.</li>
+  </ul>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 18 -->
+<section class="chapter" id="server">
+  <h2 class="ch"><span class="no">19</span>العمل على الشبكة (السيرفر)</h2>
+  <p class="lead">إذا كان أكثر من حاسوب يعمل على البرنامج في نفس الوقت، ضع البيانات على <b>سيرفر</b> (SQL Server Express مجاني). يتم ذلك مرة واحدة من نافذة <q>إعدادات الاتصال والسيرفر</q> (الرقم <span class="n">5</span> في <a href="#connect">صورة الاتصال</a>).</p>
+  <ol class="steps">
+    <li><b>على حاسوب واحد فقط</b> (الذي سيحفظ البيانات ويبقى شغالا): افتح <q>إعدادات الاتصال والسيرفر</q> واضغط <q>السيرفر الرئيسي</q>. ينصّب البرنامج السيرفر المجاني (قد يستغرق 10 إلى 20 دقيقة أول مرة) وينقل البيانات إليه، وتختار <b>كلمة سر السيرفر</b>. يحتاج صلاحيات المدير على ويندوز.</li>
+    <li><b>على كل حاسوب آخر</b>: افتح النافذة نفسها واضغط <q>سيرفر ثانوي</q>. يجد البرنامج السيرفر الرئيسي في الشبكة ويتصل به بعد كتابة كلمة سر السيرفر مرة واحدة.</li>
+    <li>في أسفل الشاشة الرئيسية يظهر <q>المتصلون الآن</q>، وفي <q>الإعدادات</q> <q>العمل المشترك عبر السيرفر مفعّل ✓</q>.</li>
+  </ol>
+  <div class="note">الشرح الكامل للسيرفر موجود في الملف <b>إعداد الخادم المجاني.txt</b> بجانب البرنامج.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 19 -->
+<section class="chapter" id="updates">
+  <h2 class="ch"><span class="no">20</span>التحديثات والإبلاغ عن مشكلة</h2>
+  <h3>تحديث البرنامج</h3>
+  <ul>
+    <li>يبحث البرنامج مرة في اليوم عن إصدار جديد (إذا كان الإنترنت متوفرا). عند وجوده يظهر في أسفل الشاشة: <q>⬆ يتوفر إصدار جديد … اضغط هنا للتحديث</q>.</li>
+    <li>أو من <q>الإعدادات</q> ← <q>التحديثات والدعم</q> ← <q>تحديث البرنامج</q>.</li>
+    <li>عند الموافقة يُنزّل التحديث ويُتحقق من سلامته، ثم يُغلق البرنامج ويُفتح من جديد تلقائيا. <b>البيانات والإعدادات لا تتغير</b>.</li>
+  </ul>
+  <div class="warn">إذا ظهرت رسالة <q>لا توجد صلاحية كتابة في مجلد البرنامج</q>: أغلق البرنامج، ثم زر الفأرة الأيمن على أيقونته ← <q>Run as administrator</q> وأعد التحديث.</div>
+  <h3>الإبلاغ عن مشكلة أو اقتراح</h3>
+  <figure class="small"><img src="img/problem-report.png" alt="نافذة تبليغ عن مشكلة"><figcaption>نافذة <q>تبليغ عن مشكلة</q></figcaption></figure>
+  <ol class="steps">
+    <li>من <q>الإعدادات</q> ← <q>التحديثات والدعم</q> اضغط <q>تبليغ عن مشكلة</q>.</li>
+    <li>اكتب <span class="n">1</span> ماذا كنت تفعل، وماذا ظهر لك، وماذا كنت تتوقع. مثال: رقم السند ونص رسالة الخطأ.</li>
+    <li>أبقِ <q>إرفاق صورة شاشة البرنامج</q> و<q>إرفاق المعلومات الفنية</q> معلَّمين ثم اضغط <q>إرسال التبليغ</q> <span class="n">2</span>.</li>
+    <li>يُسجَّل التبليغ في سجل العمليات ليراه المدير، ويُحفظ ملف مضغوط (zip) على سطح المكتب لترسله بالواتساب أو البريد. هذا الملف فيه التفاصيل الكاملة (الحاسوب، آخر الأخطاء، صورة الشاشة)، فأرسله للمسؤول فقط.</li>
+    <li>ويسألك البرنامج إن كنت تريد فتح صفحة التبليغ على GitHub أيضا (تحتاج حسابا على GitHub).</li>
+  </ol>
+  <div class="warn">صفحة GitHub <b>عامة يراها الجميع</b>. لا يُرفق فيها إلا الإصدار ونسخة ويندوز ونوع الاتصال (ملف أو سيرفر). لا تكتب فيها أسماء أشخاص أو مراكز كلفة أو أرقاما أو أي بيانات تخص الشركة، ولا تلصق فيها صورة شاشة فيها بيانات.</div>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 20 -->
+<section class="chapter" id="keys">
+  <h2 class="ch"><span class="no">21</span>اختصارات لوحة المفاتيح</h2>
+  <table>
+    <tr><th>المفتاح</th><th>العمل</th><th>أين</th></tr>
+    <tr><td class="k"><kbd>F1</kbd></td><td>فتح دليل الاستخدام</td><td>النافذة الرئيسية</td></tr>
+    <tr><td class="k"><kbd>Ctrl</kbd>+<kbd>F</kbd> أو <kbd>F3</kbd></td><td>البحث السريع عن مادة</td><td>النافذة الرئيسية</td></tr>
+    <tr><td class="k"><kbd>F5</kbd></td><td>تحديث التنبيهات وآخر السندات</td><td>الشاشة الرئيسية</td></tr>
+    <tr><td class="k"><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>حفظ</td><td>السندات، طلب الصرف، الجرد</td></tr>
+    <tr><td class="k"><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>سند جديد</td><td>السندات</td></tr>
+    <tr><td class="k"><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>طباعة</td><td>السندات، طلب الصرف، ورقة الجرد، نافذة الطباعة</td></tr>
+    <tr><td class="k"><kbd>F2</kbd></td><td>الانتقال إلى مربع البحث عن مادة / إضافة مادة للجرد</td><td>السندات، الجرد</td></tr>
+    <tr><td class="k"><kbd>↓</kbd> <kbd>↑</kbd></td><td>التنقل بين نتائج البحث</td><td>مربع البحث عن مادة</td></tr>
+    <tr><td class="k"><kbd>Enter</kbd></td><td>اختيار المادة، ثم إضافة السطر بعد كتابة الكمية؛ الانتقال للمادة التالية في الجرد</td><td>السندات، الجرد</td></tr>
+    <tr><td class="k"><kbd>Esc</kbd></td><td>مسح مربع البحث؛ إغلاق النافذة الصغيرة أو نافذة التقارير</td><td>كل مكان</td></tr>
+    <tr><td class="k"><kbd>Delete</kbd></td><td>حذف السطر المختار</td><td>جدول السند</td></tr>
+    <tr><td class="k"><kbd>PageUp</kbd> / <kbd>PageDown</kbd></td><td>السند السابق / التالي</td><td>السندات (الوضع المتقدم)</td></tr>
+    <tr><td class="k"><kbd>Ctrl</kbd>+<kbd>+</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd></td><td>تكبير / تصغير الخط</td><td>نافذة الطباعة</td></tr>
+  </table>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+<!-- ================================================================ 21 -->
+<section class="chapter" id="faq">
+  <h2 class="ch"><span class="no">22</span>أسئلة شائعة وحل المشكلات</h2>
+  <dl class="faq">
+    <dt>أغلقت البرنامج بـ ✕ ولا أجده.</dt>
+    <dd>البرنامج يعمل بجانب ساعة ويندوز. انقر مرتين على أيقونته هناك (قد تكون داخل السهم ^). انظر <a href="#tray">الإغلاق بجانب الساعة</a>.</dd>
+    <dt>لا أجد «نقل مخزني» أو «الجرد الفعلي» أو «طلبات الشراء» في القائمة.</dt>
+    <dd>هذه الشاشات في <a href="#modes">الوضع المتقدم</a>. اضغط <q>الوضع: مبتدئ ⇄</q> في أعلى الشاشة. إذا بقيت مخفية فليست لديك الصلاحية: اسأل المدير.</dd>
+    <dt>ظهرت رسالة «ليس لديك صلاحية».</dt>
+    <dd>المدير يعطي الصلاحيات من شاشة <a href="#users">المستخدمون</a>.</dd>
+    <dt>لا أجد المادة عند البحث في السند.</dt>
+    <dd>جرّب جزءا أقصر من الاسم أو الرمز. قد تكون المادة <b>مجمدة</b> (افتح <q>المواد</q> وعلّم <q>إظهار المجمدة</q>)، أو غير مضافة بعد: أضفها من <a href="#items">المواد</a>.</dd>
+    <dt>رصيد مادة أصبح سالبا.</dt>
+    <dd>أُخرجت كمية أكبر من الموجودة، غالبا لأن سند إدخال لم يُسجَّل. سجّل الإدخال الناقص، أو صحّح الكمية في سند الإخراج. تقرير <q>الأرصدة السالبة</q> و<q>كارت المادة</q> يساعدانك في معرفة السبب.</dd>
+    <dt>لا أستطيع تعديل سند قديم: «شهر … مقفل».</dt>
+    <dd>الشهر مقفل بـ<a href="#periodlock">قفل الفترات الشهرية</a>. يفتح صاحب الصلاحية القفل من <q>الإعدادات ← قفل الفترات الشهرية</q> للتصحيح ثم يعيده، أو يكون التصحيح بسند جديد بتاريخ اليوم.</dd>
+    <dt>أين ذهبت مواد سند الإتلاف؟ الرصيد لم ينقص.</dt>
+    <dd>سند الإتلاف لا يُخرج المواد إلا بعد <q>اعتماد وترحيل</q>. افتح <q>سندات الإتلاف</q> وتأكد أن حالته <b>معتمد ومُرحّل</b>، لا <b>بانتظار الاعتماد</b> (<a href="#writeoff">شرحه</a>).</dd>
+    <dt>لا أستطيع تعديل سند قديم: «سنة … مقفلة».</dt>
+    <dd>السنة مقفلة. التصحيح يكون بسند جديد بتاريخ اليوم، أو يعيد المدير فتح السنة (<a href="#yearclose">إقفال السنة</a>).</dd>
+    <dt>رسالة «تعذر الاتصال بالبيانات» عند الفتح.</dt>
+    <dd>ملف البيانات نُقل أو الحاسوب الذي فيه الملف/السيرفر مطفأ أو الشبكة مقطوعة. شغّل حاسوب السيرفر وتأكد من الشبكة، ثم اختر المكان الصحيح من نافذة <a href="#connect">إعدادات الاتصال</a>.</dd>
+    <dt>تنبيه أحمر في الأسفل: «ملف البيانات على قرص تتم مزامنته».</dt>
+    <dd>الملف داخل مجلد OneDrive أو Google Drive أو Dropbox. للعمل من أكثر من حاسوب استعمل <a href="#server">السيرفر</a>، أو انقل الملف إلى مجلد عادي.</dd>
+    <dt>نسيت كلمة المرور.</dt>
+    <dd>المدير يكتب لك كلمة جديدة من <a href="#users">المستخدمون</a>. إذا نسي المدير كلمة مروره فاتصل بالمسؤول عن البرنامج.</dd>
+    <dt>الطباعة تخرج صغيرة أو مقطوعة.</dt>
+    <dd>من نافذة الطباعة استعمل <q>إعداد الصفحة</q> (الورق A4 والهوامش والاتجاه) و<q>تكبير +</q> / <q>تصغير −</q>، ثم <q>معاينة</q> قبل الطباعة.</dd>
+    <dt>زر «تصدير Excel» لا يعمل.</dt>
+    <dd>يسألك البرنامج أين تحفظ الملف (المستندات تلقائيا)، ثم <q>هل تريد فتح الملف الآن؟</q>. إذا لم يُفتح فليس على الحاسوب برنامج يفتح ملفات xlsx: ثبّت Excel أو LibreOffice، أو افتح الملف المحفوظ على حاسوب آخر.</dd>
+    <dt>البرنامج بطيء.</dt>
+    <dd>في <q>الإعدادات</q> شغّل <q>ضغط وإصلاح ملف البيانات</q> (بعد خروج الجميع من البرنامج). وللعمل من عدة حواسيب استعمل السيرفر.</dd>
+    <dt>ظهر خطأ لم أفهمه.</dt>
+    <dd>صوّر الرسالة أو اكتبها، ثم استعمل <a href="#updates">تبليغ عن مشكلة</a>.</dd>
+  </dl>
+  <p class="top"><a href="#toc">↑ المحتويات</a></p>
+</section>
+
+</div>
+<a id="toTop" class="noprint" href="#toc" title="المحتويات">↑</a>
+</body>
+</html>

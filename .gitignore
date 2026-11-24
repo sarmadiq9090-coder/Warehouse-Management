@@ -1,0 +1,21 @@
+# data and local files (never in the repository)
+*.AMR
+*.amr
+*.mdb
+!tests/demo/empty-template.mdb
+*.accdb
+*.ldb
+*.laccdb
+*.bak
+settings.ini
+errors.log
+logo.png
+مكونات/
+نسخ احتياطية*/
+.update-backup/
+# build output
+*.exe
+*.pdb
+tests/bin/
+dist/
+*.tmp

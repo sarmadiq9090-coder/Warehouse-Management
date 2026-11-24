@@ -1,0 +1,51 @@
+# Build and test on every push and pull request (free on public repositories).
+# The program, the tests and the Access (Jet 4.0) driver are all 32-bit; Windows has everything built in.
+# Not run here: Excel export (needs Excel), printing, UI click tests, SQL Server tests.
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["v*"]   # tags are built by release.yml
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Access driver (32-bit) available
+        shell: powershell
+        run: |
+          & "$env:WINDIR\SysWOW64\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -Command `
+            "(New-Object System.Data.OleDb.OleDbEnumerator).GetElements() | Where-Object { `$_.SOURCES_NAME -like '*OLEDB*' } | ForEach-Object { `$_.SOURCES_NAME }"
+
+      - name: Build the program
+        shell: cmd
+        run: call build.bat
+
+      - name: Build the test programs
+        shell: cmd
+        run: call tests\build-tests.bat
+
+      - name: Tests on demo data
+        shell: powershell
+        run: .\tests\RunAll.ps1 -Work "$env:RUNNER_TEMP\tests"
+
+      - name: Keep the test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: ${{ runner.temp }}/tests/*.log
+          if-no-files-found: ignore
+          retention-days: 14

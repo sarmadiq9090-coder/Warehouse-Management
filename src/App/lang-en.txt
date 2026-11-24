@@ -1,0 +1,1535 @@
+# English UI dictionary: one "arabic<TAB>english" per line (keys = text without edge spaces/punctuation, \n = new line).
+# Add new strings with tools\ExtractStrings.exe (see AGENTS.md, Translations).
+32 بت	32-bit
+64 بت	64-bit
+Esc للمسح	Esc to clear
+F2 مربع البحث عن مادة   •   Enter للانتقال   •   Delete حذف السطر   •   PageUp/PageDown السند السابق/التالي   •   اكتب الرمز مباشرة في العمود	F2 item search box   •   Enter to move on   •   Delete removes the line   •   PageUp/PageDown previous/next document   •   type the code directly in the column
+MB\nالحجم بعد	MB\nSize after
+SQL Server يحتاج ويندوز 64 بت. اختر حاسوبا آخر ليكون السيرفر الرئيسي	SQL Server needs 64-bit Windows. Choose another computer to be the main server
+ms   •   ↓ ↑ ثم Enter، أو انقر على المادة	ms   •   ↓ ↑ then Enter, or click the item
+replace(/ة/g	replace(/ة/g
+replace(/ى/g	replace(/ى/g
+toLowerCase().replace(/[أإآ]/g	toLowerCase().replace(/[أإآ]/g
+آخر	Last
+آخر 12 شهرا	Last 12 months
+آخر 3 أشهر	Last 3 months
+آخر 6 أشهر	Last 6 months
+آخر إخراج	Last issue
+آخر إدخال	Last receipt
+آخر الأخطاء المسجلة	Latest logged errors
+آخر السندات	Latest documents
+آخر المواد المستعملة	Recently used items
+آخر المواد المستعملة في	Recently used items in
+آخر سنة مقفلة	Last closed year
+أحرف على الأقل	characters at least
+أخذ نسخة احتياطية قبل الإقفال	Take a backup before closing
+أخرى	Other
+أداة الضغط (JRO) غير متوفرة على هذا الحاسوب	The compact tool (JRO) is not available on this computer
+أدخل اسم المادة	Enter the item name
+أدخل اسم المستخدم	Enter the user name
+أدخل اسم المستخدم وكلمة المرور للمتابعة	Enter your user name and password to continue
+أدخل اسم قاعدة البيانات	Enter the database name
+أدخل اسم مركز الكلفة	Enter the cost centre name
+أدخل الاسم	Enter the name
+أدخل عنوان السيرفر	Enter the server address
+أدخل كلمة المرور الجديدة	Enter the new password
+أدخل كمية صحيحة أكبر من صفر	Enter a valid quantity greater than zero
+أدخل كمية صحيحة للمادة	Enter a valid quantity for the item
+أرصدة حرجة تحتاج تعزيز	Critical balances to replenish
+أرصدة سالبة	Negative balances
+أرصدة غير مطابقة	Mismatched balances
+أسماء الجهات والأشخاص	Names of parties and people
+أسماء ورموز المواد	Item names and codes
+أشهر	months
+أصبحت	became
+أعد كتابة كلمة السر للتأكيد	Retype the password to confirm
+أعلى	Top
+أغلقه ثم أعد التصدير، أو اختر اسما آخر	Close it and export again, or choose another name
+أقل من 6 غيغابايت (المتوفر	Less than 6 GB (available
+أقل من دقيقة	Less than a minute
+أكبر من المتوفر	More than available
+أكثر المواد إخراجا	Most issued items
+أمين المخزن	Storekeeper
+أمين المخزن المستلم	Receiving storekeeper
+أمين المخزن المُرسِل	Sending storekeeper
+أنشأه	Created by
+أنواع المواد	Item types
+أهلا بك	Welcome
+أو	or
+أي بيانات موجودة على الخادم ستُستبدل. متابعة	Any data on the server will be replaced. Continue
+أيام بلا إخراج	Days without issue
+أُخرج منها	Issued from it
+أُضيفت	Added
+أُضيفت أثناء الجرد	Added during the count
+أُضيفت للجرد	Added to the count
+إخراج	Issue
+إخراج رقم	Issue No.
+إخراج مخزني	Issue
+إخراج مخزني - إضافة	Issue - Add
+إخراج مخزني - تعديل	Issue - Edit
+إخراج مخزني - حذف	Issue - Delete
+إخراج مخزني - عرض	Issue - View
+إخراج مواد من المخزن إلى مركز كلفة:   ① اختر مركز الكلفة   ② اختر المستلم   ③ ابحث عن المادة واكتب الكمية ثم Enter   ④ اضغط «حفظ	Issue items to a cost centre:   ① cost centre   ② recipient   ③ find the item, type the quantity, Enter   ④ "Save
+إدارة	Administration
+إدارة الجهات والأشخاص	Manage parties and people
+إدارة المواد والأرصدة الافتتاحية	Manage items and opening balances
+إدخال	Receipt
+إدخال رقم	Receipt No.
+إدخال مخزني	Receipt
+إدخال مخزني - إضافة	Receipt - Add
+إدخال مخزني - تعديل	Receipt - Edit
+إدخال مخزني - حذف	Receipt - Delete
+إدخال مخزني - عرض	Receipt - View
+إدخال مواد جديدة إلى المخزن:   ① اختر المجهز   ② اختر المخزن   ③ ابحث عن المادة واكتب الكمية ثم Enter   ④ اضغط «حفظ	Receive items into the store:   ① supplier   ② store   ③ find the item, type the quantity, Enter   ④ "Save
+إذا غيّرت كلمة السر عن السابقة: أعد «سيرفر ثانوي» على كل حاسوب آخر	If you changed the password from the previous one: redo "Secondary server" on every other computer
+إذا كان التعديل ضروريا: يعيد المدير فتح السنة من «الإعدادات ← إقفال السنة	If a change is necessary: the administrator reopens the year from "Settings → Year closing
+إذا كان السيرفر مجهزا مسبقا: اكتب كلمة السر نفسها (كلمة سر جديدة تعني إعادة «سيرفر ثانوي» على كل حاسوب	If the server was already set up: type the same password (a new password means redoing "Secondary server" on every computer
+إرجاع مواد إلى المجهز	Return items to the supplier
+إرجاع مواد إلى المجهز (تنقص من المخزن):   ① اختر المجهز   ② ابحث عن المواد واكتب الكميات   ③ اضغط «حفظ	Return items to the supplier (out of the store):   ① supplier   ② find the items, type the quantities   ③ "Save
+إرسال التبليغ	Send report
+إرفاق المعلومات الفنية (الإصدار، ويندوز، نوع الاتصال، آخر الأخطاء	Attach technical information (version, Windows, connection type, latest errors
+إرفاق صورة شاشة البرنامج	Attach a screenshot of the program
+إزالة	Remove
+إزالة الشعار	Remove logo
+إضافة	Add
+إضافة المواد التي رصيدها صفر أيضا	Also add items with a zero balance
+إضافة جديد	Add new
+إضافة جهة	Add party
+إضافة سند إخراج	Add issue document
+إضافة سند إدخال / مردود	Add receipt / return document
+إضافة مادة	Add item
+إضافة مادة  (F2	Add item  (F2
+إضافة مركز كلفة	Add cost centre
+إظهار الرصيد الدفتري والفرق	Show book balance and difference
+إظهار المجمدة	Show frozen
+إظهار المغلقة	Show closed
+إظهار المواد ذات الرصيد صفر	Show items with a zero balance
+إظهار كلمة السر	Show password
+إعادة	Redo
+إعادة احتساب الأرصدة	Recalculate balances
+إعادة فتح	Reopen
+إعادة فتح آخر سنة مقفلة	Reopen the last closed year
+إعادة فتح السنة للمدير فقط	Only the administrator can reopen the year
+إعادة فتح سنة	Reopen year
+إعادة فتح مركز كلفة	Reopen cost centre
+إعداد الصفحة	Page setup
+إعداد المخازن والأنواع	Stores and types setup
+إعداد النظام	System setup
+إعدادات الاتصال والسيرفر	Connection and server settings
+إغلاق	Close
+إغلاق مركز الكلفة	Close the cost centre
+إغلاق مركز كلفة	Close cost centre
+إقفال	Close
+إقفال السنة	Year closing
+إقفال السنة (يدوي، للمدير	Year closing (manual, administrator
+إقفال السنة للمدير فقط	Only the administrator can close the year
+إلغاء	Cancel
+إلغاء  (Esc	Cancel  (Esc
+إلغاء الحجز	Cancel reservation
+إلى	To
+إلى الخادم	To the server
+إلى مخزن	To store
+إنشاء	Create
+إنشاء الجداول	Creating tables
+إنشاء الجرد	Create count
+إنشاء الفهارس	Creating indexes
+إنشاء بيانات جديدة	Create new data
+إنشاء جرد فعلي	Create stock count
+ا	ا
+ابحث	Search
+ابحث برمز المادة أو اسمها أو امسح الباركود	Search by item code or name, or scan the barcode
+ابحث عن مادة بالرمز أو الاسم…   (Ctrl+F	Find an item by code or name…   (Ctrl+F
+اترك الرمز فارغا ليُعطى تلقائيا	Leave the code empty to assign it automatically
+اترك كلمة المرور فارغة لإبقائها كما هي.\nالمستخدم رقم 1 هو مدير النظام وله كل الصلاحيات	Leave the password empty to keep it unchanged.\nUser No. 1 is the system administrator and has all permissions
+اتصال	Connect
+اتصال سيرفر ثانوي	Secondary server connection
+احتساب	Calculate
+احفظها في مكان آمن، ولا تعطها إلا لمن يجهّز البرنامج على الحواسيب	Keep it in a safe place and give it only to whoever sets up the program on the computers
+اختبار	Test
+اختبار الاتصال	Test connection
+اختر اسما من القائمة أولا	Choose a name from the list first
+اختر التقرير وحدد الخيارات ثم اضغط «عرض التقرير	Choose the report, set the options, then press "Show report
+اختر الجهة	Choose the party
+اختر الجهة التي أعادت المواد	Choose the party that returned the items
+اختر المادة	Choose the item
+اختر المادة من القائمة أولا (↓ ثم Enter	Choose the item from the list first (↓ then Enter
+اختر المجهز / الجهة	Choose the supplier / party
+اختر المجهز الذي تُرجع إليه المواد	Choose the supplier the items are returned to
+اختر المخزن	Choose the store
+اختر المخزن المنقول إليه	Choose the destination store
+اختر المستلم	Choose the recipient
+اختر جردا من القائمة أولا	Choose a count from the list first
+اختر سطرا من القائمة أولا	Choose a line from the list first
+اختر صورة الشعار	Choose the logo image
+اختر كلمة سر للسيرفر	Choose a server password
+اختر مركز الكلفة	Choose the cost centre
+اختر مركز الكلفة الذي تُحجز له المواد	Choose the cost centre the items are reserved for
+اختر مستخدما من القائمة أولا	Choose a user from the list first
+اختر ملف البيانات (الداتا) لنقله إلى السيرفر	Choose the data file to move to the server
+اختر ملف بيانات Access المراد نقله إلى الخادم	Choose the Access data file to move to the server
+اختر ملف بيانات المخازن	Choose the stores data file
+اختيار	Select
+اختيار  (Enter	Select  (Enter
+اختيار صورة	Choose image
+ادخل باسم المستخدم 1 وكلمة المرور 1، ثم غيّر كلمة المرور.\nابدأ بإضافة المواد من شاشة «المواد	Sign in with user name 1 and password 1, then change the password.\nStart by adding items on the "Items
+استعراض	Browse
+استلام	Receive
+استلام مواد من مجهز	Receive items from a supplier
+استيراد	Import
+استيراد من ملف Access	Import from an Access file
+اسم الشركة	Company name
+اسم المادة	Item name
+اسم المستخدم	User name
+اسم المستخدم أو كلمة المرور الخاصة بالسيرفر غير صحيحة	The server user name or password is incorrect
+اسم المستخدم أو كلمة المرور غير صحيحة	The user name or password is incorrect
+اسم قاعدة البيانات غير صحيح أو غير موجود على السيرفر	The database name is wrong or does not exist on the server
+اسم مركز الكلفة	Cost centre name
+اسمه على الشبكة	Its network name
+اضغط على عنوان أي عمود للترتيب	click any column heading to sort
+اضغط للترتيب	Click to sort
+اضغط للتفاصيل	click for details
+اضغط هنا للتحديث	click here to update
+اعدادات برنامج	Program settings
+اعرض التقرير أولا	Show the report first
+اعرض التقرير أولا بالضغط على «عرض التقرير	Show the report first by pressing "Show report
+اقتراح رمز	Suggest code
+اكتب اسم حاسوب السيرفر الرئيسي أو عنوانه (يظهر في رسالة نهاية تجهيزه	Type the name or address of the main server computer (shown in the message at the end of its setup
+اكتب الرمز أو أي جزء من الاسم • الأسهم للتنقل	Type the code or any part of the name • arrows to move
+اكتب الكمية الموجودة فعلا على الرف لكل مادة. المواد غير الموجودة في القائمة تُكتب في آخر الورقة وتُضاف في البرنامج	Write the quantity actually on the shelf for each item. Items not in the list are written at the end of the sheet and added in the program
+اكتب الكمية ثم Enter	Type the quantity, then Enter
+اكتب الكمية ثم Enter للانتقال للمادة التالية   •   اكتب رمز المادة أو اسمها في مربع البحث ثم Enter   •   F2 بحث وإضافة مادة غير موجودة في القائمة   •   Delete مسح الكمية	Type the quantity, then Enter to move to the next item   •   type the item code or name in the search box, then Enter   •   F2 find and add an item not in the list   •   Delete clears the quantity
+اكتب رمز المادة أو اسمها أولا	Type the item code or name first
+اكتب رمزا أو اسما أو رقما	Type a code, name or number
+اكتب كلمة سر السيرفر	Type the server password
+اكتب كلمة سر السيرفر التي اختيرت عند تجهيز «السيرفر الرئيسي	Type the server password chosen when setting up the "Main server
+اكتب للبحث أو اختر من القائمة	Type to search or choose from the list
+اكتب ماذا كنت تفعل، وماذا ظهر لك، وماذا كنت تتوقع.\nمثال: عند حفظ سند إخراج رقم 120 ظهرت رسالة خطأ، والمادة لم تُخصم	Write what you were doing, what you saw and what you expected.\nExample: when saving issue document No. 120 an error message appeared and the item was not deducted
+اكتب وصفا للمشكلة أولا	Describe the problem first
+الأرشيف	Archive
+الأرصدة الحرجة (تحتاج تعزيز	Critical balances (reorder
+الأرصدة الحرجة — مواد تحتاج تعزيز	Critical balances — items to replenish
+الأرصدة السالبة	Negative balances
+الأرصدة بتاريخ	Balances as of
+الأرصدة لا تتغير ولا تُنقل: رصيد نهاية السنة هو نفسه رصيد بداية السنة الجديدة تلقائيا	Balances do not change and are not carried over: the year-end balance automatically is the opening balance of the new year
+الإخراج	Issues
+الإخراج التفصيلي	Detailed issues
+الإخراج المخزني	Issues
+الإخراج حسب المستلمين	Issues by recipient
+الإخراج حسب مراكز الكلفة	Issues by cost centre
+الإدخال التفصيلي	Detailed receipts
+الإدخال المخزني	Receipts
+الإدخال والمردودات	Receipts and returns
+الإصدار	Version
+الإصدار الحالي	Current version
+الإصدار لا يحتوي بصمة التحقق (sha256)، لذلك لن يُنصّب لحماية البرنامج	The release has no verification checksum (sha256), so it will not be installed, to protect the program
+الإعدادات	Settings
+الإعدادات العامة	General settings
+الاتصال	Connection
+الاتصال بالبيانات	Data connection
+الاسم	Name
+الاسم الجديد	New name
+الاسم مستخدم	The name is in use
+الاسم موجود	The name exists
+الاسم موجود مسبقا	The name already exists
+البحث عن إصدار جديد على GitHub وتنصيبه بضغطة،\nأو إرسال تبليغ عن مشكلة	Look for a new version on GitHub and install it with one click,\nor send a problem report
+البحث في الشبكة	Search the network
+البرنامج	Program
+البرنامج محدّث ✓\nالإصدار الحالي	The program is up to date ✓\nCurrent version
+البيانات مشغولة بحفظ من حاسوب آخر. حاول مرة ثانية بعد لحظة	The data is busy saving from another computer. Try again in a moment
+التاريخ	Date
+التالي	Next
+التبليغ.txt	report.txt
+التحديث التلقائي	Automatic update
+التحديث التلقائي غير مفعّل في هذه النسخة.\nيُفعّل تلقائيا في النسخ المنشورة على GitHub	Automatic update is not enabled in this copy.\nIt is enabled automatically in the releases published on GitHub
+التحديثات	Updates
+التحديثات والدعم	Updates and support
+الترتيب	Order
+الترتيب في التقارير	Order in reports
+التفاصيل	Details
+التقارير	Reports
+الجرد الفعلي	Stock count
+الجرد الفعلي رقم	Stock count No.
+الجرد الفعلي وتسوية الفروقات	Stock count and adjustment of differences
+الجرد الفعلي: ① جرد جديد لمخزن   ② طباعة ورقة الجرد وعدّ المواد   ③ إدخال الكميات المعدودة   ④ تقرير الفروقات   ⑤ ترحيل التسوية (للمدير	Stock count: ① new count for a store   ② print the count sheet and count the items   ③ enter the counted quantities   ④ differences report   ⑤ post the adjustment (administrator
+الجهات	Parties
+الجهات والأشخاص	Parties and people
+الجهة	Party
+الجهة / المخزن	Party / Store
+الجهة المستفيدة	Beneficiary
+الجهة المستفيدة وتاريخ البدء للمشاريع فقط. الرمز الفارغ يُعطى تلقائيا	Beneficiary and start date are for projects only. An empty code is assigned automatically
+الجهة المُعيدة	Returning party
+الحاسوب	Computer
+الحالة	Status
+الحالة: آخر سنة مقفلة	Status: last closed year
+الحالة: لا توجد سنة مقفلة	Status: no closed year
+الحالة: ملغى	Status: cancelled
+الحالي	Current
+الحجز	Reservation
+الحجوزات القائمة	Open reservations
+الحركة	Movement
+الحفظ	Saving
+الحل: في بوابة Azure ← خادم SQL ← Networking ← أضف هذا العنوان إلى Firewall rules ثم Save، وانتظر دقيقة وأعد المحاولة	Solution: in the Azure portal → SQL server → Networking → add this address to Firewall rules, then Save, wait a minute and try again
+الخادم	Server
+الرئيسية	Home
+الرصيد	Balance
+الرصيد الافتتاحي	Opening balance
+الرصيد الحالي	Current balance
+الرصيد الحالي المسجل في كل المخازن	Current balance recorded in all stores
+الرصيد الحر	Free balance
+الرصيد الدفتري	Book balance
+الرصيد السابق	Previous balance
+الرصيد الكلي	Total balance
+الرصيد النهائي	Closing balance
+الرصيد بتاريخ	Balance as of
+الرصيد في المخزن	Balance in store
+الرصيد في نهاية يوم	Balance at the end of
+الرقم	No.
+الرمز	Code
+الرمز مستخدم لمادة أخرى	The code is used by another item
+الزيادة	Surplus
+الزيادة: إدخال رقم	Surplus: receipt No.
+الزيادة: إدخال مخزني (تسوية جرد) رقم	Surplus: receipt (count adjustment) No.
+الزيادة: إدخال مخزني رقم	Surplus: receipt No.
+السابق	Previous
+السبب	Reason
+السجل مستخدم حاليا من جهاز آخر، حاول مرة ثانية	The record is in use on another computer, try again
+السطر	Line
+السعر	Price
+السعر غير صحيح	The price is not valid
+السنة الماضية	Last year
+السنة المراد إقفالها	Year to close
+السندات حتى	Documents up to
+السندات خلال آخر 12 شهرا	Documents in the last 12 months
+السيرفر	Server
+السيرفر (SQL Server	Server (SQL Server
+السيرفر الرئيسي	Main server
+السيرفر الرئيسي — كلمة سر السيرفر	Main server — server password
+السيرفر الرئيسي» يُستعمل على حاسوب واحد فقط: الحاسوب الذي سيحفظ بيانات الشركة ويبقى شغالا	Main server" is used on one computer only: the computer that will hold the company data and stay switched on
+السيرفر فيه بيانات مسبقا.\nهل تريد استبدالها بالملف المختار؟\n\n(اختر «لا» للإبقاء على بيانات السيرفر الحالية	The server already has data.\nDo you want to replace it with the chosen file?\n\n(Choose "No" to keep the current server data
+الشركة	Company
+الشعار	Logo
+الشعار (اختياري	Logo (optional
+الشهر	Month
+الشهر الماضي	Last month
+الصافي	Net
+الصحيح	Correct
+الصلاحيات	Permissions
+العدد	Count
+العمل المشترك عبر السيرفر مفعّل	Shared work through the server is enabled
+العملية	Operation
+العنوان	Address
+الفترة	Period
+الفرق	Difference
+الفرق = الكمية المعدودة − الرصيد الدفتري (الرصيد عند إنشاء الجرد). المواد التي لم تُعد لا تُسوّى عند الترحيل	Difference = counted quantity − book balance (the balance when the count was created). Items that were not counted are not adjusted when posting
+الكل	All
+الكلف	Costs
+الكلفة	Cost
+الكميات التالية أكبر من المتوفر في المخزن	The following quantities are more than available in the store
+الكميات المُخرجة	Issued quantities
+الكمية	Quantity
+الكمية أكبر من المتوفر	The quantity is more than available
+الكمية المحجوزة	Reserved quantity
+الكمية المعدودة	Counted quantity
+الكمية الموجودة فعلا	Quantity actually present
+الكمية المُخرجة	Issued quantity
+الكمية يجب أن تكون أكبر من صفر	The quantity must be greater than zero
+اللون الأحمر: الرصيد في المخزن أقل من الكمية المحجوزة. الرمادي: الحجز اكتمل إخراجه	Red: the balance in the store is less than the reserved quantity. Grey: the reservation has been fully issued
+المادة	Item
+المادة غير موجودة في هذا الجرد	The item is not in this count
+المبلغ	Amount
+المتبقي المتوقع	Expected remaining
+المتبقي محجوزا	Still reserved
+المتبقية	Remaining
+المتصلون الآن	Online now
+المتوفر	Available
+المتوفر (غير محجوز	Available (not reserved
+المجموع	Total
+المجموعة	Group
+المجهز	Supplier
+المجهز (يُرجع إليه	Supplier (returned to
+المجهز / الجهة	Supplier / Party
+المحجوز لمراكز الكلفة أكبر من الرصيد	Reserved for cost centres exceeds the balance
+المخازن	Stores
+المخازن والأنواع	Stores and Types
+المخازن والأنواع والمجموعات	Stores, Types and Groups
+المخزن	Store
+المخزن الرئيسي	Main store
+المخزون	Stock
+المدة المتوقعة: 10–20 دقيقة (مرة واحدة فقط	Expected time: 10–20 minutes (one time only
+المدة المتوقعة: 1–3 دقائق	Expected time: 1–3 minutes
+المدير	Manager
+المساحة الفارغة في القرص	Free disk space
+المستخدم	User
+المستخدم في البرنامج	Program user
+المستخدمون	Users
+المستخدمون المتصلون الآن	Users online now
+المستخدمون والصلاحيات	Users and Permissions
+المستلم	Recipient
+المستلم / المُعيد	Recipient / Returned by
+المسجل	Recorded
+المشاريع	Projects
+المصدر	Source
+المصروف له	Issued to
+المصروف منها	Issued from
+المطلوب	Required
+المعدودة	Counted
+المعروض	Shown
+الملخص الشهري	Monthly summary
+الملف	File
+الملف غير موجود	The file does not exist
+الملف ليس صورة صالحة	The file is not a valid image
+الملف مفتوح في Excel	The file is open in Excel
+المواد	Items
+المواد الراكدة	Slow-moving items
+المواد المحجوزة لمراكز الكلفة: المحجوز والمُخرج والمتبقي	Items reserved for cost centres: reserved, issued and remaining
+المواد المعدودة	Counted items
+المواد المُرجعة إلى المجهزين	Items returned to suppliers
+المُجهّز منه	Supplied from
+المُخرج خلال	Issued during
+المُخرج لمركز الكلفة	Issued to the cost centre
+المُسلِّم (المجهز	Delivered by (supplier
+المُعاد	Returned
+المُعاد منه	Returned from
+المُعيد	Returned by
+النتائج	Results
+النسخة الاحتياطية اليومية في	Daily backup in
+النقص	Shortage
+النقص: إخراج رقم	Shortage: Issue No.
+النقص: إخراج مخزني (تسوية جرد) رقم	Shortage: Issue (stock count adjustment) No.
+النقص: إخراج مخزني رقم	Shortage: Issue No.
+النقل المخزني	Transfer
+النقل من الملف مباشرة	Transfer directly from the file
+النوع	Type
+الهاتف	Phone
+الوثوق بشهادة السيرفر (لخادم خاص بالشركة	Trust the server certificate (for a company-owned server
+الوحدة	Unit
+الوضع: مبتدئ	Mode: Beginner
+الوضع: متقدم	Mode: Advanced
+الوقت	Time
+الوقت المنقضي	Elapsed time
+اليوم	Today
+انتهى التنصيب بدون نتيجة (ربما أُغلقت نافذته	The installation ended without a result (its window may have been closed
+انقر على المادة أو ↓ ↑ ثم Enter، ثم اكتب الكمية	Click the item or use ↓ ↑ then Enter, then type the quantity
+انقر مرتين على الجرد لفتحه	Double-click a stock count to open it
+انقر مرتين على السند لفتحه	Double-click a document to open it
+انقر مرتين على سند لفتحه	Double-click a document to open it
+باركود	Barcode
+بتاريخ	dated
+بحث	Search
+بحث / إضافة مادة (رمز أو اسم ثم Enter	Search / add item (code or name, then Enter
+بحث داخل التقرير	Search in the report
+بحث سريع عن مادة	Quick item search
+بحث عن جهة / شخص	Search for a party / person
+بحث فوري بالرمز أو الاسم	Instant search by code or name
+بدء التنصيب… اضغط «نعم» إذا ظهرت نافذة صلاحيات ويندوز	Starting the installation… click "Yes" if a Windows permission window appears
+بدون	None
+بدون (اختياري	None (optional
+برميل	Barrel
+بعد الترحيل يُقفل الجرد ولا يمكن تعديله. متابعة	After posting, the stock count is locked and cannot be edited. Continue
+بواسطة	by
+بيانات المخازن.AMR	Stores data.AMR
+ت	No.
+تأكد أن حاسوب السيرفر شغال ومتصل بنفس الشبكة، وأن «السيرفر الرئيسي» تم تجهيزه عليه	Make sure the server computer is on and connected to the same network, and that "Main server" has been set up on it
+تأكيد قبل الحفظ	Confirm before saving
+تأكيد كلمة المرور	Confirm password
+تؤخذ نسخة احتياطية من البيانات	A backup of the data is taken
+تاريخ الإخراج	Export date
+تاريخ البدء	Start date
+تاريخ البداية بعد تاريخ النهاية	The start date is after the end date
+تاريخ الجرد	Count date
+تاريخ السند	Document date
+تاريخ الطباعة	Printed on
+تاريخ مستقبلي	Future date
+تبليغ	Report
+تبليغ عن مشكلة	Report a Problem
+تبليغ عن مشكلة أو اقتراح	Report a problem or suggestion
+تبليغ مشكلة - مخازن	Problem report - Stores
+تثبيت كميات لمركز كلفة	Hold quantities for a cost centre
+تجميع حسب المادة	Group by item
+تجهيز السيرفر الرئيسي	Set Up the Main Server
+تجهيز الشبكة • مرة واحدة لكل حاسوب	Network setup • once per computer
+تجهيز نسخة مضغوطة ومُصلحة من الملف	Preparing a compacted and repaired copy of the file
+تحتاج إضافة حقول جديدة لملف البيانات.\nأغلق البرنامج القديم على كل الأجهزة ثم اضغط تفعيل	New fields must be added to the data file.\nClose the old program on all computers, then click Activate
+تحديث	Refresh
+تحديث البرنامج	Update the Program
+تدقيق	Check
+تدقيق البيانات	Data Check
+ترتيب المواد حسب الكمية المُخرجة	Items ranked by quantity issued
+ترحيل	Post
+ترحيل التسوية	Post Adjustment
+ترحيل تسوية الجرد رقم	Post stock count adjustment No.
+ترحيل تسوية الجرد للمدير أو لمن لديه صلاحية الإعدادات فقط	Only the manager or a user with the settings permission can post a stock count adjustment
+ترحيل تسوية جرد	Post stock count adjustment
+تسجيل الدخول	Sign In
+تسجيل دخول	Sign in
+تسليم مواد إلى مركز كلفة	Deliver items to a cost centre
+تسمح بتعديل سنداتها وتغيّر أرصدة نهاية تلك السنة المؤرشفة.\nاستعملها للتصحيح فقط، ثم أعد الإقفال.\n\nمتابعة	This allows editing its documents and changes the archived year-end balances of that year.\nUse it for corrections only, then close the year again.\n\nContinue
+تسوية جرد (زيادة	Stock count adjustment (surplus
+تسوية جرد (نقص	Stock count adjustment (shortage
+تسوية جرد فعلي رقم	Stock count adjustment No.
+تشغيل التدقيق	Run Check
+تصدير	Export
+تصدير Excel	Export to Excel
+تصغير	Zoom Out
+تصغير الخط	Smaller font
+تعديل	Edit
+تعديل الاسم	Rename
+تعديل جهة	Edit Party
+تعديل جهة / شخص	Edit Party / Person
+تعديل سند إخراج	Edit issue document
+تعديل سند إدخال / مردود	Edit receipt / return document
+تعديل مادة	Edit Item
+تعديل مركز كلفة	Edit Cost Centre
+تعديل مستخدم	Edit User
+تعذر إنشاء البيانات	Could not create the data
+تعذر الاتصال بالبيانات	Could not connect to the data
+تعذر الاتصال بالسيرفر الذي وُجد	Could not connect to the server that was found
+تعذر الاتصال بـ	Could not connect to
+تعذر الاتصال بـ GitHub للبحث عن تحديث.\nتأكد من الإنترنت ثم أعد المحاولة	Could not connect to GitHub to check for an update.\nCheck the internet connection and try again
+تعذر الوصول إلى السيرفر. تأكد أن حاسوب السيرفر شغال ومتصل بنفس الشبكة، ومن اسمه أو عنوانه	Could not reach the server. Make sure the server computer is on and connected to the same network, and check its name or address
+تعذر بدء التنصيب	Could not start the installation
+تعذر حفظ ملف الاعدادات	Could not save the settings file
+تعذر حفظ ملف التبليغ على سطح المكتب	Could not save the report file to the desktop
+تعذر ضغط نسخة الملف	Could not compact the file copy
+تعذر فتح الملف	Could not open the file
+تعذر فتح صفحة GitHub	Could not open the GitHub page
+تغيير الاتصال	Change Connection
+تغيير كلمة المرور	Change Password
+تغييرات غير محفوظة	Unsaved
+تفصيل حسب السندات	Detail by document
+تفعيل الآن	Activate Now
+تفعيل مراكز الكلفة والحجز	Enable Cost Centres and Reservations
+تقرير	Report
+تقرير الفروقات	Differences report
+تكبير	Zoom In
+تكبير الخط	Larger font
+تلقائي	Automatic
+تم إقفال سنة	Closed year
+تم إلغاء الحجز رقم	Cancelled reservation No.
+تم إنشاء بيانات جديدة فارغة	New empty data was created
+تم الاتصال بالسيرفر الرئيسي	Connected to the main server
+تم الاتصال بنجاح	Connected successfully
+تم التحويل إلى الوضع المتقدم:\nتظهر كل الشاشات (النقل المخزني، سجل السندات، الإعدادات، الأدوات) والإدخال السريع بلوحة المفاتيح	Switched to Advanced mode:\nAll screens are shown (Transfer, Document log, Settings, Tools) with fast keyboard entry
+تم التحويل إلى وضع المبتدئ:\nشاشات مبسطة مع شرح لكل خطوة وتأكيد قبل الحفظ	Switched to Beginner mode:\nSimplified screens with an explanation for each step and confirmation before saving
+تم التصدير	Exported
+تم التنصيب لكن تعذر الاتصال بالسيرفر	Installed, but could not connect to the server
+تم الحفظ	Saved
+تم الحفظ • رقم السند	Saved • Document No.
+تم الحفظ ✓\nيظهر الاسم والشعار الجديدان كاملين بعد إعادة فتح البرنامج	Saved ✓\nThe new name and logo appear everywhere after the program is reopened
+تم الضغط ✓\nالحجم قبل	Compacted ✓\nSize before
+تم تجاوز عدد المحاولات	Too many attempts
+تم ترحيل التسوية بتاريخ	Adjustment posted on
+تم ترحيل تسوية الجرد	Stock count adjustment posted
+تم تصحيح	Corrected
+تم تغيير كلمة المرور	Password changed
+تم تفعيل مراكز الكلفة والحجز ✓\nأعد تشغيل البرنامج	Cost centres and reservations enabled ✓\nRestart the program
+تم حذف السند رقم	Deleted document No.
+تم حفظ النسخة	Backup saved
+تم ضغط وإصلاح نسخة من الملف قبل النقل (الملف الأصلي لم يتغير	A copy of the file was compacted and repaired before the transfer (the original file was not changed
+تم فتح سنة	Reopened year
+تم نقل البيانات	Data transferred
+تم نقل البيانات بنجاح	Data transferred successfully
+تم. يفضل إعادة تشغيل البرنامج	Done. Restarting the program is recommended
+تنبيه: المادة مكررة في السطر	Note: the item is repeated on line
+تنبيه: ملف البيانات على قرص محلي تتم مزامنته تلقائيا. إذا عمل أكثر من حاسوب في نفس الوقت ستحصل تعارضات	Warning: the data file is on a local drive that is synced automatically. If more than one computer works at the same time, conflicts will occur
+تنبيه: هذه المادة مجمدة	Note: this item is frozen
+توسيع القائمة	Expand Menu
+تُطلب مرة واحدة فقط على هذا الحاسوب، ثم تُحفظ فيه مشفرة	Asked only once on this computer, then stored on it encrypted
+جاري إعداد السيرفر الرئيسي — العملية تعمل الآن	Setting up the main server — the process is running now
+جاري الاتصال بالسيرفر	Connecting to the server
+جاري البحث عن السيرفر الرئيسي في الشبكة	Searching the network for the main server
+جاري تجربة الاتصال بـ	Testing the connection to
+جاري تنصيب السيرفر الرئيسي — التنصيب يعمل الآن	Installing the main server — the installation is running now
+جاري نقل البيانات إلى السيرفر	Transferring the data to the server
+جدار الحماية في السيرفر لا يسمح لهذا الحاسوب بالاتصال	The server's firewall does not allow this computer to connect
+جدول	Table
+جديد	New
+جديد  (Ctrl+N	New  (Ctrl+N
+جرد أرصدة المواد	Stock balances
+جرد جديد	New Stock Count
+جرد رقم	Stock count No.
+جرد فعلي جديد	New Stock Count
+جرد نهاية السنة محفوظ في	Year-end inventory saved in
+جرد نهاية سنة	Year-end inventory
+جهة / شخص جديد	New Party / Person
+جهة جديدة	New Party
+حجز	Reservation
+حجز ملغى	Cancelled reservation
+حجز مواد	Reserve Items
+حجز مواد لمركز كلفة	Reserve Items for a Cost Centre
+حجز مواد لمركز كلفة (لا تخرج من المخزن لكنها لا تُخرج لغيره):   ① اختر مركز الكلفة   ② ابحث عن المواد واكتب الكميات   ③ اضغط «حفظ	Reserve items for a cost centre (kept in the store for it only):   ① cost centre   ② find the items, type the quantities   ③ "Save
+حجوزات قائمة	Open reservations
+حجوزات مراكز الكلفة	Cost centre reservations
+حد إعادة الطلب	Reorder level
+حد إعادة الطلب غير صحيح	Invalid reorder level
+حدث خطأ	An error occurred
+حذف	Delete
+حذف الجرد رقم	Delete stock count No.
+حذف الجرد للمدير أو لمن أنشأه	Only the manager or the user who created it can delete the stock count
+حذف السطر	Delete line
+حذف السند	Delete
+حذف المادة	Delete Item
+حذف المادة المضافة من الجرد	Remove the added item from the stock count
+حذف جرد فعلي	Delete stock count
+حذف جرد مفتوح	Delete open stock count
+حذف جهة	Delete party
+حذف سند إخراج	Delete issue document
+حذف سند إدخال / مردود	Delete receipt / return document
+حذف مادة	Delete item
+حركات النقل بين المخازن	Transfers between stores
+حركة في السندات.\nيمكنك تجميدها بدلا من الحذف (من شاشة التعديل	movements in documents.\nYou can freeze it instead of deleting it (from the edit screen
+حزمة SQL Server غير موجودة في مجلد «مكونات» بجانب البرنامج، ولا يوجد اتصال بالإنترنت لتنزيلها.\nانسخ مجلد البرنامج كاملا (مع مجلد مكونات) أو اتصل بالإنترنت	The SQL Server package is not in the "مكونات" (components) folder next to the program, and there is no internet connection to download it.\nCopy the whole program folder (with the components folder) or connect to the internet
+حفظ	Save
+حفظ  (Ctrl+S	Save  (Ctrl+S
+حفظ جرد نهاية السنة (Excel) في: المستندات ← مخازن الشركة الهندسية - إقفال السنوات	Save the year-end inventory (Excel) in: Documents → مخازن الشركة الهندسية - إقفال السنوات
+حفظ كميات الجرد	Save Count Quantities
+حفظ واتصال	Save and Connect
+حفظ واختيار	Save and Select
+حُفظ ملف على سطح المكتب يمكنك إرساله (واتساب / بريد	A file was saved on the desktop that you can send (WhatsApp / email
+خروج	Exit
+دخول	Sign In
+دقائق	minutes
+دقيقة	minute
+دقيقتين	two minutes
+دليل الجهات	Party directory
+دليل الجهات والأشخاص	Directory of parties and people
+دليل المواد	Item catalogue
+راجع تقرير الحجوزات القائمة	See the open reservations report
+رزمة	Bundle
+رصيد	Balance
+رصيد افتتاحي	Opening balance
+رصيد افتتاحي غير صحيح في	Invalid opening balance in
+رصيد سابق	Previous balance
+رصيد سالب	Negative balance
+رصيد غير مطابق للحركات	Balance does not match the movements
+رصيد كل مادة في كل مخزن بتاريخ معين	Balance of each item in each store on a given date
+رغم ذلك	anyway
+رقم	No.
+رقم الجرد	Count No.
+رقم السند	Document No.
+رقم مكرر	Duplicate number
+رقم/ملاحظة	No./Note
+رمز المادة	Item code
+زوج	Pair
+زيادة	Surplus
+زيدت الكمية	Quantity increased
+ستصبح المواد متاحة لكل مراكز الكلفة (يبقى السند محفوظا كملغى).\nلإلغاء جزء من الحجز: عدّل الكميات أو احذف السطور ثم احفظ	The items will become available to all cost centres (the document stays saved as cancelled).\nTo cancel part of the reservation: change the quantities or delete lines, then save
+ستُضاف الكمية إلى السطر نفسه	The quantity will be added to the same line
+سجل	Log
+سجل السندات	Document Log
+سجل العمليات (آخر 300 عملية	Activity log (last 300 actions
+سجل سندات الإخراج المخزني	Issues log
+سجل سندات الإدخال والمردود	Receipts and returns log
+سجّل الدخول الآن	Sign in now
+سطر	line(s)
+سطر في السندات يشير إلى مادة محذوفة	document lines refer to a deleted item
+سعر الوحدة	Unit price
+سنة	Year
+سند	Document
+سند إخراج رقم	Issue document No.
+سند إخراج مخزني «تسوية جرد (نقص	Issue document "Stock count adjustment (shortage
+سند إدخال مخزني «تسوية جرد (زيادة	Receipt document "Stock count adjustment (surplus
+سند استلام رقم	Receipt document No.
+سند الزيادة	Surplus document
+سند النقص	Shortage document
+سند بدون مواد	Document without items
+سند جديد	New Document
+سند جديد • الرقم يُثبّت عند الحفظ	New document • the number is assigned when saved
+سندات إخراج بدون مركز كلفة في هذه الفترة	issue documents without a cost centre in this period
+سندات الإخراج	Issue documents
+سندات الإدخال	Receipt documents
+سندات الإدخال المخزني ومردود الإخراج خلال فترة	Receipts and issue returns during a period
+سندات المردود	Return documents
+سيتم أخذ نسخة احتياطية ثم ضغط الملف. متابعة	A backup will be taken, then the file will be compacted. Continue
+سيتم إعادة تشغيل البرنامج	The program will restart
+سيتم إقفال سنة	This will close the year
+سيتم تصحيح أرصدة المواد حسب الحركات المسجلة.\nيفضل أن يكون الآخرون خارج البرنامج. متابعة	Item balances will be corrected from the recorded movements.\nOther users should preferably be out of the program. Continue
+سيتم نقل كل البيانات من	All data will be transferred from
+سيرفر	Server
+سيرفر SQL Server • للعمل من أي مكان ومن عدة حواسيب (موصى به	SQL Server • to work from anywhere and from several computers (recommended
+سيرفر ثانوي	Secondary server
+سيرفر ثانوي — كلمة سر السيرفر	Secondary server — server password
+سيُنصّب عليه SQL Server Express (قد يستغرق 10–20 دقيقة في المرة الأولى	SQL Server Express will be installed on it (may take 10–20 minutes the first time
+شغّل البرنامج كمسؤول (Run as administrator) ثم أعد التحديث	Run the program as administrator (Run as administrator), then update again
+شكرا، تم تسجيل التبليغ.\n\n• سُجّل في «سجل العمليات» ليراه المدير	Thank you, the report has been recorded.\n\n• It was logged in the "Activity log" for the manager to see
+صادر	Out
+صافي الكميات	Net quantities
+صافي المستهلك	Net consumed
+صافي المصروف	Net issued
+صندوق	Box
+صور (*.png;*.jpg;*.jpeg;*.bmp;*.gif	Images (*.png;*.jpg;*.jpeg;*.bmp;*.gif
+صورة الشاشة.png	Screenshot.png
+صيانة	Maintenance
+ضغط	Compact
+ضغط وإصلاح	Compact and Repair
+ضغط وإصلاح ملف البيانات	Compact and Repair the Data File
+طباعة	Print
+طباعة  (Ctrl+P	Print  (Ctrl+P
+طباعة ورقة الجرد	Print Count Sheet
+طريقة الحساب: متوسط الإخراج الشهري = مجموع ما أُخرج خلال	Calculation: average monthly issue = total issued during
+طقم	Set
+طن	Ton
+طي القائمة	Collapse Menu
+عدد	Count
+عدد الأسطر	Number of lines
+عدد البنود	Number of items
+عدد الجهات	Number of parties
+عدد السجلات في الجدول	Number of records in the table
+عدد السطور	Number of lines
+عدد السندات	Number of documents
+عدد السندات والكميات لكل شهر مع رسم بياني	Number of documents and quantities per month, with a chart
+عدد السندات والكميات لكل مستلم	Number of documents and quantities per recipient
+عدد الملاحظات	Number of notes
+عدد المواد	Number of items
+عدد المواد الراكدة	Number of slow-moving items
+عدد المواد المختلفة	Number of different items
+عدد عمليات الجرد	Number of stock counts
+عدد مراكز الكلفة	Number of cost centres
+عرض	View
+عرض التقرير	Show Report
+عرض المعلومات الفنية التي سترفق	Show the technical information to be attached
+عرض سندات الإخراج	View issue documents
+عرض سندات الإدخال والمردود	View receipt and return documents
+عرض فقط • لا توجد صلاحية تعديل	View only • no edit permission
+علبة	Can
+على الحاسوب الذي سيحفظ البيانات فقط: يُنصّب السيرفر المجاني وينقل البيانات إليه،\nوتختار فيه «كلمة سر السيرفر». يحتاج صلاحيات المدير على هذا الحاسوب	Only on the computer that will hold the data: installs the free server and moves the data to it,\nand you choose the "server password" there. Needs administrator rights on this computer
+على الحواسيب الأخرى استعمل «سيرفر ثانوي».\n\nهل هذا الحاسوب هو السيرفر الرئيسي	On the other computers use "Secondary server".\n\nIs this computer the main server
+على كل حاسوب آخر: افتح البرنامج ← «إعدادات الاتصال والسيرفر» ← «سيرفر ثانوي	On every other computer: open the program → "Connection and server settings" → "Secondary server
+على كل حاسوب آخر: يجد السيرفر الرئيسي في الشبكة ويتصل به\nبعد كتابة «كلمة سر السيرفر» مرة واحدة	On every other computer: finds the main server on the network and connects to it\nafter typing the "server password" once
+عند إقفال السنة	At year closing
+عنوان السيرفر	Server address
+عنوان هذا الحاسوب على الإنترنت	This computer's internet address
+عنوانه	Address
+غالبا سندات قديمة قبل تفعيل مراكز الكلفة	Probably old documents from before cost centres were enabled
+غير مطابق بعد النقل	Mismatch after transfer
+غير مفعّل في هذه النسخة	Not enabled in this version
+غير موجود في المصدر (تم إنشاؤه فارغا	Not found in the source (created empty
+غيغابايت). فرّغ مساحة ثم أعد المحاولة	GB). Free up space and try again
+فتح	Open
+فتح المجلد	Open Folder
+فتح سند	Open Document
+فتح سند برقم	Go to number
+فتح مجلد الأرشيف	Open Archive Folder
+فترة المتوسط	Averaging Period
+فحص بتاريخ	Checked on
+فحص سلامة البيانات والأرصدة	Check Data and Balances
+فروقات الجرد الفعلي رقم	Stock count differences No.
+فشل الاتصال	Connection failed
+فعّال	Active
+في السند	In document
+في المستقبل. هل هو صحيح	in the future. Is it correct
+فيها	in it
+فُتحت صفحة GitHub: الصق صورة الشاشة بـ Ctrl+V ثم اضغط Submit	The GitHub page has opened: paste the screenshot with Ctrl+V, then click Submit
+قائمة الجرد	Count List
+قائمة سندات الإخراج خلال فترة	List of issue documents in a period
+قائمة مراكز الكلفة	Cost Centre List
+قاعدة البيانات	Database
+قاعدة البيانات على السيرفر فارغة.\nهل تريد نقل البيانات إليها الآن من ملف Access	The database on the server is empty.\nDo you want to move the data to it now from an Access file
+قاعدة البيانات في وضع الاستيقاظ أو مشغولة حاليا. انتظر دقيقة وأعد المحاولة	The database is waking up or busy. Wait a minute and try again
+قالب البيانات غير موجود في البرنامج	The data template is missing from the program
+قبل إقفال سنة	Before closing year
+قبل احتساب الأرصدة	Before recalculating balances
+قبل الضغط	Before compacting
+قبل انتهائها	Before it expires
+قبل ترحيل الجرد	Before posting the stock count
+قد يصبح الرصيد سالبا	The balance may become negative
+قسم	Department
+قطعة	pc
+قيمة غير صحيحة	Invalid value
+كارت	Card
+كارت المادة	Item Card
+كارت المادة (حركة مادة	Item card (movements
+كشف	Statement
+كشف الجهة	Party Statement
+كشف جهة	Party Statement
+كشف جهة / شخص	Party / Person Statement
+كشف مركز الكلفة	Cost Centre Statement
+كشف مركز كلفة	Cost Centre Statement
+كغم	kg
+كل الأرصدة صحيحة	All balances are correct
+كل الأنواع	All Types
+كل الفترة	Whole Period
+كل المخازن	All Stores
+كل الملفات	All files
+كل المواد	All Items
+كل حاسوب آخر سيحتاجها مرة واحدة فقط عند الضغط على «سيرفر ثانوي	Each other computer will need it only once, when clicking "Secondary server
+كل حركات المادة مع الرصيد بعد كل حركة	All movements of the item with the balance after each movement
+كل ما أُخرج للجهة وما أعادته أو جهّزته	Everything issued to the party and what it returned or supplied
+كل ما أُخرج لمركز الكلفة وما أُعيد منه والصافي والكلفة	Everything issued to the cost centre, what was returned from it, the net and the cost
+كل مادة أُخرجت: التاريخ ومركز الكلفة والمستلم والكمية	Each issued item: date, cost centre, recipient and quantity
+كل مادة أُدخلت: التاريخ والمجهز والكمية	Each received item: date, supplier and quantity
+كل مراكز الكلفة	All Cost Centres
+كلمة السر قصيرة	The password is too short
+كلمة المرور	Password
+كلمة المرور الجديدة	New Password
+كلمة المرور الحالية	Current Password
+كلمة المرور الحالية غير صحيحة	The current password is incorrect
+كلمة المرور طويلة (الحد 20 حرفا	The password is too long (maximum 20 characters
+كلمة سر السيرفر	Server Password
+كلمة سر السيرفر غير صحيحة.\nاكتبها كما اختيرت على حاسوب «السيرفر الرئيسي» (تُميَّز الأحرف الكبيرة من الصغيرة	The server password is incorrect.\nType it exactly as it was chosen on the "main server" computer (it is case-sensitive
+كلمة مرور جديدة	New password
+كلمتا السر غير متطابقتين. اكتبهما مرة أخرى	The passwords do not match. Type them again
+كلمتا المرور غير متطابقتين	The passwords do not match
+كميات غير محفوظة	Unsaved quantities
+كمية	Quantity
+كمية الإخراج	Issue Quantity
+كمية الإدخال	Receipt Quantity
+كمية المردود	Return Quantity
+كمية غير صحيحة	Invalid quantity
+كيس	bag
+لأنه أُخرج منها	because it has been issued from
+لأنها أُخرجت	because they have been issued
+لإضافة كمية استعمل «إدخال مخزني»، ولإنقاصها «إخراج مخزني	To add quantity use "Receipt"; to reduce it use "Issue
+لإضافة مادة اكتب جزءا من اسمها أو رمزها في مربع البحث ثم Enter واكتب الكمية ثم Enter. لتغيير الكمية انقر عليها في الجدول. لحذف مادة اضغط «✕ حذف» في سطرها	To add an item, type part of its name or code in the search box, then Enter, type the quantity, then Enter. To change a quantity click it in the table. To remove an item click "✕ Delete" on its line
+لا تغلق البرنامج ولا تطفئ الحاسوب حتى تظهر رسالة الانتهاء	Do not close the program or turn off the computer until the completion message appears
+لا توجد بيانات	No data
+لا توجد سنة مقفلة	No closed year
+لا توجد سنة منتهية غير مقفلة	No ended year that is not closed
+لا توجد صلاحية كتابة في مجلد البرنامج	No write permission in the program folder
+لا توجد فروقات: كل المواد المعدودة مطابقة	No differences: all counted items match
+لا توجد لدي بيانات • إنشاء بيانات جديدة	I have no data • Create new data
+لا توجد مادة بالرمز	No item with code
+لا توجد مادة تطابق	No item matches
+لا توجد مراكز كلفة بعد • اضغط + لإضافة مركز كلفة	No cost centres yet • Click + to add a cost centre
+لا توجد ملاحظات ✓ البيانات سليمة	No issues found ✓ The data is sound
+لا توجد مواد في السند	No items in the document
+لا يمكن أن تقل عن	cannot be less than
+لا يمكن أن يكون تاريخ الجرد بعد اليوم	The count date cannot be after today
+لا يمكن إقفال سنة	Cannot close year
+لا يمكن الحذف لأنه مستخدم	Cannot delete because it is in use
+لا يمكن الحذف: لهذه الجهة	Cannot delete: this party has
+لا يمكن النقل إلى نفس المخزن	Cannot transfer to the same store
+لا يمكن بعدها إضافة أو تعديل أو حذف أي سند بتاريخ في تلك السنة أو قبلها	After that no document dated in that year or earlier can be added, edited or deleted
+لا يمكن تجهيز السيرفر الرئيسي على هذا الحاسوب	The main server cannot be set up on this computer
+لا يمكن تغيير الرصيد الافتتاحي بعد إقفال سنة	The opening balance cannot be changed after a year has been closed
+لا يمكن تغيير المادة	The item cannot be changed
+لا يمكن تغيير هذه المادة لأنه أُخرج منها	This item cannot be changed because it has been issued from
+لا يمكن حذف السند لأنه أُخرج من مواده	The document cannot be deleted because some of its items have been issued
+لا يمكن حذف المادة	The item cannot be deleted
+لا يمكن حذف مادة لها رصيد	An item with a balance cannot be deleted
+لا يمكن حذف هذه المادة لأن لها	This item cannot be deleted because it has
+لا يمكن حذف هذه المادة لأنه أُخرج منها	This item cannot be deleted because it has been issued from
+لا يوجد	None
+لا يوجد رصيد كافٍ	Insufficient balance
+لا يوجد سند بهذا الرقم	No document with this number
+لا يوجد مزود بيانات Access مناسب على هذا الحاسوب	No suitable Access data provider on this computer
+لتر	litre
+لتصحيح الأرصدة غير المطابقة: الإعدادات ← إعادة احتساب الأرصدة (للمدير	To correct mismatched balances: Settings → Recalculate balances (administrator
+لجنة الجرد	Count Committee
+لفة	roll
+للتنقل بين النتائج   •   Enter للاختيار ثم اكتب الكمية و Enter للإضافة   •   Esc للمسح   •   F2 للعودة إلى البحث	Navigate the results   •   Enter to choose, then type the quantity and Enter to add   •   Esc to clear   •   F2 to return to search
+للعمل المشترك استخدم السيرفر (SQL Server) (شاشة الدخول ← إعدادات الاتصال والسيرفر	For shared work use the server (SQL Server) (login screen → Connection and server settings
+لم تُدخل أي كمية معدودة بعد	No counted quantity has been entered yet
+لم تُعد	Not returned
+لم يتم التفعيل	Not activated
+لم يتم تحديد المادة	No item selected
+لم يكتمل تجهيز السيرفر	Server setup did not complete
+لم يُخرج منذ	Not issued since
+لم يُعثر على السيرفر الرئيسي تلقائيا	The main server was not found automatically
+لم يُعد	Not returned
+لن يظهر في قائمة سندات الإخراج الجديدة، وتبقى سنداته وكشفه كما هي	It will not appear in the list for new issue documents; its documents and statement stay as they are
+لن يمكن إضافة أو تعديل أو حذف السندات بتاريخ حتى	Documents cannot be added, edited or deleted with a date up to
+لها رصيد فقط	With a balance only
+لوح	board
+ليس لديك صلاحية لهذه العملية	You do not have permission for this operation
+م	m
+مادة	item(s)
+مادة (تبقى أرصدتها كما هي	items (their balances stay as they are
+مادة (مجموع	items (total
+مادة تغيّر رصيدها بسندات بعد إنشاء الجرد؛ تُرحّل الفروقات محسوبة من الرصيد عند إنشاء الجرد	items whose balance changed through documents after the count was created; differences are posted as calculated from the balance at count creation
+مادة جديدة	New Item
+مادة مجمدة (لا تظهر في السندات الجديدة	Frozen item (does not appear in new documents
+ماذا تريد أن تفعل	What do you want to do
+متر	metre
+متفرقة	Miscellaneous
+متوسط الإخراج الشهري	Average Monthly Issue
+متوسط الاستهلاك محسوب من	Average consumption calculated from
+متوسط الاستهلاك من	Average consumption from
+مثال:  SERVER-PC,1433   (أو زر «سيرفر ثانوي» في الأعلى	Example:  SERVER-PC,1433   (or the "Secondary server" button above
+مجمدة	Frozen
+مجموع الصادر	Total Out
+مجموع الكميات	Total Quantities
+مجموع المتبقي محجوزا	Total Still Reserved
+مجموع المصروف	Total Spent
+مجموع المُجهّز	Total Supplied
+مجموع المُخرج	Total Issued
+مجموع المُعاد	Total Returned
+مجموع الوارد	Total In
+مجموعات المواد	Item Groups
+مجهز	Supplier
+محجوز	Reserved
+محجوز لمشاريع أخرى	Reserved for other cost centres
+محجوز له	Reserved for
+محجوز منذ	Reserved since
+محلي	Local
+مخازن الشركة الهندسية - إقفال السنوات	Engineering Company Stores - Year Closing
+مخزن	Store
+مخصص	Allocated
+مرات	times
+مرات الإخراج	Times Issued
+مراكز الكلفة	Cost Centres
+مردود إخراج	Issue return
+مردود إخراج مخزني	Issue Return
+مردود الإخراج المخزني	Issue Return
+مردود المشتريات	Purchase Return
+مردود مشتريات	Purchase Return
+مردودات المشتريات	Purchase Returns
+مركز الكلفة	Cost Centre
+مركز الكلفة (المُعاد منه	Cost centre (returned from
+مركز الكلفة / الجهة	Cost Centre / Party
+مركز الكلفة هو الجهة التي تُحمّل عليها المواد المُخرجة: مشروع أو قسم أو صيانة أو إدارة. يُختار في سند الإخراج، ويمكن حجز مواد له	The cost centre is what issued items are charged to: a project, department, maintenance or administration. It is chosen in the issue document, and items can be reserved for it
+مركز كلفة جديد	New Cost Centre
+مركز كلفة جديد باسم	New cost centre named
+مسؤول مركز الكلفة	Cost Centre Manager
+مستخدم	User
+مستخدم آخر متصل الآن. اطلب منهم الخروج من البرنامج أولا	Another user is connected now. Ask them to exit the program first
+مستعمل لمركز كلفة آخر	Used for another cost centre
+مستلم	Recipient
+مستلم المردود (المجهز	Return received by (supplier
+مستلم ومجهز	Recipient and Supplier
+مشروع	Project
+مصروف له	Spent for
+مطابق	Matching
+مطابقة	Matching
+معاينة	Preview
+مغلق	Closed
+مفتوح	Open
+مقفلة	Closed
+مقفلة مسبقا	Already closed
+مقفلة.\nلا يمكن إضافة أو تعديل أو حذف سند بتاريخ	closed.\nNo document can be added, edited or deleted with a date
+مكان ملف البيانات الجديد	New data file location
+مكرر	Duplicate
+مكونات	Components
+ملء الشاشة	Full Screen
+ملاحظات	Notes
+ملاحظات / لجنة الجرد	Notes / Count Committee
+ملاحظة: قليل من المواد لها حد إعادة طلب. يمكن تحديده من شاشة المواد ← تعديل	Note: few items have a reorder level. It can be set from the Items screen → Edit
+ملخص الكميات والكلفة لكل مركز كلفة، مع مجموع كل نوع	Summary of quantities and cost per cost centre, with a total for each type
+ملخصات	Summaries
+ملغى	Cancelled
+ملف	File
+ملف Access	Access File
+ملف Access (.AMR) • حاسوب واحد أو مجلد مشترك على الشبكة المحلية	Access file (.AMR) • one computer or a shared folder on the local network
+ملف البيانات على قرص تتم مزامنته • العمل المشترك يحتاج السيرفر	The data file is on a synchronised drive • shared work needs the server
+ملف البيانات غير متاح. تأكد من الاتصال بالشبكة	The data file is not available. Check the network connection
+ملف البيانات غير موجود	The data file does not exist
+ملف التحديث المنزّل غير سليم (البصمة لا تطابق). لم يُنصّب شيء. أعد المحاولة لاحقا	The downloaded update file is corrupt (checksum mismatch). Nothing was installed. Try again later
+ملف التحديث غير موجود في هذا الإصدار	The update file is missing from this release
+ملف التحديث لا يحتوي البرنامج	The update file does not contain the program
+ملف الجهات	Parties File
+ملف المواد	Items File
+ملف بيانات المخازن (*.AMR	Stores data file (*.AMR
+ملفات البيانات (*.AMR;*.mdb	Data files (*.AMR;*.mdb
+من	From
+من GitHub	from GitHub
+من السند لأنه أُخرج منها	from the document because it has been issued from
+من مخزن	From Store
+من ملف Access	from an Access file
+منذ	since
+مهم: أبقِ هذا الحاسوب شغالا، ولا تستعمل البرنامج القديم بعد الآن	Important: keep this computer running, and do not use the old program any more
+مواد أُخرج منها أكثر من رصيدها — يجب تدقيقها	Items issued beyond their balance — must be checked
+مواد تحتاج تعزيز	Items Needing Replenishment
+مواد رجعت من مركز كلفة	Items returned from a cost centre
+مواد رجعت من مركز كلفة إلى المخزن:   ① اختر مركز الكلفة   ② اختر الجهة التي أعادتها   ③ ابحث عن المواد واكتب الكميات   ④ اضغط «حفظ	Items returned from a cost centre:   ① cost centre   ② party that returned them   ③ find the items, type the quantities   ④ "Save
+مواد رصيدها أقل من صفر وتحتاج مراجعة	Items with a balance below zero that need review
+مواد رصيدها الحر أقل من حد الطلب أو من استهلاك شهر — مع الكمية المقترحة للتعزيز	Items whose free balance is below the reorder level or a month's consumption — with the suggested replenishment quantity
+مواد غير معرفة	Undefined items
+مواد فيها زيادة	Items with surplus
+مواد فيها نقص	Items with shortage
+مواد لها رصيد ولم يُخرج منها شيء منذ	Items with a balance and nothing issued since
+مواد لها رصيد ولم يُخرج منها شيء منذ تاريخ معين	Items with a balance and nothing issued since a given date
+مواد وصلت حد إعادة الطلب	Items at reorder level
+موافق	OK
+موجود	Exists
+ميزة الجرد الفعلي غير مفعّلة بعد: يجب إغلاق البرنامج القديم على كل الأجهزة ثم فتح هذا البرنامج مرة واحدة	The stock count feature is not enabled yet: close the old program on all computers, then open this program once
+ميزة الحجز غير مفعّلة بعد (راجع الإعدادات	The reservation feature is not enabled yet (see Settings
+ميزة مراكز الكلفة غير مفعّلة بعد	The cost centres feature is not enabled yet
+ميزة مراكز الكلفة غير مفعّلة بعد (راجع الإعدادات	The cost centres feature is not enabled yet (see Settings
+ميزة مراكز الكلفة غير مفعّلة بعد: يجب إغلاق البرنامج القديم على كل الأجهزة ثم فتح هذا البرنامج مرة واحدة	The cost centres feature is not enabled yet: close the old program on all computers, then open this program once
+مُخرج	Issued
+مُرحّل (مقفل	Posted (locked
+مُرحّل بتاريخ	Posted on
+مُعاد	Returned
+مُعاد / مُجهّز منه	Returned / Supplied From
+نحو	about
+نسخ احتياطية	Backups
+نسخ احتياطية - مخازن	Backups - Stores
+نسخة	Copy
+نسخة احتياطية	Backup
+نسخة الآن	Back Up Now
+نظام إدارة المخازن	Inventory Management System
+نفد الرصيد ويوجد استهلاك	Out of stock with consumption
+نفد رصيدها الحر	Free balance exhausted
+نقص	Shortage
+نقل البيانات	Move Data
+نقل البيانات إلى الخادم	Move Data to the Server
+نقل الجدول	Moving table
+نقل صادر	Transfer out
+نقل كل البيانات من ملف .AMR إلى السيرفر.\nيُستبدل ما في السيرفر حاليا	Move all data from the .AMR file to the server.\nWhat is currently on the server will be replaced
+نقل مخزني	Transfer
+نقل مواد بين المخازن	Transfer items between stores
+نقل مواد بين مخزنين:   ① اختر المخزن المنقول منه وإليه   ② ابحث عن المواد واكتب الكميات   ③ اضغط «حفظ	Transfer items between stores:   ① from and to store   ② find the items, type the quantities   ③ "Save
+نقل وارد	Transfer in
+نهائيا؟\nسيتم تعديل أرصدة المواد تلقائيا	permanently?\nItem balances will be adjusted automatically
+نوع الإدخال	Receipt Type
+نوع السند	Document Type
+نوع الملاحظة	Note Type
+نوع المواد	Item Type
+ه	h
+هذا آخر سند	This is the last document
+هذا أول سند	This is the first document
+هذا الجرد غير موجود (ربما حُذف من حاسوب آخر	This stock count does not exist (it may have been deleted from another computer
+هذا الجرد مُرحّل مسبقا. لا يمكن ترحيله مرة ثانية	This stock count has already been posted. It cannot be posted again
+هذا الجرد مُرحّل ومقفل ولا يمكن حذفه	This stock count is posted and locked and cannot be deleted
+هذا الجرد مُرحّل ومقفل. لا يمكن تعديله	This stock count is posted and locked. It cannot be edited
+هذا الحاسوب أصبح السيرفر الرئيسي	This computer is now the main server
+هذا الحجز ملغى	This reservation is cancelled
+هذا السند تسوية جرد فعلي (أُنشئ عند ترحيل الجرد) ولا يمكن تعديله أو حذفه	This document is a stock count adjustment (created when the count was posted) and cannot be edited or deleted
+هذا السند تم تعديله من حاسوب آخر بعد أن فتحته.\nلحماية البيانات لم يتم حفظ تعديلك. أعد فتح السند لرؤية آخر نسخة ثم عدّله	This document was changed on another computer after you opened it.\nTo protect the data your change was not saved. Reopen the document to see the latest version, then edit it
+هذا السند حُذف من حاسوب آخر. لا يمكن حفظ التعديل.\nأعد فتح السند أو أنشئ سندا جديدا	This document was deleted on another computer. The change cannot be saved.\nReopen the document or create a new one
+هذا الشهر	This Month
+هذه الخطوة أبطأ من المعتاد على هذا الحاسوب — هذا طبيعي، يرجى الانتظار	This step is slower than usual on this computer — this is normal, please wait
+هذه السنة	This Year
+هل أنت متأكد	Are you sure
+هل المعلومات صحيحة	Is the information correct
+هل تريد	Do you want to
+هل تريد إلغاء الحجز رقم	Do you want to cancel reservation No.
+هل تريد التحديث الآن؟\nسيُغلق البرنامج ويُفتح من جديد تلقائيا (البيانات والإعدادات لا تتغير	Do you want to update now?\nThe program will close and reopen automatically (data and settings do not change
+هل تريد حذف	Do you want to delete
+هل تريد فتح الملف الآن	Do you want to open the file now
+هل تريد فتحه الآن	Do you want to open it now
+وارد	In
+واكتب كلمة سر السيرفر التي اخترتها الآن (مرة واحدة لكل حاسوب). احتفظ بها في مكان آمن	and type the server password you have just chosen (once per computer). Keep it in a safe place
+والمتوفر	and available
+وتُقفل معها السنوات قبلها	and the years before it are closed with it
+وحدة القياس	Unit of Measure
+ورقة الجرد الفعلي رقم	Stock count sheet No.
+وصل حد إعادة الطلب	Reached reorder level
+وكل الكميات المدخلة فيه؟\nلن تتغير أرصدة المواد	and all the quantities entered in it?\nItem balances will not change
+ويندوز	Windows
+ويندوز في هذا الحاسوب قديم (يحتاج .NET Framework 4.7.2 أو أحدث). حدّث ويندوز ثم أعد المحاولة	Windows on this computer is too old (needs .NET Framework 4.7.2 or later). Update Windows and try again
+وُجد السيرفر الرئيسي	Main server found
+ي	y
+يتم أخذ نسخة تلقائية يوميا عند الدخول.\nالمجلد	An automatic backup is taken daily at login.\nFolder
+يتوفر إصدار جديد	A new version is available
+يجب أولا الاتصال بخادم SQL Server	You must first connect to a SQL Server
+يجب الضغط «نعم» في نافذة صلاحيات ويندوز لإكمال التنصيب	You must click "Yes" in the Windows permission window to complete the installation
+يجب حفظ السند قبل الطباعة. حفظ الآن	The document must be saved before printing. Save now
+يحسب رصيد كل مادة في كل مخزن من جديد\n(الافتتاحي + كل الحركات) ويصحح الفروقات	Recalculates the balance of every item in every store\n(opening + all movements) and corrects the differences
+يدوي	Manual
+يدوي: يحفظ جرد نهاية السنة ويمنع تعديل سنداتها.\nالأرصدة تستمر للسنة الجديدة تلقائيا	Manual: saves the year-end stock and prevents editing its documents.\nBalances carry over to the new year automatically
+يرجى الانتظار… المدة المتوقعة أقل من نصف دقيقة	Please wait… expected time is under half a minute
+يظهر في الشاشات والتقارير المطبوعة وملفات Excel. بدون شعار يظهر اسم الشركة	Shown on screens, printed reports and Excel files. Without a logo the company name is shown
+يظهران في الشاشات والتقارير وExcel	Shown on screens, reports and Excel
+يغيّر أرصدة السنة المقفلة	Changes the balances of the closed year
+يقلل حجم الملف ويصلح الأخطاء.\nيجب أن يكون الجميع خارج البرنامج	Reduces the file size and repairs errors.\nEveryone must be out of the program
+يكشف الأرصدة غير المطابقة والسالبة،\nوالتواريخ المستقبلية والأرقام المكررة	Detects mismatched and negative balances,\nfuture dates and duplicate numbers
+يكفي (يوم	Enough for (days
+يكفي أقل من شهر	Enough for less than a month
+يمكن التعديل على سنداتها	Its documents can be edited
+يمكن للمدير إعادة فتح آخر سنة مقفلة إذا احتاج تصحيحا	The administrator can reopen the last closed year if a correction is needed
+يوجد	Exists
+يوجد تغييرات غير محفوظة في السند.\nهل تريد حفظها	There are unsaved changes in the document.\nDo you want to save them
+يوجد سطر بدون مادة	There is a line without an item
+يوجد كميات جرد غير محفوظة.\nهل تريد حفظها	There are unsaved count quantities.\nDo you want to save them
+يوجد لمركز الكلفة مواد محجوزة لم تُخرج بعد بمجموع كميات	The cost centre has reserved items not yet issued, with total quantities
+يوجد مادة أخرى بنفس الاسم	Another item with the same name exists
+يوجد مركز كلفة بنفس الاسم	A cost centre with the same name exists
+يوجد ملف بهذا الاسم. اختر اسما آخر	A file with this name exists. Choose another name
+يُحفظ «جرد نهاية السنة» (رصيد كل مادة في كل مخزن بتاريخ 31/12) كملف Excel للأرشيف	The "year-end stock" (balance of every item in every store on 31/12) is saved as an Excel file for the archive
+يُحفظ الرصيد الدفتري لكل مادة لحظة إنشاء الجرد. اطبع ورقة الجرد (بدون الأرصدة)، ثم أدخل الكميات المعدودة، ثم راجع تقرير الفروقات ورحّل التسوية	The book balance of each item is saved when the count is created. Print the count sheet (without balances), then enter the counted quantities, then review the differences report and post the adjustment
+يُعرض أفضل	Best viewed
+اختر لغة البرنامج	Choose the program language
+العربية	Arabic
+عربي	Arabic
+يمكن تغييرها لاحقا من الشريط العلوي  •  You can change it later in the top bar	You can change it later in the top bar
+# day names (DashboardView shows the date with the ar-IQ day name)
+الأحد	Sunday
+الإثنين	Monday
+الثلاثاء	Tuesday
+الأربعاء	Wednesday
+الخميس	Thursday
+الجمعة	Friday
+السبت	Saturday
+# requisitions, purchasing, themes, recipient = cost centre
+أخضر	Green
+أزرق	Blue
+أساس الاقتراح	Basis of the suggestion
+أضف مادة واحدة على الأقل إلى الطلب	Add at least one item to the requisition
+أضف مادة واحدة على الأقل إلى طلب الشراء	Add at least one item to the purchase request
+أعدّه	Prepared by
+أقدم من 30 يوما	Older than 30 days
+أي ما يكفي شهرين، وتُكمَّل حتى نقطة الطلب إذا كانت أكبر	i.e. enough for two months, topped up to the reorder point if that is higher
+أُرسل الطلب للموافقة	The requisition was sent for approval
+أُغلق الطلب	The requisition was closed
+أُغلق دون صرف المتبقي	Closed without issuing the remainder
+أُلغي الطلب	The requisition was cancelled
+إخراج مواد من المخزن إلى مركز كلفة:   ① اختر مركز الكلفة (المستلم)   ② ابحث عن المادة واكتب الكمية ثم Enter   ③ اضغط «حفظ	Issue items from the store to a cost centre:   ① choose the cost centre (recipient)   ② find the item, type the quantity, Enter   ③ "Save
+إذا حُدد للمادة حد أدنى في المخزن أو مدة توريد: نقطة إعادة الطلب = المتوسط اليومي × مدة التوريد + الحد الأدنى (مخزون الأمان)، وتظهر المادة إذا كان رصيدها الحر لا يزيد عن هذه النقطة	If the item has a minimum in the store or a lead time: reorder point = daily average × lead time + minimum (safety stock), and the item is shown when its free balance is not above this point
+إذا حُدد للمادة حد أعلى، وإلا	If the item has a maximum, otherwise
+إرسال للموافقة	Send for Approval
+إضافة طلب شراء	Add Purchase Request
+إظهار المسودات أيضا	Show drafts too
+إظهار المكتملة والملغاة	Show completed and cancelled
+إغلاق الطلب	Close Requisition
+إغلاق الطلب رقم	Close requisition No.
+إلغاء الطلب	Cancel Requisition
+إلغاء الطلب رقم	Cancel requisition No.
+إلغاء طلب الشراء رقم	Cancel purchase request No.
+إنشاء طلب شراء	Create Purchase Request
+إنشاء طلب شراء (مسودة) لـ	Create a purchase request (draft) for
+إنشاء وتعديل طلبات الشراء لمن لديه صلاحية إضافة سندات الإدخال	Creating and editing purchase requests needs the permission to add receipts
+اختر المادة أولا	Choose the item first
+اختر طلب الشراء من القائمة	Choose the purchase request from the list
+اختر طلبا من القائمة أولا	Choose a request from the list first
+اختر مركز الكلفة (المستلم) الذي تُخرج له المواد	Choose the cost centre (recipient) the items are issued to
+اختر مركز الكلفة الذي أعاد المواد	Choose the cost centre that returned the items
+اختر مركز الكلفة الذي تُطلب له المواد	Choose the cost centre the items are requested for
+اختر مركز الكلفة والمخزن   ② ابحث عن المادة واكتب الكمية ثم Enter   ③ «إرسال للموافقة»   •   «المتوفر» = رصيد المخزن ناقص المحجوز لمراكز كلفة أخرى	Choose the cost centre and the store   ② find the item, type the quantity, Enter   ③ "Send for Approval"   •   "Available" = store balance minus the quantity reserved for other cost centres
+استهلاك شهرين − الرصيد الحر	Two months' consumption − free balance
+اعتماد طلبات الصرف	Approve requisitions
+اعتمده	Approved by
+اعتُمد الطلب تلقائيا (قيمته دون حد الاعتماد) • يمكن صرفه الآن	The requisition was approved automatically (its value is below the approval limit) • it can be issued now
+اعرض تقرير الأرصدة الحرجة أولا	Show the critical balances report first
+اقتراحها بالحد الأعلى	suggested up to the maximum
+اكتب اسم طالب المواد	Type the name of the person requesting the items
+اكتب جزءا من اسم المادة أو رمزها ثم الكمية و Enter	Type part of the item name or code, then the quantity and Enter
+اكتب رقما صحيحا (0 أو أكثر	Type a whole number (0 or more
+اكتب سبب الرفض	Type the reason for rejecting
+اكتب كمية صحيحة	Type a valid quantity
+الأدنى	Min
+الأعلى	Max
+الأقل منه يُعتمد تلقائيا	Lower values are approved automatically
+البرنامج يعمل بجانب الساعة. انقر مرتين لفتحه، وللخروج: زر الفأرة الأيمن ← خروج	The program keeps running next to the clock. Double-click it to open it; to exit: right-click → Exit
+الحالة الآن	Status now
+الحد الأدنى	Minimum
+الحد الأدنى أو الأعلى غير صحيح في	Invalid minimum or maximum in
+الحد الأدنى والأعلى لكل مخزن ومدة التوريد تُحدد من شاشة المواد ← تعديل	Minimum and maximum per store and the lead time are set in the Items screen → Edit
+الحد الأعلى	Maximum
+الحد الأعلى أقل من الحد الأدنى في	The maximum is below the minimum in
+الحد الأعلى − الرصيد الحر	Maximum − free balance
+الرصيد الحر = الرصيد − المحجوز لمراكز الكلفة	Free balance = balance − quantity reserved for cost centres
+الطلب ليس بانتظار الموافقة (حالته	The requisition is not waiting for approval (its status
+الطلبات التي قيمتها (الكمية × آخر كلفة إدخال) أقل من هذا الحد تُعتمد تلقائيا عند إرسالها.\nاكتب 0 ليحتاج كل طلب إلى موافقة	Requisitions whose value (quantity × last receipt cost) is below this limit are approved automatically when sent.\nType 0 so that every requisition needs approval
+الطلبات المفتوحة	Open requests
+العمر (يوم	Age (days
+القيمة	Value
+القيمة التقديرية	Estimated value
+الكمية المطلوبة	Requested quantity
+الكمية المطلوبة يجب أن تكون أكبر من صفر	The requested quantity must be greater than zero
+الكمية المقترحة	Suggested quantity
+اللون	Colour
+المتبقي	Remaining
+المتبقي = المطلوب − المستلم بسندات الإدخال المرتبطة بالطلب. الأحمر: طلب مُرسل منذ أكثر من 30 يوما ولم يكتمل	Remaining = requested − received with the receipts linked to the request. Red: a request sent more than 30 days ago and not complete
+المتبقي للصرف	Remaining to issue
+المتبقي منها	remaining of it
+المتوفر في	Available in
+المجهز (اختياري	Supplier (optional
+المخازن: الرصيد الافتتاحي، موقع المادة على الرف، والحد الأدنى (مخزون الأمان) والأعلى	Stores: opening balance, shelf location of the item, and minimum (safety stock) and maximum
+المستلم يُحدَّث تلقائيا عند حفظ سند الإدخال	Received is updated automatically when the receipt is saved
+المصروف	Issued
+المطلوب أكبر من المتوفر	Requested is more than available
+المطلوب والمستلم والمتبقي لكل مادة وعمر الطلب بالأيام	Requested, received and remaining per item, and the age of the request in days
+المظهر	Appearance
+المعتمد	Approver
+الموافقة على طلب الصرف رقم	Approve requisition No.
+الموقع	Location
+الورقة مرتبة حسب موقع المادة على الرفوف ثم	The sheet is sorted by shelf location, then
+الوضع	Mode
+انقر مرتين على الطلب لفتحه	Double-click a request to open it
+بانتظار الموافقة	Waiting for approval
+بانتظار موافقة من لديه صلاحية	Waiting for approval by someone with the permission
+بانتظار موافقتك	Waiting for your approval
+برتقالي	Orange
+بلا مستلم صالح	without a valid recipient
+بنفسجي	Purple
+بنقطة إعادة الطلب	by the reorder point
+تاريخ الاعتماد	Approval date
+تحويل المستلمين إلى مراكز كلفة	Convert recipients to cost centres
+تسجيل الخروج	Log Out
+تعديل حد الاعتماد للمدير فقط	Only the administrator can change the approval limit
+تعديل طلب شراء	Edit Purchase Request
+تعذر ربط سندات الإخراج بمراكز الكلفة (سيُعاد المحاولة عند التشغيل القادم	Could not link issues to cost centres (will retry at the next start
+تعليم الطلب رقم	Mark request No.
+تعليم كمُرسل	Mark as Sent
+تغيّرت حالة الطلب من حاسوب آخر. أعد فتحه	The request status was changed from another computer. Open it again
+تقرير الطلبات المفتوحة	Open requests report
+تلقائي (حسب ويندوز	Auto (Windows
+تلقائي (دون حد الاعتماد	Automatic (below the approval limit
+تم الحفظ • طلب الشراء رقم	Saved • purchase request No.
+تمت الموافقة على الطلب	The requisition was approved
+جديد • الرقم يُثبّت عند الحفظ	New • the number is assigned when saved
+حالة طلب شراء	Purchase request status
+حالته	its status
+حتى نقطة الطلب	up to the reorder point
+حد اعتماد طلبات الصرف	Requisition approval limit
+حد الاعتماد	Approval limit
+حذف طلب شراء	Delete purchase request
+حذف مسودة	Delete Draft
+حذف مسودة طلب الشراء رقم	Delete draft purchase request No.
+حفظ التغييرات على طلب الشراء	Save changes to the purchase request
+حفظ كمسودة	Save as Draft
+حُفظ السند، لكن طلب الصرف رقم	The document was saved, but requisition No.
+حُفظ السند، لكنه لم يُربط بطلب الصرف رقم	The document was saved, but it was not linked to requisition No.
+حُفظ الطلب رقم	Saved requisition No.
+حُفظ سند الإخراج، لكن تعذر تحديث طلب الصرف	The issue was saved, but the requisition could not be updated
+داكن	Dark
+دون صرف المتبقي	without issuing the remainder
+ربط إدخال بطلب شراء	Link receipt to purchase request
+ربط الاستلام بطلب شراء	Link the receipt to a purchase request
+ربط سندات جديدة بمراكز الكلفة	Link new documents to cost centres
+رفض	Reject
+رفض طلب الصرف	Reject requisition
+رفض طلب الصرف رقم	Reject requisition No.
+رفضه	Rejected by
+رقم / اسم	No. / Name
+رقم الطلب	Request No.
+رمادي	Grey
+رُبطت بمراكز موجودة	linked to existing centres
+رُفض الطلب	The requisition was rejected
+سبب الرفض	Reason for rejecting
+سندات إخراج	Issues
+سندات الإدخال المرتبطة	Linked receipts
+سندات مردود	Returns
+صرف الطلب	Issue Requisition
+صُرف جزء من الطلب: استعمل «إغلاق الطلب» بدلا من الإلغاء	Part of the requisition was issued: use "Close Requisition" instead of cancelling
+صُرف جزئيا	Partly issued
+طالب الشراء	Requested by
+طالب المواد	Requested by
+طلب	Request
+طلب الشراء	Purchase request
+طلب الشراء حُذف من حاسوب آخر	The purchase request was deleted from another computer
+طلب الشراء غير موجود	The purchase request does not exist
+طلب الشراء لا يغيّر أرصدة المخزن؛ المواد تُضاف إلى الرصيد عند حفظ سند الإدخال المخزني	A purchase request does not change stock balances; the items are added to the balance when the receipt is saved
+طلب الشراء لا يغيّر الأرصدة. عند حفظ «إدخال مخزني» لهذه المواد يمكن ربطه بهذا الطلب	A purchase request does not change balances. When a receipt for these items is saved it can be linked to this request
+طلب الصرف: ① طالب المواد يكتب الطلب ويرسله للموافقة   ② المعتمد يوافق أو يرفض   ③ أمين المخزن يصرفه بـ«صرف الطلب» (إخراج مخزني	Requisition: ① the requester writes the requisition and sends it for approval   ② the approver approves or rejects   ③ the storekeeper issues it with "Issue Requisition" (an issue
+طلب جديد	New Request
+طلب رقم	Request No.
+طلب شراء	Purchase Request
+طلب شراء (مسودة) بالكميات المقترحة للمواد المعروضة	Purchase request (draft) with the suggested quantities of the items shown
+طلب شراء جديد	New Purchase Request
+طلب شراء رقم	Purchase request No.
+طلب صرف	Requisition
+طلب صرف رقم	Requisition No.
+طلب صرف مواد جديد	New Material Requisition
+طلب صرف مواد رقم	Material requisition No.
+طلب صرف: إرسال للموافقة	Requisition: sent for approval
+طلب صرف: إعادة إلى مسودة	Requisition: back to draft
+طلب صرف: إغلاق	Requisition: closed
+طلب صرف: إلغاء	Requisition: cancelled
+طلب صرف: تعديل	Requisition: edited
+طلب صرف: رفض	Requisition: rejected
+طلب صرف: صرف	Requisition: issued
+طلب صرف: مسودة جديدة	Requisition: new draft
+طلب صرف: موافقة	Requisition: approved
+طلب صرف: موافقة تلقائية	Requisition: approved automatically
+طلبات الشراء	Purchase Requests
+طلبات الشراء المفتوحة	Open purchase requests
+طلبات الصرف	Requisitions
+طلبات الصرف غير مفعّلة بعد في ملف البيانات (أعد تشغيل البرنامج على حاسوب لا يفتح عليه أحد الملف ببرنامج Access	Requisitions are not enabled in the data file yet (restart the program on a computer while nobody has the file open in Access
+طلبات الصرف غير مفعّلة في ملف البيانات	Requisitions are not enabled in the data file
+طلبات الصرف غير مفعّلة في ملف البيانات بعد	Requisitions are not enabled in the data file yet
+طلبات صرف المواد	Material Requisitions
+طلبات صرف المواد وحالتها: المطلوب والمصروف والمتبقي	Material requisitions and their status: requested, issued and remaining
+طلبات صرف بانتظار موافقتك	Requisitions waiting for your approval
+طلبات مفتوحة تنتظر مواد من هذا السند. اختر الطلب ليُحدَّث المستلم والمتبقي تلقائيا، أو «لا	Open requests are waiting for items of this document. Choose the request so that received and remaining are updated automatically, or "No
+عدد الطلبات	Number of requests
+غير محدد	Not set
+فاتح	Light
+فتح البرنامج	Open the Program
+فلم يُربط به	so it was not linked to it
+فيروزي	Teal
+قائمة الطلبات	Requests List
+قبل تحويل المستلمين إلى مراكز كلفة	before converting recipients to cost centres
+كان	was
+كل الطلبات	All requests
+كل الطلبات تحتاج موافقة	Every requisition needs approval
+كمسودة	as a draft
+كمُرسل إلى المجهز	as sent to the supplier
+لأن مركز الكلفة أو المخزن يختلف عن الطلب	because the cost centre or the store differs from the requisition
+لا	No
+لا توجد طلبات صرف في هذه الفترة	No requisitions in this period
+لا توجد كميات متبقية للصرف في هذا الطلب	No quantities left to issue in this requisition
+لا توجد مواد في الطلب	No items in the request
+لا توجد مواد معروضة لها كمية مقترحة	No items shown have a suggested quantity
+لا يغيّر الأرصدة  •  أنشئه هنا أو من تقرير «الأرصدة الحرجة»  •  اطبعه وأرسله  •  اربطه عند حفظ «إدخال مخزني» فيُحدَّث المستلم	Does not change balances  •  create it here or from the "Critical balances" report  •  print it and send it  •  link it when saving a "Receipt" so received is updated
+لا يمكن أن تكون الكمية المطلوبة أقل مما استُلم	The requested quantity cannot be less than what was received
+لا يمكن إلغاء طلب حالته	Cannot cancel a request with status
+لا يمكن اعتماد أو رفض طلب أنشأته بنفسك (فصل المهام	You cannot approve or reject a request you created yourself (separation of duties
+لا يمكن تعديل طلب حالته	Cannot edit a request with status
+لا يمكن تغيير حالة الطلب من	Cannot change the request status from
+لا يمكن حذف مادة استُلم منها شيء	Cannot delete an item of which something was received
+لطلب شراء	for a purchase request
+للعرض فقط: إنشاء وتعديل طلبات الشراء لمن لديه صلاحية إضافة سندات الإدخال	View only: creating and editing purchase requests needs the permission to add receipts
+لم يُنشأ طلب: كل المواد لها طلب شراء مفتوح	No request created: all items have an open purchase request
+لمخزن	for store
+ليس لديك صلاحية	You do not have the permission
+ليس لديك صلاحية لإغلاق الطلب	You do not have the permission to close the request
+ليس لديك صلاحية لطلبات الصرف	You do not have the permission for requisitions
+ما استُلم منه يبقى كما هو	What was received stays as it is
+مادة - مركز الكلفة	Item - Cost centre
+مادة بالكميات المقترحة	items with the suggested quantities
+مادة بلا كلفة	items without a cost
+ماذا تريد أن تفعل؟   (اسحب أي بطاقة لتغيير ترتيبها	What do you want to do?   (drag any card to change its order
+مدة التوريد (يوم	Lead time (days
+مدة التوريد غير صحيحة (عدد الأيام من طلب المادة حتى وصولها	Invalid lead time (number of days from ordering the item until it arrives
+مراكز كلفة جديدة	new cost centres
+مرفوض	Rejected
+مركز الكلفة (المستلم	Cost Centre (Recipient
+مركز الكلفة المختار غير موجود (ربما حُذف من حاسوب آخر). اختر مركز الكلفة من جديد	The chosen cost centre does not exist (it may have been deleted on another computer). Choose the cost centre again
+مركز كلفة	Cost centre
+مستلم جزئيا	Partly received
+مستلمون	recipients
+مسودة	Draft
+مع المسودات	with drafts
+مفتوحة	Open
+مكتمل	Complete
+من المواد المعروضة لها طلب شراء مفتوح لم يُستلم بالكامل.\n\nنعم: تخطيها   •   لا: إضافتها أيضا	of the items shown have an open purchase request not fully received.\n\nYes: skip them   •   No: add them too
+من تقرير الأرصدة الحرجة	from the critical balances report
+من طلب الصرف رقم	from requisition No.
+مواد رجعت من مركز كلفة إلى المخزن:   ① اختر مركز الكلفة الذي أعادها   ② ابحث عن المواد واكتب الكميات   ③ اضغط «حفظ	Items returned from a cost centre to the store:   ① choose the cost centre that returned them   ② find the items, type the quantities   ③ "Save
+مواد مشتركة	Shared items
+موافق عليه	Approved
+موافقة	Approve
+موقع وحدود المادة	Item location and limits
+ميزة طلبات الشراء غير مفعّلة بعد في ملف البيانات (يجب أن يفتح البرنامج الملف دون أن يكون مفتوحا في برنامج Access القديم	The purchase request feature is not enabled in the data file yet (the program must open the file while it is not open in the old Access program
+مُرسل	Sent
+نعم، اربطه بالطلب المحدد	Yes, link it to the selected request
+نفد الرصيد (نقطة إعادة الطلب	Out of stock (reorder point
+نقطة / حد الطلب	Reorder point / level
+نهائيا	permanently
+هذا الطلب غير موجود	This request does not exist
+هذا الطلب غير موجود (ربما حُذف من حاسوب آخر	This request does not exist (it may have been deleted on another computer
+هذا الطلب مرتبط بسند إدخال ولا يمكن حذفه	This request is linked to a receipt and cannot be deleted
+هل هذا الاستلام (إدخال مخزني رقم	Is this receipt (receipt No.
+وإلا تظهر إذا وصل رصيدها الحر حد إعادة الطلب، أو كان أقل من استهلاك شهر واحد (للمواد التي أُخرجت مرتين على الأقل في الفترة	otherwise it is shown when its free balance reaches the reorder level, or is below one month's consumption (for items issued at least twice in the period
+والرمادي: مسودة لم تُرسل بعد	and grey: a draft not sent yet
+والمتوسط اليومي = الشهري ÷ 30	and the daily average = monthly ÷ 30
+وصل نقطة إعادة الطلب	Reached the reorder point
+ولا يمكن تعديله	and it cannot be edited
+يبقى الطلب محفوظا كملغى ولا يُعرض في الطلبات المفتوحة	The request stays saved as cancelled and is not shown among the open requests
+يجب حفظ الطلب قبل الطباعة. حفظ الآن	The request must be saved before printing. Save now
+يرسل الطلب من أنشأه	The request is sent by the person who created it
+يلغي الطلب من أنشأه أو من لديه صلاحية	The request is cancelled by the person who created it or someone with the permission
+يمكن تعديل الكميات قبل الإرسال	Quantities can be edited before sending
+يمكن حذف المسودات فقط. افتح الطلب واستعمل «إلغاء الطلب	Only drafts can be deleted. Open the request and use "Cancel Requisition
+يمكن حذف المسودات فقط. الطلب المُرسل يُلغى (يبقى محفوظا كملغى	Only drafts can be deleted. A sent request is cancelled (it stays saved as cancelled
+يوجد تغييرات غير محفوظة في طلب الصرف.\nهل تريد حفظها	There are unsaved changes in the requisition.\nDo you want to save them
+يُرسل للموافقة طلب في حالة «مسودة» فقط (حالته الآن	Only a requisition in "Draft" status can be sent for approval (its status now
+يُطبّق فورا ويُحفظ لهذا المستخدم	Applied at once and saved for this user
+يُغلق طلب «صُرف جزئيا» فقط	Only a "Partly issued" requisition can be closed
+# write-offs, month lock, audit trail
+آب	August
+آخر عمليات القفل والفتح	Latest lock and unlock actions
+آخر كلفة	Last cost
+آذار	March
+أضف مادة واحدة على الأقل إلى سند الإتلاف	Add at least one item to the write-off document
+أمين المخزن يكتب المواد التالفة أو المفقودة وسببها ويرسلها للاعتماد   ② المعتمد يعتمد السند فتخرج المواد بكلفتها، أو يرفضه	the storekeeper lists damaged or lost items and the reason → approval   ② the approver posts them at cost or rejects
+أيار	May
+أيلول	September
+أُرسل السند للاعتماد • لم تخرج المواد بعد	The document was sent for approval • the items have not left the store yet
+أُلغي السند	The document was cancelled
+إتلاف / شطب	Write-off
+إذا كان التعديل ضروريا: يفتح صاحب الصلاحية القفل من «الإعدادات ← قفل الفترات الشهرية	If a change is necessary: someone with the permission unlocks it in "Settings → Monthly period lock
+إرسال للاعتماد	Send for Approval
+إقفال السنة: السندات حتى	Year closing: documents up to
+إقفال السنة: لا توجد سنة مقفلة	Year closing: no closed year
+إلا ما كان في سنة مقفلة).\nاستعمله للتصحيح فقط، ثم أعد القفل.\n\nمتابعة	except what is in a closed year).\nUse it for corrections only, then lock again.\n\nContinue
+إلغاء السند	Cancel Document
+إلغاء سند الإتلاف رقم	Cancel write-off No.
+اختر الشهر والسنة	Choose the month and the year
+اختر المخزن والسبب   ② ابحث عن المادة واكتب الكمية ثم Enter   ③ «إرسال للاعتماد»   •   لا تخرج المواد من المخزن إلا بعد الاعتماد	Choose the store and the reason   ② find the item, type the quantity, Enter   ③ "Send for Approval"   •   the items leave the store only after approval
+اختر سبب الإتلاف	Choose the write-off reason
+اختر سندا من القائمة أولا	Choose a document from the list first
+اعتماد سند الإتلاف رقم	Approve write-off No.
+اعتماد سندات الإتلاف	Approve write-offs
+اعتماد وترحيل	Approve and Post
+اعتُمد السند وخرجت المواد من المخزن	The document was approved and the items left the store
+الأرصدة والتقارير لا تتغير	Balances and reports do not change
+الإتلاف حسب السبب	Write-offs by reason
+التعديلات والحذف فقط	Edits and deletions only
+التغييرات	Changes
+الحقل	Field
+الرصيد في	Balance in
+السبب (إن اختلف	Reason (if different
+السبب «أخرى»: اكتب التوضيح في الملاحظات	Reason "Other": write the explanation in the notes
+السند / السجل	Document / Record
+السند غير مُرحّل: لم تخرج المواد من المخزن بعد، والقيمة تقديرية (الكمية × آخر كلفة إدخال	The document is not posted: the items have not left the store yet, and the value is an estimate (quantity × last receipt cost
+السندات حتى نهاية شهر	Documents up to the end of
+السندات غير المُرحّلة	Unposted documents
+السندات مقفلة حتى نهاية شهر	Documents are locked up to the end of
+العمليات	Actions
+القيمة الجديدة	New value
+القيمة السابقة	Old value
+الكلفة = كلفة الدفعات التي خرجت منها المواد (الوارد أولا يصرف أولا	Cost = cost of the batches the items left from (first in, first out
+الكميات	Quantities
+الكمية أكبر من رصيد المخزن	The quantity is more than the store balance
+المطلوب شطبه	To write off
+الملاحظات	Notes
+النسبة من الكلفة	Share of the cost
+بانتظار اعتماد من لديه صلاحية	Waiting for approval by someone with the permission
+بانتظار اعتمادك	Waiting for your approval
+بانتظار الاعتماد	Waiting for approval
+بكلفتها ولا يمكن التراجع	at their cost, and this cannot be undone
+تالف	Damaged
+تشرين الأول	October
+تشرين الثاني	November
+تغيّرت حالة سند الإتلاف من حاسوب آخر. أعد فتحه	The write-off status was changed from another computer. Open it again
+تفصيل حسب المادة	Detail by item
+تقادم	Obsolete
+تقرير الإتلاف حسب السبب	Write-offs by reason report
+تم فتح القفل الشهري	The monthly lock was removed
+تم قفل السندات حتى نهاية شهر	Documents are now locked up to the end of
+تموز	July
+تنبيه: القفل الحالي حتى	Note: the current lock is up to
+حزيران	June
+حُفظ سند الإتلاف رقم	Saved write-off No.
+خرجت المواد من المخزن بكلفتها • السند مقفل	The items left the store at their cost • the document is locked
+رصيد المخزن	Store balance
+رفض سند الإتلاف	Reject write-off
+رفض سند الإتلاف رقم	Reject write-off No.
+رقم / ملاحظة	No. / Note
+رقم سند الترحيل	Posting document No.
+رُفض السند	The document was rejected
+سبب الإتلاف	Write-off reason
+سبب السند	Document reason
+ستخرج مواده من	its items will leave
+سجل التدقيق	Audit Trail
+سجل التدقيق (القيم قبل وبعد التعديل	Audit trail (values before and after the change
+سجل التدقيق (قبل / بعد	Audit trail (before / after
+سجل التدقيق • القيم قبل وبعد التعديل	Audit trail • values before and after the change
+سند إتلاف	Write-off
+سند إتلاف / شطب مواد جديد	New Write-off / Item Disposal
+سند إتلاف / شطب مواد رقم	Write-off / Item Disposal No.
+سند إتلاف جديد	New Write-off
+سند إتلاف: إرسال للاعتماد	Write-off: sent for approval
+سند إتلاف: إعادة إلى مسودة	Write-off: back to draft
+سند إتلاف: إلغاء	Write-off: cancelled
+سند إتلاف: اعتماد وترحيل	Write-off: approved and posted
+سند إتلاف: تعديل	Write-off: edited
+سند إتلاف: رفض	Write-off: rejected
+سند إتلاف: مسودة جديدة	Write-off: new draft
+سند الإتلاف ليس بانتظار الاعتماد (حالته	The write-off is not waiting for approval (its status
+سند الترحيل	Posting document
+سند • يُقفل معه كل ما قبله	document(s) • everything before it is locked with it
+سندات إتلاف بانتظار اعتمادك	Write-offs waiting for your approval
+سندات إتلاف غير معتمدة بعد في هذه الفترة	Write-offs not approved yet in this period
+سندات الإتلاف	Write-offs
+سندات الإتلاف / الشطب المعتمدة لكل سبب: الكميات والكلفة	Approved write-offs per reason: quantities and cost
+سندات الإتلاف / شطب المواد	Write-off / Item Disposal Documents
+سندات الإتلاف غير مفعّلة بعد في ملف البيانات (أعد تشغيل البرنامج على حاسوب لا يفتح عليه أحد الملف ببرنامج Access	Write-offs are not enabled in the data file yet (restart the program on a computer while nobody has the file open in Access
+سندات الإتلاف غير مفعّلة في ملف البيانات	Write-offs are not enabled in the data file
+سندات الإتلاف غير مفعّلة في ملف البيانات بعد	Write-offs are not enabled in the data file yet
+سيتم قفل كل السندات حتى نهاية شهر	All documents will be locked up to the end of
+شباط	February
+شهر	month
+ضمن سنة مقفلة مسبقا (إقفال السنة حتى	within a year already closed (year closing up to
+عدد سندات الإتلاف	Number of write-offs
+عرض السجل	Show Log
+عملية	action(s)
+عند قفل الفترة حتى نهاية شهر	When the period is locked up to the end of
+فتح القفل	Unlock
+فتح القفل يحتاج نفس الصلاحية، وكل قفل أو فتح يُسجَّل في سجل التدقيق	Unlocking needs the same permission, and every lock or unlock is recorded in the audit trail
+فتح القفل يسمح بتعديل السندات حتى	Unlocking allows editing documents up to
+فتح قفل	Unlock
+فتح قفل الفترات	Unlock Periods
+فقط، ضيّق البحث	only; narrow the search
+فهذا يفتح الأشهر بعد	this unlocks the months after
+في شهر	In
+قائم	Open
+قائمة سندات الإتلاف	Write-offs List
+قفل السندات حتى نهاية شهر	Lock documents up to the end of
+قفل الفترات	Period Lock
+قفل الفترات الشهرية	Monthly Period Lock
+قفل الفترات حتى	Periods locked up to
+قفل الفترات وإقفال السنة	Period lock and year closing
+قفل الفترات وفتحها يحتاج صلاحية	Locking and unlocking periods needs the permission
+قفل حتى نهاية الشهر	Lock up to the End of the Month
+قفل وفتح الفترات الشهرية	Lock and unlock monthly periods
+كان القفل حتى نهاية شهر	The lock was up to the end of
+كانون الأول	December
+كانون الثاني	January
+كل السندات	All documents
+كلفة الوحدة	Unit cost
+لأنه لم يبدأ بعد	because it has not started yet
+لا تدخل في التقرير قبل اعتمادها	are not in the report until approved
+لا توجد سندات إتلاف معتمدة في هذه الفترة	No approved write-offs in this period
+لا يمكن أن يكون تاريخ سند الإتلاف بعد اليوم	A write-off cannot be dated after today
+لا يمكن إضافة أو تعديل أو حذف أي سند بتاريخ في ذلك الشهر أو قبله (مثل السنة المقفلة	No document dated in that month or before can be added, edited or deleted (like the closed year
+لا يمكن إلغاء سند إتلاف حالته	Cannot cancel a write-off with status
+لا يمكن اعتماد أو رفض سند إتلاف أعددته بنفسك (فصل المهام	You cannot approve or reject a write-off you prepared yourself (separation of duties
+لا يمكن تعديل سند إتلاف حالته	Cannot edit a write-off with status
+لا يمكن شطب كمية أكبر من رصيد المخزن	Cannot write off more than the store balance
+لا يمكن قفل شهر	Cannot lock month
+لا يوجد قفل شهري	No monthly lock
+لن يمكن إضافة أو تعديل أو حذف سند بتاريخ حتى هذا اليوم	No document dated up to this day can be added, edited or deleted
+ليس لديك صلاحية لإعداد سندات الإتلاف (تحتاج صلاحية «إضافة سند إخراج» أو	You do not have the permission to prepare write-offs (you need the permission "Add issue" or
+مادة - القيمة التقديرية	Item - Estimated value
+مادة - الكلفة	Item - Cost
+مادة محذوفة	Item removed
+مادة مضافة	Item added
+متابعة	Continue
+مجموع الكلفة	Total cost
+مسبقا	already
+معتمد ومُرحّل	Approved and posted
+مفقود	Lost
+مقفل	Locked
+مقفل.\nلا يمكن إضافة أو تعديل أو حذف سند بتاريخ	is locked.\nNo document can be added, edited or deleted dated
+مقفلة (سنة	closed (year
+ملاحظات / وصف الحالة	Notes / Description of the condition
+من عدّل أو حذف السندات والمواد ومراكز الكلفة، مع القيم قبل وبعد التعديل	Who changed or deleted documents, items and cost centres, with the values before and after the change
+من عدّل أو حذف ماذا ومتى: القيم قبل وبعد\nالتعديل في السندات والمواد ومراكز الكلفة	Who changed or deleted what and when: values before and after\nthe change in documents, items and cost centres
+منتهي الصلاحية	Expired
+نعم	Yes
+نيسان	April
+هذا السند ترحيل لسند إتلاف / شطب مواد معتمد ولا يمكن تعديله أو حذفه	This document posts an approved write-off / item disposal and cannot be edited or deleted
+هذا السند غير موجود	This document does not exist
+هذا السند غير موجود (ربما حُذف من حاسوب آخر	This document does not exist (it may have been deleted on another computer
+هذا السند للعرض والطباعة فقط	This document is for viewing and printing only
+وإقفال السنة باق حتى	and year closing remains up to
+والرصيد	and the balance
+وكان القفل حتى	and the lock was up to
+يرسل سند الإتلاف من أعدّه	The write-off is sent by the person who prepared it
+يلغي السند من أعدّه أو من لديه صلاحية	The document is cancelled by the person who prepared it or someone with the permission
+يمنع إضافة أو تعديل أو حذف السندات حتى نهاية\nالشهر المختار. الفتح يحتاج نفس الصلاحية ويُسجَّل	Prevents adding, editing or deleting documents up to the end of\nthe chosen month. Unlocking needs the same permission and is logged
+يوجد تغييرات غير محفوظة في سند الإتلاف.\nهل تريد حفظها	There are unsaved changes in the write-off.\nDo you want to save them
+يُرسل للاعتماد سند في حالة «مسودة» فقط (حالته الآن	Only a write-off in "Draft" status can be sent for approval (its status now
+يُعرض أحدث	Showing the latest
+اختر كلمة مرور مختلفة عن الحالية	Choose a password different from the current one
+معروفة للجميع، لذلك يجب تغييرها الآن	is known to everyone, so it must be changed now
+هذه أول مرة تدخل فيها إلى البيانات الجديدة.\nكلمة المرور الحالية	This is your first sign-in to the new data.\nThe current password
+هل تريد فتح صفحة التبليغ على GitHub أيضا؟\n\n⚠ صفحة GitHub عامة يراها الجميع: لا تكتب فيها أسماء أو أرقاما أو بيانات خاصة بالشركة،\nولا تلصق صورة شاشة فيها بيانات. تُرفق فيها فقط نسخة البرنامج وويندوز ونوع الاتصال.\n(تحتاج حسابا على GitHub. صورة الشاشة ستُنسخ لتلصقها بـ Ctrl+V إن أردت	Open the report page on GitHub as well?\n\n⚠ The GitHub page is PUBLIC: do not write names, numbers or company data there,\nand do not paste a screenshot that shows data. Only the program version, Windows version and connection type are attached.\n(You need a GitHub account. The screenshot is copied so you can paste it with Ctrl+V if you want
+# stock valuation
+auto_seq\tالنوع\tرقم السند\tالتاريخ\tالرمز\tالمادة\tالكمية\tالكلفة الجديدة	auto_seq\tType\tDocument No.\tDate\tCode\tItem\tQuantity\tNew cost
+إدخال بدون سعر	receipt(s) without a price
+الكمية والقيمة في نهاية يوم	Quantity and value at the end of
+المواد باللون الرمادي ليس لها أي سعر في سندات الإدخال فقيمتها صفر؛ يمكن إدخال السعر في سند الإدخال (الوضع المتقدم	Items in grey have no price in any receipt, so their value is zero; the price can be entered in the receipt (advanced mode
+المواد ذات الكلفة المعروفة فقط	Items with a known cost only
+تعبئة الكلفة	Fill Costs
+تعبئة كلفة الدفعات بدون كلفة	Fill the cost of lots without a cost
+تعذر تعبئة كلفة الدفعات التي بدون كلفة (سيُعاد المحاولة عند التشغيل القادم	Could not fill the cost of lots without a cost (will retry at the next start
+تقييم المخزون بتاريخ	Stock valuation as of
+سطر لمواد بلا أي كلفة معروفة	line(s) of items without any known cost
+طريقة التقييم: حسب المعيار المحاسبي الدولي IAS 2 بطريقة الوارد أولا صادر أولا (FIFO): الكمية الموجودة تُقيَّم بكلفة أحدث الإدخالات حتى التاريخ	Valuation method: IAS 2, first in, first out (FIFO): the quantity on hand is valued at the cost of the latest receipts up to the date
+طريقة الكلفة: الوارد أولا صادر أولا (FIFO	Cost method: first in, first out (FIFO
+قبل تعبئة كلفة الدفعات	before filling the lot costs
+قيمة المخزون	Stock value
+قيمة المخزون (FIFO	Stock value (FIFO
+كمية وقيمة كل مادة بتاريخ معين بطريقة الوارد أولا صادر أولا (FIFO) حسب المعيار IAS 2	Quantity and value of each item at a given date, first in, first out (FIFO), as in IAS 2
+متوسط كلفة الوحدة	Average unit cost
+مردود الإخراج يدخل بالكلفة التي أُخرج بها، والإدخال بدون سعر يأخذ آخر كلفة معروفة للمادة	An issue return comes in at the cost it was issued at; a receipt without a price takes the item's last known cost
+من سعر السطر	from the line price
+مواد كلفتها غير معروفة كليا أو جزئيا	Items whose cost is wholly or partly unknown
+والرصيد الافتتاحي بأقدم كلفة معروفة للمادة. قيمة المادة في مخزن = كميتها فيه × متوسط كلفة الوحدة للمادة	and the opening balance at the item's oldest known cost. Value of an item in a store = its quantity there × the item's average unit cost
+وبقي	and there remain
+انسخ مجلد docs من ملف الإصدار (zip) إلى مجلد البرنامج	Copy the docs folder from the release file (zip) into the program folder
+ترحيل سند إتلاف	Posted write-off
+تسوية جرد فعلي	Stock count adjustment
+تعذر فتح دليل الاستخدام	Could not open the user manual
+دليل	Manual
+دليل الاستخدام	User manual
+دليل الاستخدام غير موجود بجانب البرنامج	The user manual is not next to the program
+شرح مصوّر خطوة بخطوة لكل شاشات البرنامج،\nيُفتح في المتصفح ويمكن طباعته.\nاختصار: F1 من أي شاشة	An illustrated step-by-step guide to every screen,\nopens in the browser and can be printed.\nShortcut: F1 from any screen
+فتح الدليل	Open the manual
+لا يمكن تغيير الرصيد الافتتاحي بعد قفل الفترة حتى	The opening balance cannot be changed after the period is locked up to
+يغيّر أرصدة الفترة المقفلة	it changes the balances of the locked period
