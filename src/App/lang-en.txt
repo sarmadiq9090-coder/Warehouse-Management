@@ -1713,3 +1713,13 @@ SQL Server يحتاج ويندوز 64 بت	SQL Server needs 64-bit Windows
 جاري حفظ نسخة من بيانات السيرفر الحالية	Backing up the server data that is there now
 الاسم طويل (50 حرفا كحد أقصى	The name is too long (50 characters at most
 السعر لا يمكن أن يكون سالبا	The price cannot be negative
+وُجد سيرفر رئيسي في الشبكة	A main server was found on the network
+تم التنصيب	Installed
+كلمة سر السيرفر (للحواسيب الأخرى	Server password (for the other computers
+نسخ	Copy
+صوّرها أو اكتبها الآن: لا تظهر مرة أخرى	Photograph it or write it down now: it is not shown again
+الدخول أول مرة: المستخدم 1 وكلمة المرور 1	First sign-in: user 1, password 1
+أعد تشغيل هذا الحاسوب	Restart this computer
+دخول البرنامج	Open the Program
+هل تريد ربط هذا الحاسوب به؟\n(«لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا	Connect this computer to it?\n("No": this computer becomes a new main server
+بيانات المخازن	Stores Data

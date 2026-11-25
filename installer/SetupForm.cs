@@ -34,7 +34,7 @@ namespace Stores.Installer
         internal InstallCopy Sel;           // the copy that will be replaced, null = a new folder
         internal string Dir;                // target folder
         string oldDir;                      // another folder: its settings and shortcuts are taken over
-        bool mixedElevated;
+        bool mixedElevated, auto;
         string warn = "";
         ProgressBar bar; Label barText; Button skip;
 
@@ -68,6 +68,10 @@ namespace Stores.Installer
                 else Dir = en.Env.DefaultDir;
                 Show(MainPage);
             }
+            // the one-file setup: run it and everything is done (files, then the program sets up the server by itself)
+            long ps, pn;
+            auto = !uninstall && PackageInside.Find(en.SetupExe, out ps, out pn);
+            if (auto && (Sel == null || InstallFind.Compare(Sel.Version, en.Version) <= 0)) Show(AgreePage);
             FormClosing += delegate(object s, FormClosingEventArgs e)
             {
                 if (busy) { e.Cancel = true; return; }
@@ -196,6 +200,29 @@ namespace Stores.Installer
             Put(head, lang, W - M - 80, 14, 80, 26);
         }
 
+        // ------------------------------------------------------------ one-file setup: Microsoft's terms (one click, then everything runs)
+        internal void AgreePage()
+        {
+            int y = Para(Tx.S("تنصيب البرنامج والسيرفر", "Install the program and the server"), 22, 15f, true, Color.FromArgb(17, 24, 39)) + 8;
+            y = Para(Tx.S("يحتوي هذا الملف Microsoft SQL Server 2022 Express. بالضغط على «أوافق» تقبل شروط ترخيص مايكروسوفت له.",
+                          "This file contains Microsoft SQL Server 2022 Express. By pressing \"I agree\" you accept Microsoft's license terms for it."), y, 11f, false, Color.FromArgb(31, 41, 55)) + 4;
+            Link(Tx.S("عرض شروط الترخيص", "Show the license terms"), y, delegate
+            {
+                try
+                {
+                    string f = Path.Combine(Path.GetTempPath(), "SQL Server 2022 Express license terms.pdf");
+                    using (Stream s = typeof(SetupForm).Assembly.GetManifestResourceStream("sql-terms.pdf")) using (FileStream o = File.Create(f)) s.CopyTo(o);
+                    Process.Start(f);
+                }
+                catch { try { Process.Start("https://www.microsoft.com/useterms"); } catch { } }
+            });
+            y += 42;
+            AcceptButton = Big(Tx.S("أوافق، ابدأ التنصيب", "I agree, install"), y, Go);
+            Lbl("© 2026 sarmadiq9090-coder", BodyH - 62, 20, 8.5f, false, Muted).RightToLeft = RightToLeft.No;
+            Lbl(Tx.S("علامتا Microsoft وSQL Server لشركة مايكروسوفت، وهي لا ترعى هذا البرنامج.", "Microsoft and SQL Server are trademarks of Microsoft, which does not endorse this program."), BodyH - 40, 22, 8.5f, false, Muted);
+            FootBtn(Tx.S("إلغاء", "Cancel"), 0, false, Close);
+        }
+
         // ------------------------------------------------------------ main page
         internal void MainPage()
         {
@@ -260,6 +287,8 @@ namespace Stores.Installer
 
         int ComponentsNote(int y)
         {
+            long inside = PackageInside.Missing(en.SetupExe, Dir) / (1024 * 1024);
+            if (inside > 0) return Para(Tx.S("● يحتوي هذا الملف حزمة السيرفر أيضا (" + inside + " ميغابايت): تنصيب السيرفر بدون إنترنت.", "● This file also holds the server package (" + inside + " MB): the server installs without internet."), y, 10f, false, Muted);
             List<string> c = InstallReplace.MissingComponents(en.SetupDir, Dir);
             if (c.Count == 0) return y;
             long mb = InstallReplace.ComponentsSize(en.SetupDir, c) / (1024 * 1024);
@@ -488,6 +517,15 @@ namespace Stores.Installer
                 if (e.Error != null) { code = SetupCode.Failed; en.Error = e.Error.Message; }
                 Setup.L("install " + en.Version + " → " + target + ", code " + code + (en.Error.Length > 0 ? ", " + en.Error : ""));
                 Code = code;
+                if (code == SetupCode.Ok && auto && warn.Length == 0 && !skipComponents)
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(en.Env.ExePath(Dir), "/server /lang=" + (Tx.En ? "en" : "ar")) { WorkingDirectory = Dir, UseShellExecute = false });
+                        Close(); return;
+                    }
+                    catch (Exception ex) { warn = ex.Message; }
+                }
                 if (code == SetupCode.Ok) Show(DonePage);
                 else if (code == SetupCode.ProgramOpen && InstallFind.RunningIn(en.Env, target).Count > 0) Show(OpenPage);
                 else if (code == SetupCode.NotWritable && !elevated) Show(NotWritablePage);

@@ -59,10 +59,15 @@
 
 ## إعداد الخادم (عدة حواسيب) في 3 خطوات
 
+**الأسهل:** نزّل `Inventory-Management-Full-Setup-<الإصدار>.exe` وشغّله على الحاسوب الذي سيكون الخادم: ينصّب البرنامج وSQL Server
+Express (بعد موافقتك على شروط مايكروسوفت) ويجهّز الخادم وحده بدون إنترنت، ثم يعرض كلمة سر الخادم.
+
+أو يدويا:
+
 1. **على الحاسوب الذي سيكون الخادم:** في شاشة الدخول افتح «إعدادات الاتصال والسيرفر» واضغط «السيرفر الرئيسي»،
    واختر كلمة سر للسيرفر، ثم وافق على نافذة صلاحيات ويندوز. التنصيب **بدون إنترنت** من الملف
-   `مكونات\SQLEXPR_x64_ENU.exe` بجانب البرنامج (حزمة SQL Server Express المجانية من مايكروسوفت، 266 ميغابايت، غير موجودة
-   في الإصدار المنشور). إذا لم يكن موجودا يسألك البرنامج: اختياره من فلاش أو الشبكة، أو تنزيله من موقع مايكروسوفت.
+   `مكونات\SQLEXPR_x64_ENU.exe` بجانب البرنامج (حزمة SQL Server Express المجانية من مايكروسوفت، 266 ميغابايت، موجودة
+   داخل ملف Full-Setup فقط). إذا لم يكن موجودا يسألك البرنامج: اختياره من فلاش أو الشبكة، أو تنزيله من موقع مايكروسوفت.
 2. **انتظر** حتى ينتهي التنصيب ونقل البيانات (عادة 4–10 دقائق، مع شرح التقدم). احتفظ باسم الحاسوب الذي يظهر في النهاية،
    وأوقف وضع السكون في هذا الحاسوب.
 3. **على كل حاسوب آخر:** «إعدادات الاتصال» ← «سيرفر ثانوي»؛ يجد البرنامج الخادم في الشبكة ويتصل به تلقائيا.
@@ -115,8 +120,9 @@ program keeps working — or in a free SQL Server Express on the office network 
   *Run anyway*; check the `.sha256` next to it. Without installing: `EngStores-<version>.zip`, extract and run the .exe.
 - **User manual (Arabic, illustrated):** [docs/manual/index.html](docs/manual/index.html), shipped in the zip and opened
   from the program with F1. Its screenshots come from fake demo data via `tests\bin\ManualShots.exe`.
-- **Server setup without internet:** «السيرفر الرئيسي» installs SQL Server Express from `مكونات\SQLEXPR_x64_ENU.exe` (not in the release;
-  `scripts\make-offline.ps1` builds the complete offline folder). Downloading it is offered, never done on its own.
+- **Server setup without internet:** «السيرفر الرئيسي» installs SQL Server Express from `مكونات\SQLEXPR_x64_ENU.exe` (inside the release's
+  Full-Setup file, unmodified and under Microsoft's terms in `installer/sql-express-terms.pdf`, which the user accepts; Microsoft and
+  SQL Server are trademarks of Microsoft, which does not endorse this program; `scripts\make-offline.ps1` builds the complete offline folder). Downloading it is offered, never done on its own.
 - **Build:** `build.bat` (uses the C# compiler that ships with Windows, no SDK/NuGet). Tests: `tests\build-tests.bat`.
 - **Tests:** `tests\RunAll.ps1` seeds fake demo data into `tests\demo\empty-template.mdb` (the real schema, no rows)
   and runs the core and year-closing tests; `-Data <file>` runs them on a copy of real data. CI runs on every push / PR.

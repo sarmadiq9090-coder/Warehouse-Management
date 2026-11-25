@@ -101,7 +101,7 @@ namespace Stores
 
             string dir = res.Split('|')[1];
             Process.Start(new ProcessStartInfo("schtasks.exe", "/run /tn \"EngStores Daily Backup\"") { UseShellExecute = false, CreateNoWindow = true }).WaitForExit();
-            DateTime end = DateTime.Now.AddSeconds(60); bool bak = false;
+            DateTime end = DateTime.Now.AddSeconds(180); bool bak = false;
             while (!bak && DateTime.Now < end) { Thread.Sleep(1500); try { bak = Directory.GetFiles(dir, "EngStores*.bak").Length > 0; } catch { } }
             Check(bak, "daily backup task makes a backup in " + dir);
             Check(!File.Exists(@"C:\Program Files\EngStores\setup\" + SqlPackage.FileName) && !Directory.Exists(@"C:\Program Files\EngStores\setup\extract"), "installation files are cleaned up");

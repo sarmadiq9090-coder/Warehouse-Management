@@ -3,7 +3,9 @@
 #   2. build + tests on demo data
 #   3. EngStores-<version>.zip (program .exe + the two guide files + docs/manual) and EngStores-<version>.zip.sha256
 #   4. Inventory-Management-Setup-<version>.exe (installer/, the same files inside) and its .sha256
-#   5. GitHub release with the four files; the program's updater (src/Update/Updater.cs) takes only the zip and its .sha256.
+#   5. Inventory-Management-Full-Setup-<version>.exe and its .sha256: the same setup with Microsoft's SQL Server Express
+#      package appended (scripts/make-merged.ps1; allowed by Microsoft's terms, installer/sql-express-terms.pdf)
+#   6. GitHub release with the six files; the program's updater (src/Update/Updater.cs) takes only the zip and its .sha256.
 # Release steps for the maintainer: bump Program.Version, commit, then: git tag v1.2.0 && git push origin v1.2.0
 name: Release
 
@@ -57,11 +59,18 @@ jobs:
         shell: cmd
         run: tests\bin\InstallerTests.exe
 
+      - name: One-file setup with SQL Server Express (downloaded from Microsoft, pinned SHA-256)
+        id: full
+        shell: powershell
+        run: |
+          & .\scripts\make-merged.ps1 -Package "$env:RUNNER_TEMP\SQLEXPR_x64_ENU.exe" -Download -Asset
+          exit $LASTEXITCODE
+
       - name: Create the GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$env:GITHUB_REF_NAME" "${{ steps.setup.outputs.setup }}" "${{ steps.setup.outputs.setupsha }}" `
-            "${{ steps.pkg.outputs.zip }}" "${{ steps.pkg.outputs.sha }}" `
+            "${{ steps.pkg.outputs.zip }}" "${{ steps.pkg.outputs.sha }}" "${{ steps.full.outputs.full }}" "${{ steps.full.outputs.fullsha }}" `
             --title "$env:GITHUB_REF_NAME" --generate-notes

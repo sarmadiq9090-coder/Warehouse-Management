@@ -7,7 +7,7 @@
   Maps the offline folder read-only (like a flash drive), switches the network off, copies the folder inside the sandbox,
   and runs tests\bin\ServerInstallCheck.exe there. Result: <Work>\out\result.txt (and result.txt.done at the end).
 #>
-param([Parameter(Mandatory = $true)][string]$Offline, [string]$Work = "", [switch]$NoStart)
+param([Parameter(Mandatory = $true)][string]$Offline, [string]$Work = "", [string]$Merged = "", [switch]$Auto, [switch]$NoStart)
 $ErrorActionPreference = "Stop"
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if ($Work -eq "") { $Work = Join-Path $env:TEMP "engstores-sandbox" }
@@ -23,6 +23,7 @@ Copy-Item -LiteralPath (Join-Path $bin "ServerInstallCheck.exe") $in
 $p = Start-Process (Join-Path $bin "DemoData.exe") -ArgumentList ('"' + (Join-Path $root "tests\demo\empty-template.mdb") + '"'), ('"' + (Join-Path $in "demo.mdb") + '"') -NoNewWindow -Wait -PassThru
 if (-not (Test-Path -LiteralPath (Join-Path $in "demo.mdb"))) { Write-Host "no demo data"; exit 1 }
 
+if ($Merged -ne "") { Copy-Item -LiteralPath $Merged (Join-Path $in "full.exe") }      # the one-file setup (scripts\make-merged.ps1)
 # inside the sandbox: the flash drive's folder copied to the disk, then the check next to «مكونات»
 [IO.File]::WriteAllText((Join-Path $in "run.ps1"), @'
 $ErrorActionPreference = 'Stop'
@@ -31,7 +32,11 @@ $ErrorActionPreference = 'Stop'
 try { & reg.exe add HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy /v VerifiedAndReputablePolicyState /t REG_DWORD /d 0 /f > C:\out\sac.txt 2>&1 } catch { }
 try { & cmd.exe /c 'CiTool.exe --refresh --json < nul >> C:\out\sac.txt 2>&1' } catch { }
 try {
-    Copy-Item -LiteralPath 'C:\flash' -Destination 'C:\Stores' -Recurse
+    if (Test-Path 'C:\in\full.exe') {
+        Copy-Item 'C:\in\full.exe' 'C:\Users\Public\full.exe'
+        $q = Start-Process 'C:\Users\Public\full.exe' -ArgumentList '/S','/NODESKTOP','/ACCEPTSQLTERMS','/D=C:\Stores' -Wait -PassThru; "merged setup: exit $($q.ExitCode)" | Set-Content 'C:\out\merged.txt'
+        Get-ChildItem C:\Stores -Recurse -File | Where-Object { $_.Length -gt 1MB } | Select-Object FullName, Length | Out-String | Add-Content 'C:\out\merged.txt'
+    } else { Copy-Item -LiteralPath 'C:\flash' -Destination 'C:\Stores' -Recurse }
     Copy-Item -LiteralPath 'C:\in\ServerInstallCheck.exe' 'C:\Stores'
     Copy-Item -LiteralPath 'C:\in\demo.mdb' 'C:\Stores\demo.mdb'
     & 'C:\Stores\ServerInstallCheck.exe' 'C:\Stores\demo.mdb' 'C:\out\result.txt' *> 'C:\out\console.txt'
@@ -42,6 +47,11 @@ Copy-Item 'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\Log\ER
 'finished' | Set-Content 'C:\out\finished.txt'
 '@, (New-Object Text.UTF8Encoding $true))
 
+if ($Auto) {    # a user runs the one file and does nothing else
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot "auto.ps1") $in
+    $run = Join-Path $in "run.ps1"; $lines = [IO.File]::ReadAllLines($run); $keep = $lines | Where-Object { $_ -match "reg\.exe add|CiTool|started" }
+    [IO.File]::WriteAllText($run, (($keep -join "`r`n") + "`r`n& 'C:\in\auto.ps1'`r`n"), (New-Object Text.UTF8Encoding $true))
+}
 $x = { param($s) [Security.SecurityElement]::Escape($s) }
 $wsb = Join-Path $Work "offline-server.wsb"
 [IO.File]::WriteAllText($wsb, @"

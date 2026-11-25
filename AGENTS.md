@@ -53,7 +53,11 @@ tools/         MakeIcon.cs (draws src/app.ico), HtmlShot.cs (renders report HTML
 ## Installing the server without internet
 
 - Microsoft's package `مكونات\SQLEXPR_x64_ENU.exe` (266 MB, size and SHA-256 pinned in `src/Server/SqlPackage.cs` **and**
-  `setup-server.ps1`: change both, OfflineSetupTests compares them) is never committed and never in the public release.
+  `setup-server.ps1`: change both, OfflineSetupTests compares them) is never committed. In the release it exists only inside the one-file setup
+  (`scripts\make-merged.ps1`, `PackageInside`), unmodified, behind `SetupForm.AgreePage`: Microsoft's terms
+  (`installer\sql-express-terms.pdf`, 2.b) require that the end user accepts them. Keep that page and the notices.
+- One-file setup: files → program `/server` → `ServerSetup.RunAuto` (no questions; another server in the network is offered;
+  generated server password in ServerReadyDialog). Checked by `tests\sandbox\make-sandbox.ps1 -Merged <file> -Auto`.
 - `scripts\make-offline.ps1 [-Out <folder>] [-Package <file>]` (after build.bat) builds «نسخة كاملة بدون إنترنت»: exe, the two
   guides, docs\manual and مكونات. It refuses a wrong package and any folder that holds other files (settings.ini, data…).
 - `ServerSetup.RunMain`: SQLEXPRESS installed → nothing needed; otherwise `SqlPackage.Find` → `Check` (size, SHA-256) before

@@ -79,9 +79,54 @@ namespace Stores
             try { return SetUpMain(owner); } finally { running = false; }
         }
 
-        static bool SetUpMain(IWin32Window owner)
+        /// <summary>One-file setup: everything without questions. Another main server in the network: offered instead. The
+        /// data file in use (or a new empty one) goes onto the server; the server password is made here and shown at the end.</summary>
+        public static void RunAuto()
         {
-            string pw = ServerPasswordDialog.AskNew(owner);
+            if (running) return;
+            if (Settings.Mode == "sql" && Program.TryConnectSaved() == null) return;      // already works
+            if (IsSqlExpressInstalled()) { RunMain(null); return; }      // set up before: its password is asked, never changed unseen
+            List<string> hosts;
+            using (WaitForm wf = new WaitForm("جاري البحث عن السيرفر الرئيسي في الشبكة", "يرجى الانتظار… المدة المتوقعة أقل من نصف دقيقة.", null))
+            {
+                wf.Show(); wf.Step("البحث في الشبكة…", 20, 5);
+                try { hosts = FindHosts(delegate(string s) { wf.Detail(s); }); } catch { hosts = new List<string>(); }
+                wf.Close();
+            }
+            hosts.RemoveAll(h => h.StartsWith(Environment.MachineName + ",", StringComparison.OrdinalIgnoreCase));
+            if (hosts.Count > 0 && UI.Confirm("وُجد سيرفر رئيسي في الشبكة: " + string.Join("، ", hosts.ConvertAll(h => h.Replace(",1433", "")).ToArray()) +
+                                              "\n\nهل تريد ربط هذا الحاسوب به؟\n(«لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا)"))
+            { if (RunSecondary(null)) return; }
+            bool isNew = false;
+            if (string.IsNullOrEmpty(Settings.DataPath) || !File.Exists(Settings.DataPath))
+            {
+                string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), path = Path.Combine(dir, "بيانات المخازن.AMR");
+                for (int i = 2; File.Exists(path); i++) path = Path.Combine(dir, "بيانات المخازن " + i + ".AMR");
+                string err = NewDatabase.Create(path);
+                if (err != null) { UI.Warn("تعذر إنشاء البيانات:\n" + err); return; }
+                Settings.Mode = "access"; Settings.DataPath = path; Settings.Save();
+                isNew = true;
+            }
+            running = true;
+            try { SetUpMain(null, NewPassword(), isNew); } finally { running = false; }
+        }
+
+        /// <summary>«K7MP-4XQ9-2TRW»: easy to read and to type, about 58 random bits.</summary>
+        internal static string NewPassword()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";      // 32 without the ones that look alike
+            byte[] b = new byte[12];
+            using (RandomNumberGenerator r = RandomNumberGenerator.Create()) r.GetBytes(b);
+            StringBuilder s = new StringBuilder();
+            for (int i = 0; i < b.Length; i++) { if (i > 0 && i % 4 == 0) s.Append('-'); s.Append(chars[b[i] & 31]); }
+            return s.ToString();
+        }
+
+        static bool SetUpMain(IWin32Window owner) { return SetUpMain(owner, null, false); }
+
+        static bool SetUpMain(IWin32Window owner, string autoPassword, bool newData)
+        {
+            string pw = autoPassword ?? ServerPasswordDialog.AskNew(owner);
             if (pw == null) return false;
             UI.WaitCursor(true);
             try { UsePassword(pw); } finally { UI.WaitCursor(false); }
@@ -149,7 +194,7 @@ namespace Stores
                 // 3. move the data (unless the server already has data)
                 bool hasData = Db.TableExists("item") && Db.I(Db.Scalar("SELECT COUNT(*) FROM item")) > 0;
                 bool import = !hasData;
-                if (hasData)
+                if (hasData && autoPassword == null)
                     import = UI.Confirm("السيرفر فيه بيانات مسبقا.\nهل تريد استبدالها بالملف المختار؟\n\n(اختر «لا» للإبقاء على بيانات السيرفر الحالية)");
                 List<string> report = null;
                 if (import && hasData)
@@ -171,6 +216,11 @@ namespace Stores
                 if (media != null && string.Equals(Path.GetDirectoryName(media), SqlPackage.UserDir, StringComparison.OrdinalIgnoreCase))
                     try { File.Delete(media); } catch { }
 
+                if (autoPassword != null)
+                {
+                    using (ServerReadyDialog d = new ServerReadyDialog(autoPassword, newData, reboot)) d.ShowDialog(owner);
+                    return true;
+                }
                 UI.Info("✓ هذا الحاسوب أصبح السيرفر الرئيسي.\n\n" +
                         (reboot ? "⚠ أعد تشغيل هذا الحاسوب الآن (طلبه تنصيب SQL Server)، ثم افتح البرنامج.\n\n" : "") +
                         "اسمه على الشبكة: " + Environment.MachineName + "\n" + LocalIPs() + "\n\n" +

@@ -35,6 +35,7 @@ $info = @"
 using System.Reflection;
 [assembly: AssemblyTitle("Inventory Management Setup")]
 [assembly: AssemblyProduct("Inventory Management Software")]
+[assembly: AssemblyCopyright("\u00A9 2026 sarmadiq9090-coder")]
 [assembly: AssemblyVersion("$four")]
 [assembly: AssemblyFileVersion("$four")]
 [assembly: AssemblyInformationalVersion("$version")]
@@ -45,7 +46,7 @@ using System.Reflection;
 $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework\v4.0.30319\csc.exe"
 $shared = "InstallEnv", "InstallFind", "InstallReplace", "ProgramExit", "ShellLink" | ForEach-Object { Join-Path $root "src\Update\$_.cs" }
 $cscArgs = @("/nologo", "/target:winexe", "/platform:x86", "/optimize+", "/codepage:65001", "/nowarn:0649", "/out:$Out",
-    "/win32icon:$(Join-Path $root 'src\app.ico')", "/win32manifest:$(Join-Path $PSScriptRoot 'setup.manifest')", "/resource:$zip,payload.zip", "/resource:$(Join-Path $root 'src\app.ico'),app.ico",
+    "/win32icon:$(Join-Path $root 'src\app.ico')", "/win32manifest:$(Join-Path $PSScriptRoot 'setup.manifest')", "/resource:$zip,payload.zip", "/resource:$(Join-Path $root 'src\app.ico'),app.ico", "/resource:$(Join-Path $PSScriptRoot 'sql-express-terms.pdf'),sql-terms.pdf",
     "/r:System.dll", "/r:System.Core.dll", "/r:System.Drawing.dll", "/r:System.Windows.Forms.dll",
     "/r:System.IO.Compression.dll", "/r:System.IO.Compression.FileSystem.dll",
     (Join-Path $PSScriptRoot "Setup.cs"), (Join-Path $PSScriptRoot "SetupEngine.cs"), (Join-Path $PSScriptRoot "SetupForm.cs"), (Join-Path $obj "SetupInfo.cs")) + $shared

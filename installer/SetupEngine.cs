@@ -31,6 +31,82 @@ namespace Stores.Installer
         public const int NotInstalled = 10;
     }
 
+    /// <summary>Merged setup (scripts\make-merged.ps1): Microsoft's SQL Server package is appended to the .exe itself, so one
+    /// file installs everything without internet: [setup.exe][package][length, 8 bytes][mark, 16 bytes]. Microsoft's terms for
+    /// SQL Server 2022 Express (installer\sql-express-terms.pdf, 2.b «Distributable Code») allow it inside a setup program,
+    /// unmodified, when the end user accepts them: SetupForm.AgreePage.</summary>
+    static class PackageInside
+    {
+        public const string Mark = "EngStoresPackage";
+
+        /// <summary>Where the package lies in this file; false: an ordinary setup.</summary>
+        public static bool Find(string exe, out long start, out long length)
+        {
+            start = length = 0;
+            try
+            {
+                using (FileStream f = new FileStream(exe, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    if (f.Length < 24) return false;
+                    byte[] b = new byte[24]; f.Position = f.Length - 24;
+                    if (f.Read(b, 0, 24) != 24 || Encoding.ASCII.GetString(b, 8, 16) != Mark) return false;
+                    length = BitConverter.ToInt64(b, 0); start = f.Length - 24 - length;
+                    return length > 0 && start > 0;
+                }
+            }
+            catch { return false; }
+        }
+
+        static string Target(string target) { return Path.Combine(target, InstallEnv.ComponentsDir, InstallEnv.ComponentsMain); }
+
+        /// <summary>Bytes still to be written into the program folder (0: no package inside, or it is there already).</summary>
+        public static long Missing(string exe, string target)
+        {
+            long s, n;
+            if (string.IsNullOrEmpty(target) || !Find(exe, out s, out n)) return 0;
+            try { FileInfo f = new FileInfo(Target(target)); return f.Exists && f.Length == n ? 0 : n; } catch { return n; }
+        }
+
+        /// <summary>false: stopped by the user.</summary>
+        public static bool Extract(string exe, string target, Func<long, long, bool> progress)
+        {
+            long start, length; if (!Find(exe, out start, out length)) return true;
+            string dst = Target(target), part = dst + ".part"; bool stop = false;
+            Directory.CreateDirectory(Path.GetDirectoryName(dst));
+            try
+            {
+                using (FileStream i = new FileStream(exe, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (FileStream o = File.Create(part))
+                {
+                    i.Position = start; long done = 0; byte[] buf = new byte[1 << 20];
+                    while (done < length)
+                    {
+                        int n = i.Read(buf, 0, (int)Math.Min(buf.Length, length - done)); if (n <= 0) throw new EndOfStreamException();
+                        o.Write(buf, 0, n); done += n;
+                        if (progress != null && !progress(done, length)) { stop = true; break; }
+                    }
+                }
+                if (!stop) { if (File.Exists(dst)) { File.SetAttributes(dst, FileAttributes.Normal); File.Delete(dst); } File.Move(part, dst); }
+            }
+            catch { try { File.Delete(part); } catch { } throw; }
+            if (stop) try { File.Delete(part); } catch { }
+            return !stop;
+        }
+
+        /// <summary>The setup without the package (Uninstall.exe must not be 280 MB).</summary>
+        public static void CopyWithout(string exe, string to)
+        {
+            long start, length;
+            if (!Find(exe, out start, out length)) { File.Copy(exe, to, true); return; }
+            using (FileStream i = new FileStream(exe, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (FileStream o = File.Create(to))
+            {
+                byte[] buf = new byte[1 << 20]; long left = start;
+                while (left > 0) { int n = i.Read(buf, 0, (int)Math.Min(buf.Length, left)); if (n <= 0) throw new EndOfStreamException(); o.Write(buf, 0, n); left -= n; }
+            }
+        }
+    }
+
     /// <summary>The work of the setup without any window: unpack, replace (InstallReplace), shortcuts, registry, uninstall.</summary>
     class SetupEngine
     {
@@ -69,7 +145,7 @@ namespace Stores.Installer
                 string un = Path.Combine(target, InstallEnv.UninstallExe);
                 if (!string.IsNullOrEmpty(SetupExe) && File.Exists(SetupExe) && !InstallEnv.SamePath(SetupExe, un))
                 {
-                    File.Copy(SetupExe, Path.Combine(stage, InstallEnv.UninstallExe), true);
+                    PackageInside.CopyWithout(SetupExe, Path.Combine(stage, InstallEnv.UninstallExe));
                     files.Add(InstallEnv.UninstallExe);
                 }
                 InstallReplace r = new InstallReplace(Env);
@@ -95,6 +171,12 @@ namespace Stores.Installer
         {
             try
             {
+                if (PackageInside.Missing(SetupExe, target) > 0)
+                    return PackageInside.Extract(SetupExe, target, delegate(long d, long t)
+                    {
+                        if (Progress != null) Progress(d, t, "components");
+                        return SkipComponents == null || !SkipComponents();
+                    }) ? SetupCode.Ok : SetupCode.Cancelled;
                 List<string> files = InstallReplace.MissingComponents(SetupDir, target);
                 if (files.Count == 0) return SetupCode.Ok;
                 bool all = InstallReplace.CopyComponents(SetupDir, files, target, delegate(long d, long t)

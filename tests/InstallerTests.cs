@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -397,6 +398,22 @@ namespace Stores
             e.SkipComponents = delegate { return true; };
             Check(e.CopyComponents(d) == SetupCode.Cancelled && Get(Path.Combine(d, @"مكونات\SQLEXPR_x64_ENU.exe")) == "short" && Directory.GetFiles(Path.Combine(d, "مكونات"), "*.part").Length == 0, "«مكونات»: skipping leaves no partial file");
             Directory.Delete(P("download", "مكونات"), true);
+
+            // merged setup: the package is appended to the setup itself
+            long s0, n0; byte[] exe = Encoding.ASCII.GetBytes(new string('e', 5000)), pkg = new byte[2500000]; new Random(1).NextBytes(pkg);
+            string plain = P("merged", "Plain.exe"), merged = P("merged", "Full Setup.exe"), md = P("merged", "program");
+            Directory.CreateDirectory(Path.GetDirectoryName(plain)); Directory.CreateDirectory(md);
+            File.WriteAllBytes(plain, exe);
+            File.WriteAllBytes(merged, exe.Concat(pkg).Concat(BitConverter.GetBytes((long)pkg.Length)).Concat(Encoding.ASCII.GetBytes(PackageInside.Mark)).ToArray());
+            Check(!PackageInside.Find(plain, out s0, out n0) && PackageInside.Missing(plain, md) == 0, "ordinary setup: no package inside");
+            Check(PackageInside.Find(merged, out s0, out n0) && s0 == exe.Length && n0 == pkg.Length && PackageInside.Missing(merged, md) == pkg.Length, "merged setup: package found");
+            SetupEngine m = new SetupEngine(env, "1.2.3", delegate { return null; }, merged); long done = 0; m.Progress = delegate(long a, long b, string w) { done = a; };
+            string put = Path.Combine(md, @"مكونات\SQLEXPR_x64_ENU.exe");
+            Check(m.CopyComponents(md) == SetupCode.Ok && done == pkg.Length && File.ReadAllBytes(put).SequenceEqual(pkg) && PackageInside.Missing(merged, md) == 0, "merged setup: package written, byte for byte, with progress");
+            File.WriteAllText(put, "short"); m.SkipComponents = delegate { return true; };
+            Check(m.CopyComponents(md) == SetupCode.Cancelled && Directory.GetFiles(Path.Combine(md, "مكونات"), "*.part").Length == 0, "merged setup: skipping leaves no partial file");
+            PackageInside.CopyWithout(merged, P("merged", "Uninstall.exe"));
+            Check(File.ReadAllBytes(P("merged", "Uninstall.exe")).SequenceEqual(exe), "merged setup: Uninstall.exe without the package");
         }
 
         static void NeverConfigured(InstallEnv env)

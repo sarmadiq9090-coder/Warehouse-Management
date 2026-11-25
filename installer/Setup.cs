@@ -17,6 +17,7 @@ namespace Stores.Installer
     ///                               A running new program is asked to exit (60 s); an old one is never killed.
     ///     /REINSTALL                also when the same version is installed (a newer one is never replaced silently)
     ///     /NODESKTOP                no Desktop shortcut
+    ///     /ACCEPTSQLTERMS           one-file setup: accepts Microsoft's terms for SQL Server Express (without it: the program only)
     ///   /uninstall [/S] [/D=folder] removes the program (also: the file is named Uninstall.exe)
     ///   /lang=ar | /lang=en         language (default: the Windows display language)
     ///   /D= must be the last argument; the folder may contain spaces.
@@ -44,7 +45,7 @@ namespace Stores.Installer
         /// <summary>Command line.</summary>
         internal class Args
         {
-            public bool Silent, Uninstall, Reinstall, NoDesktop, FilesOnly, Temp, Bad;
+            public bool Silent, Uninstall, Reinstall, NoDesktop, FilesOnly, Temp, Bad, AcceptTerms;
             public string Dir, Lang;
 
             public static Args Parse(string[] args)
@@ -57,6 +58,7 @@ namespace Stores.Installer
                     else if (u == "/UNINSTALL") r.Uninstall = true;
                     else if (u == "/REINSTALL") r.Reinstall = true;
                     else if (u == "/NODESKTOP") r.NoDesktop = true;
+                    else if (u == "/ACCEPTSQLTERMS") r.AcceptTerms = true;
                     else if (u == "/FILES") r.FilesOnly = true;      // internal: the elevated helper
                     else if (u == "/TEMP") r.Temp = true;            // internal: the uninstaller runs from a copy in %TEMP%
                     else if (u.StartsWith("/LANG=")) r.Lang = a.Substring(6).ToLowerInvariant();
@@ -128,7 +130,8 @@ namespace Stores.Installer
                 if (ProgramExit.Ask(pid, 60000, null) != ExitAnswer.Closed) return End(SetupCode.ProgramOpen);
             int code = en.CopyFiles(dir);
             if (code != SetupCode.Ok) { L(en.Error); return End(code); }
-            int comp = en.CopyComponents(dir);
+            long ps, pn; bool inside = PackageInside.Find(en.SetupExe, out ps, out pn);
+            int comp = inside && !a.AcceptTerms ? SetupCode.Ok : en.CopyComponents(dir);
             if (comp != SetupCode.Ok) L(en.Error);
             en.Finish(dir, null, !a.NoDesktop, Tx.En);
             return End(comp);
