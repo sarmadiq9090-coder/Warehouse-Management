@@ -63,6 +63,7 @@ namespace Stores.Installer
         public static long Missing(string exe, string target)
         {
             long s, n;
+            if (!Environment.Is64BitOperatingSystem) return 0;        // SQL Server 2022 is 64-bit only: not needed there
             if (string.IsNullOrEmpty(target) || !Find(exe, out s, out n)) return 0;
             try { FileInfo f = new FileInfo(Target(target)); return f.Exists && f.Length == n ? 0 : n; } catch { return n; }
         }

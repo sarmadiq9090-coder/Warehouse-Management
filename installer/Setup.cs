@@ -156,6 +156,7 @@ namespace Stores.Installer
             if (!a.Temp && InstallEnv.IsUnder(exe, dir))
             {
                 // the file that runs cannot remove itself: continue from a copy in %TEMP%
+                RemoveOldCopies();
                 string tmp = Path.Combine(Path.GetTempPath(), "EngStoresUninstall-" + Guid.NewGuid().ToString("N").Substring(0, 8));
                 Directory.CreateDirectory(tmp);
                 string copy = Path.Combine(tmp, "EngStoresUninstall.exe");
@@ -176,20 +177,13 @@ namespace Stores.Installer
                 End(code);
             }
             else using (SetupForm f = new SetupForm(en, dir, true)) { Application.Run(f); code = f.Code; }
-            if (a.Temp) DeleteSelfLater(exe);
             return code;
         }
 
-        static void DeleteSelfLater(string exe)
+        /// <summary>Copies that earlier uninstalls left in %TEMP% (a running file cannot remove itself).</summary>
+        static void RemoveOldCopies()
         {
-            try
-            {
-                string dir = Path.GetDirectoryName(exe);
-                if (!InstallFind.IsTemp(dir)) return;
-                ProcessStartInfo si = new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 4 >nul & del /f /q \"" + exe + "\" & rd \"" + dir + "\"");
-                si.UseShellExecute = false; si.CreateNoWindow = true; si.WorkingDirectory = Path.GetTempPath();
-                Process.Start(si);
-            }
+            try { foreach (string d in Directory.GetDirectories(Path.GetTempPath(), "EngStoresUninstall-*")) try { Directory.Delete(d, true); } catch { } }
             catch { }
         }
     }

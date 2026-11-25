@@ -1723,3 +1723,8 @@ SQL Server يحتاج ويندوز 64 بت	SQL Server needs 64-bit Windows
 دخول البرنامج	Open the Program
 هل تريد ربط هذا الحاسوب به؟\n(«لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا	Connect this computer to it?\n("No": this computer becomes a new main server
 بيانات المخازن	Stores Data
+هل لديك بيانات سابقة على هذا الحاسوب (ملف AMR)؟\n\nنعم: اختيار الملف ونقله إلى السيرفر\nلا: البدء ببيانات جديدة فارغة	Do you have earlier data on this computer (AMR file)?\n\nYes: choose the file and move it to the server\nNo: start with new, empty data
+لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا	No": this computer becomes a new main server
+لا»: يعمل هذا الحاسوب ببيانات محلية	No": this computer works with local data
+هل تريد ربط هذا الحاسوب به	Connect this computer to it
+ويندوز في هذا الحاسوب 32 بت: البرنامج جاهز ويعمل بملف بيانات على هذا الحاسوب.\nالسيرفر نفسه يحتاج حاسوبا بويندوز 64 بت، ويمكن ربط هذا الحاسوب به لاحقا من «سيرفر ثانوي	Windows on this computer is 32-bit: the program is ready and works with a data file on this computer.\nThe server itself needs a computer with 64-bit Windows; this computer can be connected to it later with "Secondary Server

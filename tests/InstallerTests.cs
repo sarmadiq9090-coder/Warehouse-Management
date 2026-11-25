@@ -59,6 +59,7 @@ namespace Stores
                 Closing(env);
                 SilentMode(env);
                 Components(env);
+                Cleaner(env);
                 NeverConfigured(env);
                 Uninstall(env);
                 if (args.Length > 0) Listener(args[0]);
@@ -379,6 +380,26 @@ namespace Stores
             Check(InstallFind.RegValue(env.UninstallKey, "DisplayVersion") == "1.3.0", "silent: «Apps» shows the new version");
             InstallFind.Register(env, env.DefaultDir, "1.3.1");
             Check(InstallFind.RegValue(env.UninstallKey, "DisplayVersion") == "1.3.1" && InstallFind.RegValue(env.RegKey, "Version") == "1.3.1", "the program (after an in-app update) refreshes the version");
+        }
+
+        /// <summary>The cleaner: every copy under a folder is found and removed; data, backups and checkouts stay.</summary>
+        static void Cleaner(InstallEnv env)
+        {
+            string root = P("clean"), keep = P("clean-keep"), a = P("clean", "one"), b = P("clean", "deep", "two"), src = P("clean", "repo", "bin"), data = P("clean", "one", "company.AMR");
+            foreach (string d in new[] { a, b, src }) Engine(env, New).CopyFiles(d);
+            Put(P("clean", "repo", ".git"), "x"); Put(data, "DATA"); Put(Path.Combine(a, "settings.ini"), "Mode=access\r\nDataPath=" + data + "\r\n"); Put(Path.Combine(a, "errors.log"), "err");
+            Put(Path.Combine(a, "نسخ احتياطية - مخازن", "b.AMR"), "B"); Put(Path.Combine(a, "مكونات", "SQLEXPR_x64_ENU.exe"), "pkg"); Put(Path.Combine(a, "logo.png"), "L"); Put(Path.Combine(b, "mine.txt"), "M");
+            List<InstallCopy> found = Clean.Scan(env, new[] { root }, null, delegate { return false; });
+            found.RemoveAll(delegate(InstallCopy c) { return !InstallEnv.IsUnder(c.Dir, root); });
+            Check(found.Count == 2 && found.Exists(c => InstallEnv.SamePath(c.Dir, a)) && found.Exists(c => InstallEnv.SamePath(c.Dir, b)), "cleaner: both copies found, the source folder not (" + found.Count + ")");
+            Check(Clean.Report(env, found).Contains("err"), "cleaner: report with the error log");
+            Check(Clean.Remove(env, a, keep) == null && Clean.Remove(env, b, keep) == null, "cleaner: removed");
+            Check(!File.Exists(env.ExePath(a)) && !File.Exists(env.ExePath(b)) && !Directory.Exists(Path.Combine(a, "docs")) && !Directory.Exists(Path.Combine(a, "مكونات")), "cleaner: program files gone");
+            Check(Get(data) == "DATA" && Get(Path.Combine(a, "نسخ احتياطية - مخازن", "b.AMR")) == "B" && File.Exists(Path.Combine(a, "logo.png")) && Get(Path.Combine(b, "mine.txt")) == "M", "cleaner: data, backups, logo and other files stay");
+            Check(!File.Exists(Path.Combine(a, "settings.ini")) && Directory.GetFiles(keep, "settings.ini", SearchOption.AllDirectories).Length == 1 && Directory.GetFiles(keep, "errors.log", SearchOption.AllDirectories).Length == 1, "cleaner: settings and log kept aside");
+            Check(InstallFind.RegValue(env.RegKey, "LastData") == data, "cleaner: the data file is remembered for the new installation");
+            Check(File.Exists(env.ExePath(src)), "cleaner: source folder untouched");
+            Check(Clean.Remove(env, a, keep) != null, "cleaner: nothing there any more");
         }
 
         static void Components(InstallEnv env)

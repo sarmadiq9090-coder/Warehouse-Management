@@ -216,11 +216,43 @@ namespace Stores.Installer
                 }
                 catch { try { Process.Start("https://www.microsoft.com/useterms"); } catch { } }
             });
-            y += 42;
-            AcceptButton = Big(Tx.S("أوافق، ابدأ التنصيب", "I agree, install"), y, Go);
+            y += 40;
+            CheckBox fresh = Check(Tx.S("مسح كل النسخ القديمة من هذا الحاسوب أولا (بياناتك لا تُمسح)", "Remove all old copies from this computer first (your data stays)"), y, false);
+            y += 36;
+            AcceptButton = Big(Tx.S("أوافق، ابدأ التنصيب", "I agree, install"), y, delegate { if (fresh.Checked) CleanFirst(); else Go(); });
             Lbl("© 2026 sarmadiq9090-coder", BodyH - 62, 20, 8.5f, false, Muted).RightToLeft = RightToLeft.No;
             Lbl(Tx.S("علامتا Microsoft وSQL Server لشركة مايكروسوفت، وهي لا ترعى هذا البرنامج.", "Microsoft and SQL Server are trademarks of Microsoft, which does not endorse this program."), BodyH - 40, 22, 8.5f, false, Muted);
             FootBtn(Tx.S("إلغاء", "Cancel"), 0, false, Close);
+        }
+
+        /// <summary>«مسح كل النسخ القديمة»: found, shown for confirmation, removed (Clean: program files only), then installed afresh.</summary>
+        void CleanFirst()
+        {
+            busy = true; Show(ProgressPage); bar.Style = ProgressBarStyle.Marquee; barText.Text = Tx.S("البحث عن النسخ القديمة…", "Looking for old copies…");
+            List<string> roots = new List<string>();
+            foreach (DriveInfo d in DriveInfo.GetDrives()) try { if (d.IsReady && (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Removable)) roots.Add(d.Name); } catch { }
+            List<InstallCopy> found = new List<InstallCopy>();
+            BackgroundWorker w = new BackgroundWorker();
+            w.DoWork += delegate { found = Clean.Scan(en.Env, roots, null, delegate { return closing; }); };
+            w.RunWorkerCompleted += delegate
+            {
+                busy = false;
+                if (found.Count == 0) { Go(); return; }
+                StringBuilder s = new StringBuilder();
+                foreach (InstallCopy c in found) s.AppendLine((c.Version.Length > 0 ? c.Version : "?") + "   " + c.Dir);
+                if (!Tx.Confirm(Tx.S("ستُمسح هذه النسخ من البرنامج، ويُغلق البرنامج إذا كان مفتوحا. احفظ عملك أولا.\nبياناتك ونسخك الاحتياطية لا تُمسح.\n\n", "These copies of the program will be removed (it is closed if it is open: save your work first).\nYour data and backups stay.\n\n") + s + Tx.S("\nهل تتابع؟", "\nContinue?"))) { Show(AgreePage); return; }
+                string keep = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), Clean.KeepName), bad = "";
+                foreach (InstallCopy c in found)
+                {
+                    foreach (int pid in InstallFind.RunningIn(en.Env, c.Dir)) if (ProgramExit.Ask(pid, 8000, delegate { Application.DoEvents(); return true; }) != ExitAnswer.Closed) Clean.End(pid);
+                    string err = Clean.Remove(en.Env, c.Dir, keep);
+                    if (err != null) bad += c.Dir + "  •  " + err + "\n";
+                }
+                if (bad.Length > 0) Tx.Warn(Tx.S("لم تُمسح هذه النسخ:\n", "These copies could not be removed:\n") + bad);
+                Found = new List<InstallCopy>(); Sel = null; oldDir = null; Dir = en.Env.DefaultDir;
+                Go();
+            };
+            w.RunWorkerAsync();
         }
 
         // ------------------------------------------------------------ main page

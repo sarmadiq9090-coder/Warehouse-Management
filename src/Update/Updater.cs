@@ -178,7 +178,7 @@ namespace Stores
                 string script = Path.Combine(work, "apply-update.ps1");
                 File.WriteAllText(script, ApplyScript, new UTF8Encoding(true));
                 ProcessStartInfo si = new ProcessStartInfo("powershell.exe",
-                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"" + script + "\" -ProcessId " + Process.GetCurrentProcess().Id +
+                    "-NoProfile -ExecutionPolicy Bypass -File \"" + script + "\" -ProcessId " + Process.GetCurrentProcess().Id +
                     " -Source \"" + stage + "\" -Target \"" + appDir + "\" -Exe \"" + Application.ExecutablePath + "\" -Log \"" + Path.Combine(work, "update.log") + "\"");
                 si.UseShellExecute = false; si.CreateNoWindow = true;
                 Process.Start(si);

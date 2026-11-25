@@ -18,7 +18,7 @@ namespace Stores
         public static string Company { get { return Branding.Company; } }
         /// <summary>Set by «تسجيل الخروج»: after the main window closes, the login screen shows again.</summary>
         public static bool LogoutRequested;
-        public const string Version = "1.2.3";
+        public const string Version = "1.2.4";
 
         [STAThread]
         static void Main(string[] args)
@@ -41,6 +41,7 @@ namespace Stores
             foreach (string a in args)   // started by the one-file setup: its language
                 if (a.StartsWith("/lang=", StringComparison.OrdinalIgnoreCase) && Settings.Get("Language", "").Length == 0) Lang.SetDefault(a.Substring(6).Equals("en", StringComparison.OrdinalIgnoreCase));
             Lang.Init();                 // first start: asks for the language (before any data exists)
+            if (Array.Exists(args, a => a.Equals("/test32", StringComparison.OrdinalIgnoreCase))) ServerSetup.Test32 = true;
             if (Array.Exists(args, a => a.Equals("/server", StringComparison.OrdinalIgnoreCase))) ServerSetup.RunAuto();   // the one-file setup: the server, without questions
             if (!Connect()) return;
             PrepareData();

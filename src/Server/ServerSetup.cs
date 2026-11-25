@@ -85,6 +85,7 @@ namespace Stores
         {
             if (running) return;
             if (Settings.Mode == "sql" && Program.TryConnectSaved() == null) return;      // already works
+            bool server = CanBeServer;      // 32-bit Windows: everything except being the server itself
             if (IsSqlExpressInstalled()) { RunMain(null); return; }      // set up before: its password is asked, never changed unseen
             List<string> hosts;
             using (WaitForm wf = new WaitForm("جاري البحث عن السيرفر الرئيسي في الشبكة", "يرجى الانتظار… المدة المتوقعة أقل من نصف دقيقة.", null))
@@ -95,9 +96,22 @@ namespace Stores
             }
             hosts.RemoveAll(h => h.StartsWith(Environment.MachineName + ",", StringComparison.OrdinalIgnoreCase));
             if (hosts.Count > 0 && UI.Confirm("وُجد سيرفر رئيسي في الشبكة: " + string.Join("، ", hosts.ConvertAll(h => h.Replace(",1433", "")).ToArray()) +
-                                              "\n\nهل تريد ربط هذا الحاسوب به؟\n(«لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا)"))
+                                              "\n\nهل تريد ربط هذا الحاسوب به؟" + (server ? "\n(«لا»: يصبح هذا الحاسوب سيرفرا رئيسيا جديدا)" : "\n(«لا»: يعمل هذا الحاسوب ببيانات محلية)")))
             { if (RunSecondary(null)) return; }
             bool isNew = false;
+            if (string.IsNullOrEmpty(Settings.DataPath) || !File.Exists(Settings.DataPath))
+            {
+                // the data an earlier installation worked with (remembered by the cleaner); otherwise one question: an empty
+                // server while the company's data lies in some file would look like lost data
+                string last = InstallFind.RegValue(InstallEnv.Current.RegKey, "LastData");
+                if (last.Length > 0 && File.Exists(last)) { Settings.Mode = "access"; Settings.DataPath = last; Settings.Save(); }
+                else if (UI.Confirm("هل لديك بيانات سابقة على هذا الحاسوب (ملف AMR)؟\n\nنعم: اختيار الملف ونقله إلى السيرفر\nلا: البدء ببيانات جديدة فارغة"))
+                {
+                    string f = Program.AskDataFile();
+                    if (f == null) return;
+                    Settings.Mode = "access"; Settings.DataPath = f; Settings.Save();
+                }
+            }
             if (string.IsNullOrEmpty(Settings.DataPath) || !File.Exists(Settings.DataPath))
             {
                 string dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), path = Path.Combine(dir, "بيانات المخازن.AMR");
@@ -107,9 +121,19 @@ namespace Stores
                 Settings.Mode = "access"; Settings.DataPath = path; Settings.Save();
                 isNew = true;
             }
+            if (!server)
+            {
+                UI.Info("ويندوز في هذا الحاسوب 32 بت: البرنامج جاهز ويعمل بملف بيانات على هذا الحاسوب.\nالسيرفر نفسه يحتاج حاسوبا بويندوز 64 بت، ويمكن ربط هذا الحاسوب به لاحقا من «سيرفر ثانوي»." +
+                        (isNew ? "\n\nالدخول أول مرة: المستخدم 1 وكلمة المرور 1" : ""));
+                return;
+            }
             running = true;
             try { SetUpMain(null, NewPassword(), isNew); } finally { running = false; }
         }
+
+        /// <summary>SQL Server 2022 exists for 64-bit Windows only. (Test32: tests.)</summary>
+        internal static bool Test32;
+        internal static bool CanBeServer { get { return Environment.Is64BitOperatingSystem && !Test32; } }
 
         /// <summary>«K7MP-4XQ9-2TRW»: easy to read and to type, about 58 random bits.</summary>
         internal static string NewPassword()
@@ -359,23 +383,23 @@ namespace Stores
         /// checks the copy against the SHA-256 the program computed, and only then runs that copy.</summary>
         public static string BootstrapCommand(string script, string hash, string pwFile, string result, string media, string prog)
         {
+            // one plain, readable line (no encoded command): what is run as administrator can be read in the Windows prompt
             return
-                "$ErrorActionPreference = 'Stop'\n" +
-                "$res = " + PsQuote(result) + "\n" +
-                "try {\n" +
-                "  $pf = $env:ProgramW6432; if (-not $pf) { $pf = $env:ProgramFiles }\n" +
-                "  $dir = Join-Path $pf 'EngStores\\setup'\n" +
-                "  New-Item -ItemType Directory -Force -Path $dir | Out-Null\n" +
-                "  & icacls.exe $dir /setowner '*S-1-5-32-544' /T /C /Q | Out-Null\n" +
-                "  & icacls.exe $dir /reset /T /C /Q | Out-Null\n" +
-                "  & icacls.exe $dir /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' /C /Q | Out-Null\n" +
-                "  if ($LASTEXITCODE -ne 0) { throw 'icacls failed' }\n" +
-                "  $dst = Join-Path $dir 'setup-server.ps1'\n" +
-                "  Copy-Item -LiteralPath " + PsQuote(script) + " -Destination $dst -Force\n" +
-                "  if ((Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash -ne '" + hash + "') { throw 'setup script changed on disk' }\n" +
-                "  & $dst -PasswordFile " + PsQuote(pwFile) + " -ResultFile $res -MediaFile " + PsQuote(media) + " -ProgressFile " + PsQuote(prog) + "\n" +
-                "  exit $LASTEXITCODE\n" +
-                "} catch { [IO.File]::WriteAllText($res, ('ERR|' + $_.Exception.Message), (New-Object Text.UTF8Encoding $false)); exit 1 }\n";
+                "$ErrorActionPreference = 'Stop'; $res = " + PsQuote(result) + "; " +
+                "try { " +
+                "$pf = $env:ProgramW6432; if (-not $pf) { $pf = $env:ProgramFiles }; " +
+                "$dir = Join-Path $pf 'EngStores\\setup'; " +
+                "New-Item -ItemType Directory -Force -Path $dir | Out-Null; " +
+                "& icacls.exe $dir /setowner '*S-1-5-32-544' /T /C /Q | Out-Null; " +
+                "& icacls.exe $dir /reset /T /C /Q | Out-Null; " +
+                "& icacls.exe $dir /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-18:(OI)(CI)F' /C /Q | Out-Null; " +
+                "if ($LASTEXITCODE -ne 0) { throw 'icacls failed' }; " +
+                "$dst = Join-Path $dir 'setup-server.ps1'; " +
+                "Copy-Item -LiteralPath " + PsQuote(script) + " -Destination $dst -Force; " +
+                "if ((Get-FileHash -LiteralPath $dst -Algorithm SHA256).Hash -ne '" + hash + "') { throw 'setup script changed on disk' }; " +
+                "& $dst -PasswordFile " + PsQuote(pwFile) + " -ResultFile $res -MediaFile " + PsQuote(media) + " -ProgressFile " + PsQuote(prog) + "; " +
+                "exit $LASTEXITCODE " +
+                "} catch { [IO.File]::WriteAllText($res, ('ERR|' + $_.Exception.Message), (New-Object Text.UTF8Encoding $false)); exit 1 }";
         }
 
         /// <summary>Runs the embedded setup script elevated and hidden. media: the checked package (null when SQL Server is
@@ -408,7 +432,7 @@ namespace Stores
                     // here: the elevated start is done by a 64-bit Windows service that does not know that path.
                     string boot = BootstrapCommand(script, hash, pwFile, result, media, prog);
                     ProcessStartInfo si = new ProcessStartInfo("powershell.exe",
-                        "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(boot)));
+                        "-NoProfile -ExecutionPolicy Bypass -Command \"" + boot + "\"");
                     si.Verb = "runas"; si.UseShellExecute = true; si.WindowStyle = ProcessWindowStyle.Hidden;
                     p = Process.Start(si);
                 }
@@ -462,7 +486,7 @@ namespace Stores
         /// <summary>null when this computer can become the main server, otherwise the reason (Arabic).</summary>
         static string CheckComputer(bool sqlInstalled)
         {
-            if (!Environment.Is64BitOperatingSystem) return "SQL Server يحتاج ويندوز 64 بت. اختر حاسوبا آخر ليكون السيرفر الرئيسي.";
+            if (!CanBeServer) return "SQL Server يحتاج ويندوز 64 بت. اختر حاسوبا آخر ليكون السيرفر الرئيسي.";
             if (sqlInstalled) return null;
             try
             {
